@@ -1,0 +1,905 @@
+openapi: 3.0.3
+info:
+  title: Auth Service API
+  description: Authentication and authorization service for managing users, teams, and project members
+  version: '1.0.0'
+
+servers:
+  - url: http://localhost:8000/apis/v1/auth
+    description: Development server
+  - url: https://api.shipoff.in/apis/v1/auth
+    description: Production server
+
+security:
+  - BearerAuth: []
+
+paths:
+  /login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      description: Authenticate user with email and password
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /signin:
+    post:
+      tags:
+        - Authentication
+      summary: User registration
+      description: Register a new user account
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SigninRequest'
+      responses:
+        '201':
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /oauth:
+    post:
+      tags:
+        - Authentication
+      summary: OAuth authentication
+      description: Authenticate user via OAuth provider
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OAuthRequest'
+      responses:
+        '200':
+          description: OAuth authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /me:
+    get:
+      tags:
+        - User
+      summary: Get current user
+      description: Get current authenticated user information
+      responses:
+        '200':
+          description: User information retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCurrentUserResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /refresh:
+    get:
+      tags:
+        - Authentication
+      summary: Refresh token
+      description: Refresh access token using refresh token
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /teams:
+    post:
+      tags:
+        - Teams
+      summary: Create team
+      description: Create a new team
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTeamRequest'
+      responses:
+        '201':
+          description: Team created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateTeamResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      tags:
+        - Teams
+      summary: Get user teams
+      description: Get all teams for the current user
+      parameters:
+        - name: skip
+          in: query
+          description: Number of records to skip
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: limit
+          in: query
+          description: Maximum number of records to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Teams retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAllUserTeamsResponse'
+
+  /teams/{teamId}:
+    get:
+      tags:
+        - Teams
+      summary: Get team
+      description: Get team by ID
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          description: Team ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Team retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetTeamResponse'
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - Teams
+      summary: Delete team
+      description: Delete team by ID
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          description: Team ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Team deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteTeamResponse'
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /teams/{teamId}/invitations:
+    post:
+      tags:
+        - Team Members
+      summary: Create team member invitation
+      description: Create an invitation for a user to join a team
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          description: Team ID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTeamMemberInvitationRequest'
+      responses:
+        '201':
+          description: Invitation created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateTeamMemberInvitationResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /teams/{teamId}/invitations/{inviteId}/accept:
+    get:
+      tags:
+        - Team Members
+      summary: Accept team invitation
+      description: Accept a team invitation
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          description: Team ID
+          schema:
+            type: string
+        - name: inviteId
+          in: path
+          required: true
+          description: Invitation ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Invitation accepted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetTeamMemberResponse'
+        '404':
+          description: Invitation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /teams/{teamId}/members/{targetUserId}:
+    get:
+      tags:
+        - Team Members
+      summary: Get team member
+      description: Get team member information
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          description: Team ID
+          schema:
+            type: string
+        - name: targetUserId
+          in: path
+          required: true
+          description: Target user ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Team member retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetTeamMemberResponse'
+        '404':
+          description: Team member not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - Team Members
+      summary: Delete team member
+      description: Remove a member from team
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          description: Team ID
+          schema:
+            type: string
+        - name: targetUserId
+          in: path
+          required: true
+          description: Target user ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Team member deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteProjectMemberResponse'
+        '404':
+          description: Team member not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /projects/{projectId}/invitations:
+    post:
+      tags:
+        - Project Members
+      summary: Create project member invitation
+      description: Create an invitation for a user to join a project
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProjectMemberInvitationRequest'
+      responses:
+        '201':
+          description: Invitation created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateProjectMemberInvitationResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /projects/{projectId}/invitations/{inviteId}/accept:
+    get:
+      tags:
+        - Project Members
+      summary: Accept project invitation
+      description: Accept a project invitation
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: string
+        - name: inviteId
+          in: path
+          required: true
+          description: Invitation ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Invitation accepted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetProjectMemberResponse'
+        '404':
+          description: Invitation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /projects/{projectId}/members/{targetUserId}:
+    get:
+      tags:
+        - Project Members
+      summary: Get project member
+      description: Get project member information
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: string
+        - name: targetUserId
+          in: path
+          required: true
+          description: Target user ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Project member retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetProjectMemberResponse'
+        '404':
+          description: Project member not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - Project Members
+      summary: Delete project member
+      description: Remove a member from project
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: string
+        - name: targetUserId
+          in: path
+          required: true
+          description: Target user ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Project member deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteProjectMemberResponse'
+        '404':
+          description: Project member not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        password:
+          type: string
+          format: password
+          example: password123
+
+    SigninRequest:
+      type: object
+      required:
+        - fullName
+        - email
+        - password
+      properties:
+        fullName:
+          type: string
+          example: John Doe
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        password:
+          type: string
+          format: password
+          example: password123
+        avatarUri:
+          type: string
+          format: uri
+          example: https://example.com/avatar.jpg
+
+    OAuthRequest:
+      type: object
+      required:
+        - fullName
+        - email
+        - password
+        - provider
+      properties:
+        fullName:
+          type: string
+          example: John Doe
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        password:
+          type: string
+          example: oauth_token
+        avatarUri:
+          type: string
+          format: uri
+          example: https://example.com/avatar.jpg
+        provider:
+          type: string
+          example: google
+
+    Tokens:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+        accessToken:
+          type: string
+
+    LoginResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: Login successful
+        res:
+          $ref: '#/components/schemas/Tokens'
+
+    GetCurrentUserResponseData:
+      type: object
+      properties:
+        fullName:
+          type: string
+          example: John Doe
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        avatarUri:
+          type: string
+          format: uri
+          example: https://example.com/avatar.jpg
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        password:
+          type: string
+        emailVerified:
+          type: boolean
+        userId:
+          type: string
+        teamMembers:
+          type: array
+          items:
+            $ref: '#/components/schemas/GetTeamMemberResponseData'
+        projectMembers:
+          type: array
+          items:
+            $ref: '#/components/schemas/GetProjectMemberResponse'
+
+    GetCurrentUserResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: Success
+        res:
+          $ref: '#/components/schemas/GetCurrentUserResponseData'
+
+    CreateTeamRequest:
+      type: object
+      required:
+        - teamName
+      properties:
+        teamName:
+          type: string
+          example: Development Team
+        description:
+          type: string
+          example: Team for development projects
+
+    Team:
+      type: object
+      properties:
+        teamId:
+          type: string
+        teamName:
+          type: string
+          example: Development Team
+        description:
+          type: string
+          example: Team for development projects
+        planType:
+          type: string
+          example: free
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateTeamResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 201
+        message:
+          type: string
+          example: Team created successfully
+        res:
+          $ref: '#/components/schemas/Team'
+
+    GetTeamResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: Success
+        res:
+          $ref: '#/components/schemas/Team'
+
+    DeleteTeamResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: Team deleted successfully
+        res:
+          $ref: '#/components/schemas/Team'
+
+    GetAllUserTeamsResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: Success
+        res:
+          type: array
+          items:
+            $ref: '#/components/schemas/Team'
+
+    CreateTeamMemberInvitationRequest:
+      type: object
+      required:
+        - role
+      properties:
+        role:
+          type: string
+          example: member
+          enum: [admin, member, viewer]
+
+    CreateTeamMemberInvitationResponseData:
+      type: object
+      properties:
+        inviteId:
+          type: string
+        role:
+          type: string
+        teamId:
+          type: string
+        status:
+          type: string
+          example: pending
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+
+    CreateTeamMemberInvitationResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 201
+        message:
+          type: string
+          example: Invitation created successfully
+        res:
+          $ref: '#/components/schemas/CreateTeamMemberInvitationResponseData'
+
+    GetTeamMemberResponseData:
+      type: object
+      properties:
+        userId:
+          type: string
+        teamId:
+          type: string
+        role:
+          type: string
+
+    GetTeamMemberResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: Success
+        res:
+          $ref: '#/components/schemas/GetTeamMemberResponseData'
+
+    CreateProjectMemberInvitationRequest:
+      type: object
+      required:
+        - targetUserId
+        - role
+      properties:
+        targetUserId:
+          type: string
+        role:
+          type: string
+          example: member
+          enum: [admin, member, viewer]
+
+    CreateProjectMemberInvitationResponseData:
+      type: object
+      properties:
+        inviteId:
+          type: string
+        role:
+          type: string
+        projectId:
+          type: string
+        status:
+          type: string
+          example: pending
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateProjectMemberInvitationResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 201
+        message:
+          type: string
+          example: Invitation created successfully
+        res:
+          $ref: '#/components/schemas/CreateProjectMemberInvitationResponseData'
+
+    GetProjectMemberResponseData:
+      type: object
+      properties:
+        memberId:
+          type: string
+        userId:
+          type: string
+        projectId:
+          type: string
+        role:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    GetProjectMemberResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: Success
+        res:
+          $ref: '#/components/schemas/GetProjectMemberResponseData'
+
+    DeleteProjectMemberResponseData:
+      type: object
+      properties:
+        role:
+          type: string
+        userId:
+          type: string
+        projectId:
+          type: string
+
+    DeleteProjectMemberResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: Member deleted successfully
+        res:
+          $ref: '#/components/schemas/DeleteProjectMemberResponseData'
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: Error message
+        res:
+          type: object
+          nullable: true

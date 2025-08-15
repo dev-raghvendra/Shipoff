@@ -1,0 +1,13 @@
+{
+  "name": "@shipoff/redis",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.ts",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^17.2.1",
+    "ioredis": "^5.7.0"
+  }
+}

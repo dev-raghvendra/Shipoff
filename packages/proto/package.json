@@ -1,0 +1,23 @@
+{
+  "name": "@shipoff/proto",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.ts",
+  "scripts": {
+    "proto:gen": "npm run clean && npm run generate",
+    "clean": "rm -rf generated && mkdir -p generated",
+    "generate": "grpc_tools_node_protoc --plugin=protoc-gen-ts=node_modules/.bin/protoc-gen-ts --ts_out=grpc_js:generated/ -I src/proto/ -I ./node_modules/grpc-tools/protoc/include src/proto/*.proto"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/google-protobuf": "^3.15.12",
+    "grpc-tools": "^1.13.0",
+    "protoc-gen-ts": "^0.8.7"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "^1.13.4",
+    "google-protobuf": "^3.21.4"
+  }
+}

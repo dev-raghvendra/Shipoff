@@ -1,0 +1,45 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "ui": "tui",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build","^proto:gen"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": [".next/**", "!.next/cache/**"]
+    },
+    "lint": {
+      "dependsOn": ["^lint"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "!**/generated/**",
+        "!**/.prisma/**"
+      ]
+    },
+    "check-types": {
+      "dependsOn": ["^check-types"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "!**/generated/**",
+        "!**/.prisma/**"
+      ]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "generate":{
+       "dependsOn": ["^generate","^proto:gen"],
+       "inputs":["$TURBO_DEFAULT$",".prisma*"]
+    },
+    "proto:gen":{
+      "dependsOn": ["^proto:gen"],
+      "inputs": ["src/proto/**/*.proto"],
+      "outputs": ["generated/**"]
+    },
+    "migrate:dev":{
+      "dependsOn": ["^migrate:dev"],
+      "inputs": ["src/prisma/migrations/**", ".env*"],
+      "outputs": ["src/prisma/migrations/**"]
+    }
+  }
+}

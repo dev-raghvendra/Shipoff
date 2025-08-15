@@ -1,0 +1,279 @@
+openapi: 3.0.3
+info:
+  title: GitHub Service API
+  description: GitHub integration service for managing repositories and installations
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8000/apis/v1/github
+    description: Development server
+  - url: https://api.shipoff.in/apis/v1/github
+    description: Production server
+
+security:
+  - BearerAuth: []
+
+paths:
+  /repos:
+    get:
+      tags:
+        - GitHub Repositories
+      summary: Get user GitHub repositories
+      description: Get all GitHub repositories for the authenticated user
+      parameters:
+        - name: skip
+          in: query
+          description: Number of records to skip
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: limit
+          in: query
+          description: Maximum number of records to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: GitHub repositories retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllGithubReposResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /repos/{repoId}:
+    get:
+      tags:
+        - GitHub Repositories
+      summary: Get GitHub repository
+      description: Get GitHub repository details by ID
+      parameters:
+        - name: repoId
+          in: path
+          required: true
+          description: GitHub repository ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: GitHub repository retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GithubRepoResponse'
+        '404':
+          description: GitHub repository not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /installation:
+    get:
+      tags:
+        - GitHub Installation
+      summary: Get GitHub installation
+      description: Get GitHub installation information for the authenticated user
+      responses:
+        '200':
+          description: GitHub installation retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GithubInstallationResponse'
+        '404':
+          description: GitHub installation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /installation/callback:
+    post:
+      tags:
+        - GitHub Installation
+      summary: GitHub installation callback
+      description: Handle GitHub installation callback (typically called by GitHub)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGithubInstallationRequest'
+      responses:
+        '200':
+          description: GitHub installation processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    CreateGithubInstallationRequest:
+      type: object
+      required:
+        - installation_id
+      properties:
+        authUserData:
+          $ref: '#/components/schemas/User'
+        installation_id:
+          type: string
+          example: "12345678"
+          description: GitHub installation ID
+
+    User:
+      type: object
+      properties:
+        userId:
+          type: string
+        fullName:
+          type: string
+        email:
+          type: string
+          format: email
+        avatarUri:
+          type: string
+          format: uri
+        emailVerified:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        provider:
+          type: string
+
+    GithubRepository:
+      type: object
+      properties:
+        githubRepoId:
+          type: string
+          example: "123456789"
+        githubRepoName:
+          type: string
+          example: my-awesome-repo
+        githubRepoFullName:
+          type: string
+          example: user/my-awesome-repo
+        githubRepoURI:
+          type: string
+          format: uri
+          example: https://github.com/user/my-awesome-repo
+        githubRepoDefaultBranch:
+          type: string
+          example: main
+        githubRepoPrivate:
+          type: boolean
+          example: false
+
+    GithubInstallation:
+      type: object
+      properties:
+        githubInstallationId:
+          type: string
+          example: "12345678"
+        userId:
+          type: string
+        githubUserName:
+          type: string
+          example: johndoe
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    AllGithubReposResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: Success
+        res:
+          type: array
+          items:
+            $ref: '#/components/schemas/GithubRepository'
+
+    GithubRepoResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: Success
+        res:
+          $ref: '#/components/schemas/GithubRepository'
+
+    GithubInstallationResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: Success
+        res:
+          $ref: '#/components/schemas/GithubInstallation'
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: Error message
+        res:
+          type: object
+          nullable: true

@@ -1,0 +1,38 @@
+export type ContainerEvent <T extends keyof typeof $ContainerEvent> = {
+    projectId:string;
+    domain:string;
+    event: T;
+    podURL:string;
+    containerId:string;
+    containerName:string;
+}
+
+export type DeploymentEvent <T extends keyof typeof $DeploymentEvent> =  {
+    event:T;
+    repoFullName:string;
+    branch:string;
+    projectId:string;
+    domain:string;
+}
+
+export type AuthEvent<T extends keyof typeof $AuthEvent> = {
+    userId:string;
+    action:T;
+}
+
+
+export enum $AuthEvent {
+    DELETED = "DELETED"
+}
+
+export enum $ContainerEvent {
+    STARTING = "STARTING",
+    RUNNING = "RUNNING",
+    STOPPED = "STOPPED",
+    ERROR = "ERROR"
+}
+
+export enum $DeploymentEvent {
+    CREATED = "CREATED",
+    DELETED = "DELETED",
+}

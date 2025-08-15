@@ -1,0 +1,31 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: shipoff-postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./initdb:/docker-entrypoint-initdb.d
+    networks:
+      - backend
+  redis:
+    image: redis:7
+    container_name: shipoff-redis
+    command: redis-server --requirepass secret
+    ports:
+      - "6379:6379"
+    networks:
+      - backend
+volumes:
+  pgdata:
+
+networks:
+  backend:

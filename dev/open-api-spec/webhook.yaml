@@ -1,0 +1,247 @@
+openapi: 3.0.3
+info:
+  title: Webhook Service API
+  description: Webhook service for handling external webhook events
+  version: 1.0.0
+
+
+servers:
+  - url: http://localhost:8000/apis/v1/webhook
+    description: Development server
+  - url: https://api.shipoff.in/apis/v1/webhook
+    description: Production server
+
+paths:
+  /github:
+    post:
+      tags:
+        - GitHub Webhooks
+      summary: GitHub webhook
+      description: Handle GitHub webhook events (push, pull request, etc.)
+      security: []
+      parameters:
+        - name: X-GitHub-Event
+          in: header
+          description: GitHub event type
+          required: false
+          schema:
+            type: string
+            example: push
+        - name: X-GitHub-Delivery
+          in: header
+          description: GitHub delivery ID
+          required: false
+          schema:
+            type: string
+            example: 12345678-1234-1234-1234-123456789012
+        - name: X-Hub-Signature-256
+          in: header
+          description: GitHub webhook signature
+          required: false
+          schema:
+            type: string
+            example: sha256=abc123def456...
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GithubWebhookBody'
+      responses:
+        '200':
+          description: Webhook processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Webhook processed successfully
+        '400':
+          description: Bad request - Invalid payload or signature
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Invalid signature
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Unprocessable Entity - Unsupported event type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    GithubWebhookBody:
+      type: object
+      required:
+        - payload
+        - signature
+        - event
+      properties:
+        payload:
+          type: string
+          description: JSON payload from GitHub webhook
+          example: '{"ref":"refs/heads/main","before":"abc123","after":"def456",...}'
+        signature:
+          type: string
+          description: GitHub webhook signature for verification
+          example: sha256=abc123def456789...
+        event:
+          type: string
+          description: GitHub event type
+          example: push
+          enum:
+            - push
+            - pull_request
+            - issues
+            - issue_comment
+            - pull_request_review
+            - pull_request_review_comment
+            - create
+            - delete
+            - fork
+            - watch
+            - release
+            - deployment
+            - deployment_status
+        action:
+          type: string
+          description: GitHub action type (optional, depends on event)
+          example: opened
+          enum:
+            - opened
+            - closed
+            - reopened
+            - edited
+            - assigned
+            - unassigned
+            - labeled
+            - unlabeled
+            - synchronize
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: Error message
+        res:
+          type: object
+          nullable: true
+
+    # Example webhook payload schemas for common events
+    PushWebhookPayload:
+      type: object
+      description: Example payload for push events
+      properties:
+        ref:
+          type: string
+          example: refs/heads/main
+        before:
+          type: string
+          example: abc123def456
+        after:
+          type: string
+          example: def456abc123
+        repository:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 123456789
+            name:
+              type: string
+              example: my-repo
+            full_name:
+              type: string
+              example: user/my-repo
+        commits:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                example: abc123def456
+              message:
+                type: string
+                example: Fix authentication bug
+              author:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: John Doe
+                  email:
+                    type: string
+                    example: john@example.com
+
+    PullRequestWebhookPayload:
+      type: object
+      description: Example payload for pull request events
+      properties:
+        action:
+          type: string
+          example: opened
+        number:
+          type: integer
+          example: 42
+        pull_request:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 987654321
+            title:
+              type: string
+              example: Add new feature
+            body:
+              type: string
+              example: This PR adds a new feature...
+            state:
+              type: string
+              example: open
+            head:
+              type: object
+              properties:
+                ref:
+                  type: string
+                  example: feature-branch
+                sha:
+                  type: string
+                  example: abc123def456
+            base:
+              type: object
+              properties:
+                ref:
+                  type: string
+                  example: main
+                sha:
+                  type: string
+                  example: def456abc123
+        repository:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 123456789
+            name:
+              type: string
+              example: my-repo
+            full_name:
+              type: string
+              example: user/my-repo

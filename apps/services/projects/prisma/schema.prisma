@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URI")
+}
+
+enum ProjectType {
+  STATIC
+  DYNAMIC
+}
+
+model Project {
+  projectId              String    @id @default(uuid())
+  name                   String  
+  domain                 String     @unique
+  productionCommand      String?   @default("")
+  buildCommand           String   @default("")
+  frameworkId            String
+  branch                 String?  @default("main")
+  createdAt              DateTime?  @default(now())
+  updatedAt              DateTime?  @updatedAt
+  framework              Framework  @relation(fields: [frameworkId], references: [frameworkId])
+
+  repository            Repository ?
+  deployments           Deployment[]
+  environmentVariables  EnvironmentVariable[]
+}
+
+model GithubInstallation {
+  githubInstallationId String @id
+  userId               String @unique
+  githubUserName       String
+  createdAt            DateTime? @default(now())
+  updatedAt            DateTime? @updatedAt
+
+  repositoryConfigs    Repository[]
+}
+
+model Framework {
+  frameworkId       String   @id @default(uuid())
+  icon              String
+  name              String   @unique
+  displayName       String   @unique
+  applicationType   ProjectType
+  defaultBuildCmd   String
+  defaultProdCmd    String?  @default("")
+  runtime           Runtime  
+
+  project         Project[]
+}
+
+model Repository {
+  repositoryId           String    @id @default(uuid())
+  githubInstallationId   String 
+  githubRepoName         String    @unique
+  githubRepoId           String    @unique
+  githubRepoURI          String    @unique
+  projectId              String    @unique
+  createdAt              DateTime? @default(now())
+  updatedAt              DateTime? @updatedAt
+
+
+
+  deployments            Deployment[]
+  project                Project @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+githubInstallation     GithubInstallation @relation(fields: [githubInstallationId], references: [githubInstallationId])
+}
+
+
+model Deployment {
+  deploymentId    String           @id @default(uuid())
+  commitHash      String           @unique
+  status          DeploymentStatus? @default(QUEUED)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  commitMessage   String
+  author          String
+  projectId       String
+  repositoryId    String
+  production      Boolean?         @default(false)
+
+  project         Project          @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+  repository      Repository       @relation(fields: [repositoryId], references: [repositoryId])
+}
+
+model EnvironmentVariable {
+  projectId  String
+  envName    String
+  envValue   String
+
+  project    Project @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+
+  @@id([projectId, envName])
+}
+
+enum DeploymentStatus {
+  QUEUED
+  INACTIVE
+  FAILED
+  PRODUCTION
+  BUILDING
+}
+
+enum Runtime {
+  NODEJS
+  PYTHON
+  PHP
+}

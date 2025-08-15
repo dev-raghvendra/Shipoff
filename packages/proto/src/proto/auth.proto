@@ -1,0 +1,320 @@
+//auth.proto
+
+syntax = "proto3";
+
+
+import "common.proto";
+
+
+
+message GetUserRequest {
+  User authUserData = 1;
+  string targetUserId = 2;
+}
+
+message GetUserResponseData {
+  string fullName = 1;
+  string email = 2;
+  string avatarUri = 3;
+  string createdAt = 4;
+  string updatedAt = 5;
+}
+
+message GetUserResponse {
+  int32 code = 1;
+  string message = 2;
+  GetUserResponseData res = 3;
+}
+
+message GetCurrentUserResponseData {
+  string fullName = 1;
+  string email = 2;
+  string avatarUri = 3;
+  string createdAt = 4;
+  string updatedAt = 5;
+  string password = 6;
+  bool emailVerified = 7;
+  string userId = 8;
+  repeated GetTeamMemberResponseData teamMembers = 9;
+  repeated GetProjectMemberResponse  projectMembers = 10;
+}
+
+
+message GetCurrentUserResponse {
+  int32 code = 1;
+  string message = 2;
+  GetCurrentUserResponseData res = 3;
+}
+
+
+
+// Auth-related messages
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message SigninRequest {
+  string fullName = 1;
+  string email = 2;
+  string password = 3;
+  string avatarUri = 4;
+}
+
+message OAuthRequest {
+  string fullName = 1;
+  string email = 2;
+  string password = 3;
+  string avatarUri = 4;
+  string provider = 5;
+}
+
+message Tokens {
+  string refreshToken = 1;
+  string accessToken = 2;
+}
+
+message LoginResponse {
+  int32 code = 1;
+  string message = 2;
+  Tokens res = 3;
+}
+
+
+// Team-related messages
+message Team {
+  string teamId = 1;
+  string teamName = 2;
+  string description = 3;
+  string planType = 4;
+  string createdAt = 5;
+  string updatedAt = 6;
+}
+
+message CreateTeamRequest {
+  User authUserData = 1;
+  string teamName = 2;
+  string description = 3;
+}
+
+message CreateTeamResponse {
+  int32 code = 1;
+  string message = 2;
+  Team res = 3;
+}
+
+message GetTeamRequest {
+  User authUserData = 1;
+  string teamId = 2;
+}
+
+message GetTeamResponse {
+  int32 code = 1;
+  string message = 2;
+  Team res = 3;
+}
+
+message DeleteTeamRequest {
+  User authUserData = 1;
+  string teamId = 2;
+}
+
+message DeleteTeamResponse {
+  int32 code = 1;
+  string message = 2;
+  Team res = 3;
+}
+
+// Team member invitation messages
+message CreateTeamMemberInvitationRequest {
+  User authUserData = 1;
+  string teamId = 2;
+  string role = 3;
+}
+
+message CreateTeamMemberInvitationResponseData {
+  string inviteId = 1;
+  string role = 2;
+  string teamId = 3;
+  string createdAt = 4;
+  string updatedAt = 5;
+  string expiresAt = 6;
+}
+
+message CreateTeamMemberInvitationResponse {
+  int32 code = 1;
+  string message = 2;
+  CreateTeamMemberInvitationResponseData res = 3;
+}
+
+message AcceptInvitationRequest {
+   User authUserData = 1;
+   string inviteId = 2;
+}
+
+// Team member messages
+message GetTeamMemberRequest {
+  string targetUserId = 1;
+  string teamId = 2;
+  User   authUserData = 3;
+}
+
+message GetTeamMemberResponseData {
+  string userId = 1;
+  string teamId = 2;
+  string role = 3;
+}
+
+message GetTeamMemberResponse {
+  int32 code = 1;
+  string message = 2;
+  GetTeamMemberResponseData res = 3;
+}
+
+message DeleteTeamMemberRequest {
+  User authUserData = 1;
+  string targetUserId = 2;
+  string teamId = 3;
+}
+
+message DeleteTeamMemberResponseData {
+   string role = 1;
+   string userId = 2;
+   string teamId = 3;
+}
+
+message DeleteTeamMemberResponse {
+  int32 code = 1;
+  string message = 2;
+  DeleteTeamMemberResponseData res = 3;
+}
+
+// Project member invitation messages
+message CreateProjectMemberInvitationRequest {
+  User authUserData = 1;
+  string targetUserId = 2;
+  string projectId = 3;
+  string role = 4;
+}
+
+message CreateProjectMemberInvitationResponseData {
+  string inviteId = 1;
+  string role = 2;
+  string projectId = 3;
+  string createdAt = 4;
+  string updatedAt = 5;
+  string expiresAt = 6;
+}
+
+message CreateProjectMemberInvitationResponse {
+  int32 code = 1;
+  string message = 2;
+  CreateProjectMemberInvitationResponseData res = 3;
+}
+
+// Project member messages
+message GetProjectMemberRequest {
+  string targetUserId = 1;
+  string projectId = 2;
+  User   authUserData = 3;
+}
+
+message GetProjectMemberResponseData {
+  string memberId = 1;
+  string userId = 2;
+  string projectId = 3;
+  string role = 4;
+  string createdAt = 5;
+  string updatedAt = 6;
+}
+
+message GetProjectMemberResponse {
+  int32 code = 1;
+  string message = 2;
+  GetProjectMemberResponseData res = 3;
+}
+
+message DeleteProjectMemberRequest {
+  User authUserData = 1;
+  string targetUserId = 2;
+  string projectId = 3;
+}
+
+message DeleteProjectMemberResponseData {
+   string role = 1;
+   string userId = 2;
+   string projectId = 3;
+}
+
+message DeleteProjectMemberResponse {
+  int32 code = 1;
+  string message = 2;
+  DeleteProjectMemberResponseData res = 3;
+}
+
+message HasPermissionsRequest {
+   string scope = 1;
+   repeated string permissions = 2;
+   string resourceId = 3;
+   User authUserData = 4;
+   string targetUserId = 5;
+}
+
+message HasPermissionsResponse {
+   int32 code = 1;
+   string message = 2;
+   bool res = 3;
+}
+
+message GetAllUserTeamsResponse {
+  int32 code = 1;
+  string message = 2;
+  repeated Team res = 3;
+}
+
+message GetAllUserProjectIdsResponse {
+  int32 code = 1;
+  string message = 2;
+  repeated string res = 3;
+}
+
+message BulkResourceRequest {
+   User authUserData = 1;
+   int32 skip = 2;
+   int32 limit = 3;
+}
+
+// AuthService definition
+service AuthService {
+  // Authentication
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc Signin(SigninRequest) returns (LoginResponse);
+  rpc OAuth(OAuthRequest) returns (LoginResponse);
+  rpc GetUser(GetUserRequest) returns (GetUserResponse);
+  rpc GetMe(BodyLessRequest) returns (GetCurrentUserResponse);
+  rpc RefreshToken(BodyLessRequest) returns (LoginResponse);
+
+  // Team Management
+  rpc CreateTeam(CreateTeamRequest) returns (CreateTeamResponse);
+  rpc GetTeam(GetTeamRequest) returns (GetTeamResponse);
+  rpc DeleteTeam(DeleteTeamRequest) returns (DeleteTeamResponse);
+  rpc GetAllUserTeams(BulkResourceRequest) returns (GetAllUserTeamsResponse);
+  
+  // Team Members
+  rpc CreateTeamMemberInvitation(CreateTeamMemberInvitationRequest) returns (CreateTeamMemberInvitationResponse);
+  rpc GetTeamMember(GetTeamMemberRequest) returns (GetTeamMemberResponse);
+  rpc DeleteTeamMember(DeleteTeamMemberRequest) returns (DeleteProjectMemberResponse);
+  rpc AcceptTeamInvitation(AcceptInvitationRequest) returns (GetTeamMemberResponse);
+  
+  // Project Members
+  rpc CreateProjectMemberInvitation(CreateProjectMemberInvitationRequest) returns (CreateProjectMemberInvitationResponse);
+  rpc GetProjectMember(GetProjectMemberRequest) returns (GetProjectMemberResponse);
+  rpc DeleteProjectMember(DeleteProjectMemberRequest) returns (DeleteProjectMemberResponse);
+  rpc AcceptProjectInvitation(AcceptInvitationRequest) returns (GetProjectMemberResponse);
+  rpc GetAllUserProjectIds (BodyLessRequest) returns (GetAllUserProjectIdsResponse);
+  
+  rpc HasPermissions(HasPermissionsRequest) returns (HasPermissionsResponse);
+  // Future: partial decentralized RBAC
+  // rpc UpdateTeamMember(UpdateTeamMemberRequest) returns (UpdateTeamMemberResponse);
+  // rpc UpdateProjectMember(UpdateProjectMemberRequest) returns (UpdateProjectMemberResponse);
+}

@@ -1,0 +1,149 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URI")
+}
+
+model User {
+  userId         String           @id @default(uuid())
+  fullName       String
+  email          String           @unique
+  password       String          
+  avatarUri      String           
+  emailVerified  Boolean          @default(false)
+  createdAt      DateTime?        @default(now())
+  updatedAt      DateTime?        @updatedAt
+
+  teamMembers    TeamMember[]
+  provider       ProviderType
+  projectMembers ProjectMember[]
+}
+
+model Team {
+  teamId           String                 @id @default(uuid())
+  teamName         String
+  description      String?
+  planType         String                 @default("free")
+  createdAt        DateTime?              @default(now())
+  updatedAt        DateTime?              @updatedAt
+  teamMembers      TeamMember[]
+  teamInvitation   TeamMemberInvitation[]
+  teamLink         TeamLink[]
+}
+
+model TeamMember {
+  userId   String
+  teamId   String
+  role     TeamRoleType
+
+  @@id([userId, teamId])
+  team     Team     @relation(fields: [teamId], references: [teamId], onDelete: Cascade)
+  member   User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+}
+
+model ProjectMember {
+  userId    String
+  role      ProjectRoleType
+  projectId String
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@id([userId, projectId])
+  user      User      @relation(fields: [userId], references: [userId], onDelete: Cascade)
+}
+
+model TeamMemberInvitation {
+  inviteId   String      @id @default(uuid())
+  role       TeamRoleType
+  teamId     String
+  createdAt  DateTime?   @default(now())
+  expiresAt  DateTime?    @default(dbgenerated("(now() + interval '7 days')"))
+  updatedAt  DateTime?   @updatedAt
+
+  team       Team        @relation(fields: [teamId], references: [teamId], onDelete: Cascade)
+}
+
+model ProjectMemberInvitation {
+  inviteId    String      @id @default(uuid())
+  role        ProjectRoleType
+  projectId   String
+  createdAt   DateTime?   @default(now())
+  expiresAt   DateTime?   @default(dbgenerated("(now() + interval '7 days')"))
+  updatedAt   DateTime?   @updatedAt
+}
+
+model TeamLink {
+  teamId      String
+  projectId   String
+  linkedAt    DateTime?   @default(now())
+
+  team        Team @relation(fields: [teamId], references: [teamId], onDelete: Cascade)
+
+  @@id([teamId, projectId])
+}
+
+enum PermissionType {
+  READ
+  UPDATE
+  DELETE
+  CREATE
+  TRANSFER_OWNERSHIP
+  SELF_DELETE
+  SELF_UPDATE
+}
+
+enum ProviderType {
+  GOOGLE
+  GITHUB
+  EMAIL
+}
+
+enum TeamRoleType {
+  TEAM_OWNER
+  TEAM_DEVELOPER
+  TEAM_ADMIN
+  TEAM_VIEWER
+}
+
+enum ProjectRoleType {
+  PROJECT_OWNER
+  PROJECT_DEVELOPER
+  PROJECT_ADMIN
+  PROJECT_VIEWER
+}
+
+enum ScopeType {
+  PROJECT
+  TEAM
+  DEPLOYMENT
+  TEAM_MEMBER
+  PROJECT_MEMBER
+  TEAM_LINK
+}
+
+// model ProjectMemberPermissionOverride {
+//   permissionId          String @id @default(uuid())
+//   projectMemberId       String 
+//   projectId             String 
+//   role                  ProjectRoleType
+//   scope                 ScopeType
+//   permissions           PermissionType[]
+
+//   projectMember         ProjectMember  @relation(fields: [projectMemberId], references: [memberId], onDelete: Cascade)
+// }
+
+// model TeamMemberPermissionOverride {
+//   permissionId   String @id @default(uuid())
+//   teamMemberId   String 
+//   teamId         String 
+//   role           TeamRoleType
+//   scope          ScopeType
+//   permissions    PermissionType[]
+
+//   teamMember     Team  @relation(fields: [teamMemberId], references: [memberId], onDelete: Cascade)
+//   team           Team  @relation(fields: [teamId], references: [userId], onDelete: Cascade)
+// }

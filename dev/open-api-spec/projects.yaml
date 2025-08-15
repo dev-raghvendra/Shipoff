@@ -1,0 +1,783 @@
+openapi: 3.0.3
+info:
+  title: Projects Service API
+  description: Project management service for handling projects, deployments, repositories, and environment variables
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8000/apis/v1/projects
+    description: Development server
+  - url: https://api.shipoff.in/apis/v1/projects
+    description: Production server
+
+security:
+  - BearerAuth: []
+
+paths:
+  /:
+    post:
+      tags:
+        - Projects
+      summary: Create project
+      description: Create a new project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProjectRequest'
+      responses:
+        '201':
+          description: Project created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      tags:
+        - Projects
+      summary: Get all user projects
+      description: Get all projects for the authenticated user
+      parameters:
+        - name: skip
+          in: query
+          description: Number of records to skip
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: limit
+          in: query
+          description: Maximum number of records to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Projects retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllProjectsResponse'
+
+  /{projectId}:
+    get:
+      tags:
+        - Projects
+      summary: Get project
+      description: Get project by ID
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Project retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectResponse'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    patch:
+      tags:
+        - Projects
+      summary: Update project
+      description: Update project information
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProjectRequest'
+      responses:
+        '200':
+          description: Project updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectResponse'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - Projects
+      summary: Delete project
+      description: Delete project by ID
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Project deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectResponse'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /{projectId}/deployments:
+    get:
+      tags:
+        - Deployments
+      summary: Get all deployments
+      description: Get all deployments for a project
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: string
+        - name: skip
+          in: query
+          description: Number of records to skip
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: limit
+          in: query
+          description: Maximum number of records to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Deployments retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllDeploymentsResponse'
+
+  /{projectId}/deployments/{deploymentId}:
+    get:
+      tags:
+        - Deployments
+      summary: Get deployment
+      description: Get deployment by ID
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: string
+        - name: deploymentId
+          in: path
+          required: true
+          description: Deployment ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Deployment retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeploymentResponse'
+        '404':
+          description: Deployment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - Deployments
+      summary: Delete deployment
+      description: Delete deployment by ID
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: string
+        - name: deploymentId
+          in: path
+          required: true
+          description: Deployment ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Deployment deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeploymentResponse'
+        '404':
+          description: Deployment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      tags:
+        - Deployments
+      summary: Redeploy
+      description: Redeploy a specific deployment
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: string
+        - name: deploymentId
+          in: path
+          required: true
+          description: Deployment ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Redeployment initiated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeploymentResponse'
+        '404':
+          description: Deployment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /{projectId}/env-vars:
+    get:
+      tags:
+        - Environment Variables
+      summary: Get environment variables
+      description: Get all environment variables for a project
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Environment variables retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvVarsResponse'
+
+    put:
+      tags:
+        - Environment Variables
+      summary: Create or update environment variables
+      description: Create or update environment variables for a project
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertEnvVarsRequest'
+      responses:
+        '200':
+          description: Environment variables updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpsertEnvVarsResponse'
+
+  /{projectId}/env-vars/{env-name}:
+    delete:
+      tags:
+        - Environment Variables
+      summary: Delete environment variable
+      description: Delete a specific environment variable
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: string
+        - name: env-name
+          in: path
+          required: true
+          description: Environment variable name
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Environment variable deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteEnvVarsResponse'
+        '404':
+          description: Environment variable not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /{projectId}/repository:
+    get:
+      tags:
+        - Repository
+      summary: Get repository
+      description: Get repository information for a project
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Repository retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepositoryResponse'
+        '404':
+          description: Repository not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      tags:
+        - Repository
+      summary: Create repository
+      description: Create a repository for a project
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRepositoryRequest'
+      responses:
+        '201':
+          description: Repository created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepositoryResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - Repository
+      summary: Delete repository
+      description: Delete repository for a project
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Repository deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepositoryResponse'
+        '404':
+          description: Repository not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /frameworks:
+    get:
+      tags:
+        - Frameworks
+      summary: Get frameworks
+      description: Get all available frameworks
+      responses:
+        '200':
+          description: Frameworks retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrameworkResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    CreateProjectRequest:
+      type: object
+      required:
+        - name
+        - projectType
+      properties:
+        name:
+          type: string
+          example: My Project
+        framework:
+          type: string
+          example: react
+        projectType:
+          type: string
+          enum: [STATIC, DYNAMIC]
+          example: STATIC
+        repositoryURI:
+          type: string
+          format: uri
+          example: https://github.com/user/repo
+        frameworkId:
+          type: string
+          example: react-framework-id
+        buildCommand:
+          type: string
+          example: npm run build
+        productionCommand:
+          type: string
+          example: npm start
+        branch:
+          type: string
+          example: main
+        envs:
+          type: array
+          items:
+            $ref: '#/components/schemas/EnvironmentVariablesKeyValue'
+        domain:
+          type: string
+          example: myproject.example.com
+
+    UpdateProjectRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Updated Project Name
+        domain:
+          type: string
+          example: updated.example.com
+
+    UpsertEnvVarsRequest:
+      type: object
+      required:
+        - envs
+      properties:
+        envs:
+          type: array
+          items:
+            $ref: '#/components/schemas/EnvironmentVariablesKeyValue'
+
+    CreateRepositoryRequest:
+      type: object
+      required:
+        - githubRepoId
+      properties:
+        githubRepoId:
+          type: string
+          example: 123456789
+
+    EnvironmentVariablesKeyValue:
+      type: object
+      required:
+        - envName
+        - envValue
+      properties:
+        envName:
+          type: string
+          example: NODE_ENV
+        envValue:
+          type: string
+          example: production
+
+    EnvironmentVariables:
+      type: object
+      properties:
+        projectId:
+          type: string
+        envName:
+          type: string
+          example: NODE_ENV
+        envValue:
+          type: string
+          example: production
+
+    Framework:
+      type: object
+      properties:
+        frameworkId:
+          type: string
+        icon:
+          type: string
+          format: uri
+        displayName:
+          type: string
+          example: React
+        defaultBuildCommand:
+          type: string
+          example: npm run build
+        defaultProductionCommand:
+          type: string
+          example: npm start
+        runtime:
+          type: string
+          enum: [NODEJS, PYTHON, PHP]
+          example: NODEJS
+
+    Repository:
+      type: object
+      properties:
+        repositoryId:
+          type: string
+        projectId:
+          type: string
+        githubRepoId:
+          type: string
+        githubRepoName:
+          type: string
+          example: my-repo
+
+    Deployment:
+      type: object
+      properties:
+        deploymentId:
+          type: string
+        commitHash:
+          type: string
+          example: abc123def456
+        status:
+          type: string
+          example: deployed
+          enum: [pending, building, deployed, failed]
+        commitMessage:
+          type: string
+          example: Fix bug in authentication
+        author:
+          type: string
+          example: john.doe
+        projectId:
+          type: string
+        repositoryId:
+          type: string
+
+    Project:
+      type: object
+      properties:
+        projectId:
+          type: string
+        name:
+          type: string
+          example: My Project
+        projectType:
+          type: string
+          enum: [STATIC, DYNAMIC]
+          example: STATIC
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        repository:
+          $ref: '#/components/schemas/Repository'
+        envs:
+          type: array
+          items:
+            $ref: '#/components/schemas/EnvironmentVariables'
+
+    ProjectResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: Success
+        res:
+          $ref: '#/components/schemas/Project'
+
+    AllProjectsResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: Success
+        res:
+          type: array
+          items:
+            $ref: '#/components/schemas/Project'
+
+    DeploymentResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: Success
+        res:
+          $ref: '#/components/schemas/Deployment'
+
+    AllDeploymentsResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: Success
+        res:
+          type: array
+          items:
+            $ref: '#/components/schemas/Deployment'
+
+    EnvVarsResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: Success
+        res:
+          type: array
+          items:
+            $ref: '#/components/schemas/EnvironmentVariables'
+
+    UpsertEnvVarsResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: Environment variables updated successfully
+
+    DeleteEnvVarsResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: Environment variable deleted successfully
+        res:
+          $ref: '#/components/schemas/EnvironmentVariables'
+
+    RepositoryResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: Success
+        res:
+          $ref: '#/components/schemas/Repository'
+
+    FrameworkResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: Success
+        res:
+          type: array
+          items:
+            $ref: '#/components/schemas/Framework'
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: Error message
+        res:
+          type: object
+          nullable: true
