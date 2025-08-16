@@ -15,3 +15,9 @@ message User {
 message BodyLessRequest {
   User authUserData = 1;
 }
+
+message BulkResourceRequest {
+   User authUserData = 1;
+   int32 skip = 2;
+   int32 limit = 3;
+}

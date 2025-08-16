@@ -1,5 +1,6 @@
 import { sendUnaryData, ServerUnaryCall, status } from "@grpc/grpc-js";
-import { AllProjectsResponse, CreateProjectRequest, DeleteEnvVarsRequest, DeleteEnvVarsResponse, DeleteProjectRequest, EnvVarsResponse, GetAllUserProjectsRequest, GetEnvVarsRequest, GetProjectRequest, ProjectResponse, UpdateProjectRequest, UpsertEnvVarsRequest, UpsertEnvVarsResponse } from "@shipoff/proto";
+import { AllProjectsResponse, BulkResourceRequest, CreateProjectRequest, DeleteEnvVarsRequest, DeleteEnvVarsResponse, DeleteProjectRequest, EnvVarsResponse, FrameworkResponse, GetAllUserProjectsRequest, GetEnvVarsRequest, GetProjectRequest, ProjectResponse, UpdateProjectRequest, UpsertEnvVarsRequest, UpsertEnvVarsResponse } from "@shipoff/proto";
+import { BulkResourceRequestBodyType } from "@shipoff/types";
 import { ProjectsService } from "services/projects.service";
 import { CreateProjectRequestBodyType, DeleteEnvVarsRequestBodyType, DeleteProjectRequestBodyType, GetAllUserProjectRequestBodyType, GetEnvVarsRequestBodyType, GetProjectRequestBodyType, UpdateProjectRequestBodyType, UpsertEnvVarsRequestBodyType } from "types/projects";
 
@@ -11,7 +12,6 @@ export class ProjectsHandlers {
 
     async handleCreateProject(call:ServerUnaryCall<CreateProjectRequest & {body:CreateProjectRequestBodyType}, ProjectResponse>,callback:sendUnaryData<ProjectResponse>) {
         try {
-            console.log("Creating project:", call.request.body);
             const {code,res,message} = await this._projectsService.createProject(call.request.body);
             if(code !== status.OK) return callback({code,message});
             const response = ProjectResponse.fromObject({code,message,res})
@@ -122,5 +122,18 @@ export class ProjectsHandlers {
         }
     }
 
-   
+    async handleGetFrameworks(call: ServerUnaryCall<BulkResourceRequest & {body:BulkResourceRequestBodyType}, FrameworkResponse>, callback: sendUnaryData<FrameworkResponse>) {
+        try {
+            const { code, res, message } = await this._projectsService.getFrameworks(call.request.body);
+            if (code !== status.OK) return callback({ code, message });
+            const response = FrameworkResponse.fromObject({ code, message, res });
+            return callback(null, response);
+        } catch (e: any) {
+            return callback({
+                code: status.INTERNAL,
+                message: "Internal server error"
+            });
+        }
+    }
+
 }

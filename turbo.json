@@ -40,6 +40,10 @@
       "dependsOn": ["^migrate:dev"],
       "inputs": ["src/prisma/migrations/**", ".env*"],
       "outputs": ["src/prisma/migrations/**"]
+    },
+    "seed:db":{
+      "dependsOn": ["^seed:db"],
+      "outputs": []
     }
   }
 }

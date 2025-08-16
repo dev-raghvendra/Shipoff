@@ -1,9 +1,9 @@
 import { ProjectMemberInvitationRequestSchema } from "@/types/project"
 import { CreateTeamRequestSchema, DeleteTeamMemberRequestSchema, DeleteTeamRequestSchema, GetTeamMemberRequestSchema, GetTeamRequestSchema, TeamMemberInvitationRequestSchema } from "@/types/team"
 import { EmailPassLoginRequestSchema, SigninRequestSchema, GetUserRequestSchema, OAuthRequestSchema } from "@/types/user"
-import { AcceptMemberInviteRequestSchema, BulkResourceRequestSchema, HasPermissionsRequestSchema } from "@/types/utility"
+import { AcceptMemberInviteRequestSchema, HasPermissionsRequestSchema } from "@/types/utility"
 import { createRPCEntry, RPC_SCHEMA_T } from "@shipoff/services-commons";
-import { BodyLessRequestSchema } from "@shipoff/types";
+import { BodyLessRequestSchema, BulkResourceRequestSchema } from "@shipoff/types";
 import { UnimplementedAuthServiceService } from "@shipoff/proto";
 
 export type RPCs = keyof typeof UnimplementedAuthServiceService.definition;

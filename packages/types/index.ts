@@ -17,6 +17,14 @@ export const UserSchema = z.object({
   provider:Providers
 }).strict();
 
+export const BulkResourceRequestSchema = z.object({
+   authUserData : UserSchema,
+   skip:z.number().nonnegative().optional().default(0),
+   limit:z.number().nonnegative().min(1).optional().default(5)
+})
+
+export type BulkResourceRequestBodyType = z.infer<typeof BulkResourceRequestSchema>
+
 export const BodyLessRequestSchema = z.object({
   authUserData:UserSchema
 }).strict();

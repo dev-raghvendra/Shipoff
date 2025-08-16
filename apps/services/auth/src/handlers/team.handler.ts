@@ -2,7 +2,8 @@ import { sendUnaryData, ServerUnaryCall, status } from "@grpc/grpc-js";
 import { AcceptInvitationRequest, BulkResourceRequest, CreateTeamMemberInvitationRequest, CreateTeamMemberInvitationResponse, CreateTeamMemberInvitationResponseData, CreateTeamRequest, CreateTeamResponse, DeleteTeamMemberRequest, DeleteTeamMemberResponse, DeleteTeamMemberResponseData, DeleteTeamRequest, DeleteTeamResponse, GetAllUserTeamsResponse, GetTeamMemberRequest, GetTeamMemberResponse, GetTeamMemberResponseData, GetTeamRequest, GetTeamResponse, Team } from "@shipoff/proto";
 import TeamService from "@/services/team.service";
 import { CreateTeamRequestBodyType, DeleteTeamMemberRequestBodyType, DeleteTeamRequestBodyType, GetTeamMemberRequestBodyType, GetTeamRequestBodyType, TeamMemberInvitationRequestBodyType } from "@/types/team";
-import { AcceptMemberInviteRequestBodyType, BulkResourceRequestBodyType } from "@/types/utility";
+import { AcceptMemberInviteRequestBodyType } from "@/types/utility";
+import { BulkResourceRequestBodyType } from "@shipoff/types";
 
 class TeamHandlers {
     private _teamService : TeamService;

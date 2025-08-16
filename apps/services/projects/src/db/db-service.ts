@@ -334,6 +334,22 @@ export class Database {
         }
     }
 
+    async createFramework(args: Prisma.FrameworkCreateManyArgs) {
+        try {
+            const res = await this._client.framework.createMany(args);
+            return res;
+        } catch (e:any) {
+            if(e instanceof PrismaClientKnownRequestError) {
+                if(e.code === "P2002") {
+                    throw new GrpcAppError(status.ALREADY_EXISTS, "Framework already exists", e);
+                }
+            }
+            throw new GrpcAppError(status.INTERNAL, "Failed to create Framework", {
+                e
+            });
+        }
+    }
+
     async findUniqueFrameworkById(frameworkId: string) {
         const res = await  this._client.framework.findUnique({
             where: { frameworkId }
@@ -341,6 +357,14 @@ export class Database {
         if(res)return res;
         throw new GrpcAppError(status.NOT_FOUND, "Framework not found", {
             frameworkId
+        });
+    }
+
+    async findManyFrameworks(args: Prisma.FrameworkFindManyArgs) {
+        const res = await this._client.framework.findMany(args);
+        if(res.length)return res;
+        throw new GrpcAppError(status.NOT_FOUND, "Frameworks not found", {
+            args
         });
     }
 

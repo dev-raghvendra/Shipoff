@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "nodemon --exec ts-node -r tsconfig-paths/register ./src/server.ts",
     "generate": "prisma generate",
-    "migrate:dev": "prisma migrate dev "
+    "migrate:dev": "prisma migrate dev ",
+    "seed:db":"ts-node -r tsconfig-paths/register ./src/db/seed.ts"
   },
   "devDependencies": {
     "@shipoff/types": "workspace:*",

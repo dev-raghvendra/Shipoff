@@ -11,12 +11,10 @@ export class ProjectService {
 
     async createProject(data: any) {
         try {
-            console.log(data)
             const req = CreateProjectRequest.fromObject(data);
             const response = await promisifyGrpcCall(this._projectService.CreateProject.bind(this._projectService), req);
             return response;
         } catch (e:any) {
-            console.error("Error creating project:", e);
             return e;
         }
     }

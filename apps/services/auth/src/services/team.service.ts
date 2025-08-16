@@ -2,8 +2,9 @@ import { status } from "@grpc/grpc-js";
 import { createGrpcErrorHandler, GrpcAppError, GrpcResponse } from "@shipoff/services-commons";
 import   { Database, dbService } from "@/db/db-service";
 import { CreateTeamRequestBodyType, DeleteTeamMemberRequestBodyType, DeleteTeamRequestBodyType, GetTeamMemberRequestBodyType, GetTeamRequestBodyType, TeamMemberInvitationRequestBodyType } from "@/types/team";
-import { AcceptMemberInviteRequestBodyType, BulkResourceRequestBodyType } from "@/types/utility";
+import { AcceptMemberInviteRequestBodyType } from "@/types/utility";
 import { Permission } from "@/utils/rbac-utils";
+import { BulkResourceRequestBodyType } from "@shipoff/types";
 
 class TeamService {
    

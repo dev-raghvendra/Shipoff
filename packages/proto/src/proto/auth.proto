@@ -278,11 +278,6 @@ message GetAllUserProjectIdsResponse {
   repeated string res = 3;
 }
 
-message BulkResourceRequest {
-   User authUserData = 1;
-   int32 skip = 2;
-   int32 limit = 3;
-}
 
 // AuthService definition
 service AuthService {

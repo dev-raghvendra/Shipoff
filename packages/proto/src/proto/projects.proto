@@ -1,17 +1,10 @@
 // projects.proto
 syntax = "proto3";
 
- 
-
 import "common.proto";
 import "google/protobuf/empty.proto";
-// Enums
-// enum ProjectType {
-//     UNSPECIFIED_TYPE = 0;
-//     STATIC = 1;
-//     DYNAMIC = 2;
-// }
 
+// Enums
 enum Runtime {
     UNSPECIFIED_RUNTIME = 0;
     NODEJS = 1;
@@ -46,15 +39,14 @@ message Deployment {
     string repositoryId = 7;
 }
 
-
 message Project {
-   string projectId = 1;
-   string name = 2;
-   string projectType = 4;
-   string createdAt = 5;
-   string updatedAt = 6; 
-   Repository repository = 7;
-   repeated EnviornmentVariables envs = 8;
+    string projectId = 1;
+    string name = 2;
+    Framework framework = 3;
+    string createdAt = 4;
+    string updatedAt = 5; 
+    Repository repository = 6;
+    repeated EnviornmentVariables environmentVars = 7;
 }
 
 message EnviornmentVariables {
@@ -77,7 +69,6 @@ message GithubRepository {
     bool githubRepoPrivate = 6;
 }
 
-
 message GithubInstallation {
     string githubInstallationId = 1;
     string userId = 2;
@@ -86,26 +77,32 @@ message GithubInstallation {
     string updatedAt = 5;
 }
 
+message ProjectUpdates {
+    optional string name = 1;
+    optional string domain = 2;
+    optional string frameworkId = 3;
+    optional string buildCommand = 4;
+    optional string productionCommand = 5;
+    optional string branch = 6;
+}
+
 // Requests
 message CreateProjectRequest {
     User authUserData = 1;
     string name = 2;
-    string framework = 3;
-    string projectType = 4;
-    string repositoryURI = 5;
-    string frameworkId = 6;
-    string buildCommand = 7;
-    string productionCommand = 8;
-    string branch = 9;
-    repeated EnviornmentVariablesKeyValue envs = 10;
-    string domain = 11;
+    string githubRepoId = 3;
+    string frameworkId = 4;
+    string buildCommand = 5;
+    string productionCommand = 6;
+    string branch = 7;
+    repeated EnviornmentVariablesKeyValue environmentVars = 8;
+    string domain = 9;
 }
 
 message UpdateProjectRequest {
-    string name = 1;
-    string domain = 4;
-    User authUserData = 2;
-    string projectId = 3;
+    User authUserData = 1;
+    string projectId = 2;
+    ProjectUpdates updates = 3;
 }
 
 message GetRepositoryRequest {
@@ -154,7 +151,6 @@ message GetDeploymentRequest {
     string deploymentId = 3;
 }
 
-
 message UpsertEnvVarsRequest {
     User authUserData = 1;
     string projectId = 2;
@@ -170,9 +166,8 @@ message DeleteEnvVarsRequest {
 message CreateRepositoryRequest {
     User authUserData = 1;
     string githubRepoId = 2;
-    string projectId =3;
+    string projectId = 3;
 }
-
 
 message DeleteRepositoryRequest {
     User authUserData = 1;
@@ -183,7 +178,6 @@ message GetEnvVarsRequest {
     User authUserData = 1;
     string projectId = 2;
 }
-
 
 message GetUserGithubReposRequest {
     User authUserData = 1;
@@ -249,6 +243,7 @@ message RepositoryResponse {
     string message = 2;
     Repository res = 3;
 }
+
 message FrameworkResponse {
     int32 code = 1;
     string message = 2;
@@ -272,6 +267,7 @@ message DeleteEnvVarsResponse {
     string message = 2;
     EnviornmentVariables res = 3;
 }
+
 message GetGithubRepoAccessTokenRequest {
     string githubRepoId = 1;
 }
@@ -318,7 +314,7 @@ service ProjectsService {
     rpc GetGithubRepo (GetGithubRepoRequest) returns (GithubRepoResponse);
     rpc GetGithubInstallation (BodyLessRequest) returns (GithubInstallationResponse);
 
-    rpc GetFrameworks   (BodyLessRequest) returns (FrameworkResponse);
+    rpc GetFrameworks (BulkResourceRequest) returns (FrameworkResponse);
 
     //webhooks
     rpc GithubWebhook (GithubWebhookRequest) returns (google.protobuf.Empty);

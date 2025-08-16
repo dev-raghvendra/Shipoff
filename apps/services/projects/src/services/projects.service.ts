@@ -2,7 +2,7 @@ import { status } from "@grpc/grpc-js";
 import { Prisma } from "@prisma/index";
 import { createGrpcErrorHandler, GrpcAppError } from "@shipoff/services-commons";
 import { GrpcResponse } from "@shipoff/services-commons/utils/rpc-utils";
-import { BodyLessRequestBodyType } from "@shipoff/types";
+import { BodyLessRequestBodyType, BulkResourceRequestBodyType } from "@shipoff/types";
 import { Database, dbService } from "@/db/db-service";
 import authExternalService, { AuthExternalService } from "@/externals/auth.external.service";
 import githubExternalService, { GithubExternalService } from "@/externals/github.external.service";
@@ -180,6 +180,21 @@ export class ProjectsService {
             return GrpcResponse.OK(envVars, "Environment variables found");
         } catch (e:any) {
             return this._errHandler(e, "GET-ENVIRONMENT-VARIABLES");
+        }
+    }
+
+    async getFrameworks({skip,limit}:BulkResourceRequestBodyType){
+        try {
+            const frameworks = await this._dbService.findManyFrameworks({
+                skip,
+                orderBy:{
+                    displayName:"asc"
+                },
+                take:limit
+            });
+            return GrpcResponse.OK(frameworks, "Frameworks found");
+        } catch (e:any) {
+            return this._errHandler(e, "GET-FRAMEWORKS");
         }
     }
 }

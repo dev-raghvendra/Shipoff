@@ -3,7 +3,7 @@ import { DeleteDeploymentRequestSchema, GetAllDeploymentsRequestSchema, GetDeplo
 import { CreateProjectRequestSchema, DeleteEnvVarsRequestSchema, DeleteProjectRequestSchema, GetAllUserProjectsRequestSchema, GetEnvVarsRequestSchema, GetProjectRequestSchema, UpdateProjectRequestSchema, UpsertEnvVarsRequestSchema } from "@/types/projects";
 import { CreateRepositoryRequestSchema, DeleteRepositoryRequestSchema, GetGithubRepositoryAccessTokenRequestSchema, GetGithubRepositoryDetailsRequestSchema, GetRepositoryRequestSchema, GetUserGithubRepositoriesRequestSchema } from "@/types/repositories";
 
-import { BodyLessRequestSchema } from "@shipoff/types";
+import { BodyLessRequestSchema, BulkResourceRequestSchema } from "@shipoff/types";
 import { UnimplementedProjectsServiceService } from "@shipoff/proto";
 import { CreateGithubInstallationRequestSchema, GithubWebhookSchema } from "@/types/webhooks";
  
@@ -26,7 +26,7 @@ export const RPC_SCHEMA: RPC_SCHEMA_T<RPCs> = {
     GetRepository: createRPCEntry(GetRepositoryRequestSchema),
     CreateRepository: createRPCEntry(CreateRepositoryRequestSchema),
     DeleteRepository: createRPCEntry(DeleteRepositoryRequestSchema),
-    GetFrameworks: createRPCEntry(BodyLessRequestSchema),
+    GetFrameworks: createRPCEntry(BulkResourceRequestSchema),
     GetGithubRepo: createRPCEntry(GetGithubRepositoryDetailsRequestSchema),
     GetUserGithubRepos: createRPCEntry(GetUserGithubRepositoriesRequestSchema),
     GithubWebhook: createRPCEntry(GithubWebhookSchema),

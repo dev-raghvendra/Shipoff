@@ -10,6 +10,7 @@ servers:
   - url: https://api.shipoff.in/apis/v1/projects
     description: Production server
 
+    
 security:
   - BearerAuth: []
 
@@ -482,22 +483,15 @@ components:
       type: object
       required:
         - name
-        - projectType
+        - githubRepoId
+        - frameworkId
       properties:
         name:
           type: string
           example: My Project
-        framework:
+        githubRepoId:
           type: string
-          example: react
-        projectType:
-          type: string
-          enum: [STATIC, DYNAMIC]
-          example: STATIC
-        repositoryURI:
-          type: string
-          format: uri
-          example: https://github.com/user/repo
+          example: "123456789"
         frameworkId:
           type: string
           example: react-framework-id
@@ -510,7 +504,7 @@ components:
         branch:
           type: string
           example: main
-        envs:
+        environmentVars:
           type: array
           items:
             $ref: '#/components/schemas/EnvironmentVariablesKeyValue'
@@ -527,13 +521,25 @@ components:
         domain:
           type: string
           example: updated.example.com
+        frameworkId:
+          type: string
+          example: updated-framework-id
+        buildCommand:
+          type: string
+          example: npm run build:updated
+        productionCommand:
+          type: string
+          example: npm start:updated
+        branch:
+          type: string
+          example: develop
 
     UpsertEnvVarsRequest:
       type: object
       required:
-        - envs
+        - environmentVars
       properties:
-        envs:
+        environmentVars:
           type: array
           items:
             $ref: '#/components/schemas/EnvironmentVariablesKeyValue'
@@ -591,7 +597,7 @@ components:
           example: npm start
         runtime:
           type: string
-          enum: [NODEJS, PYTHON, PHP]
+          enum: [UNSPECIFIED_RUNTIME, NODEJS, PYTHON, PHP]
           example: NODEJS
 
     Repository:
@@ -638,10 +644,8 @@ components:
         name:
           type: string
           example: My Project
-        projectType:
-          type: string
-          enum: [STATIC, DYNAMIC]
-          example: STATIC
+        framework:
+          $ref: '#/components/schemas/Framework'
         createdAt:
           type: string
           format: date-time
@@ -650,7 +654,7 @@ components:
           format: date-time
         repository:
           $ref: '#/components/schemas/Repository'
-        envs:
+        environmentVars:
           type: array
           items:
             $ref: '#/components/schemas/EnvironmentVariables'
