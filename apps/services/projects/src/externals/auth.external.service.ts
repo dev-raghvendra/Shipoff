@@ -19,12 +19,12 @@ export class AuthExternalService {
         errMsg?: string
     }) {
         try {
-            const req = new HasPermissionsRequest({
-                authUserData: new User(authUserData),
+            const req = HasPermissionsRequest.fromObject({
+                authUserData,
                 permissions,
                 scope,
-                resourceId,
-            });
+                resourceId
+            })
             const res = await promisifyGrpcCall(this._authService.HasPermissions,req,status.PERMISSION_DENIED)
             return res.res;
         } catch (e:any) {

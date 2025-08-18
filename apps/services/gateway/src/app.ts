@@ -15,11 +15,11 @@ const corsOptions : CorsOptions = {
     allowedHeaders: ["Content-Type", "Authorization"]
 }
 app.use(cors(corsOptions))
+app.use("/apis/v1/webhooks",express.raw({type:"application/json"}),webhookRouter);
 app.use(express.json());
 app.use("/apis/v1/auth",authRouter);
 app.use("/apis/v1/projects",projectRouter);
 app.use("/apis/v1/github",githubRouter);
-app.use("/apis/v1/webhooks",webhookRouter);
 
 
 app.use((_, res:Response) => {

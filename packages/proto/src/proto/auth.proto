@@ -6,7 +6,6 @@ syntax = "proto3";
 import "common.proto";
 
 
-
 message GetUserRequest {
   User authUserData = 1;
   string targetUserId = 2;

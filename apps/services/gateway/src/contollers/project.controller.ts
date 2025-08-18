@@ -12,8 +12,8 @@ export async function createProjectController(req: Request, res: Response) {
 export async function getAllUserProjectsController(req: Request, res: Response) {
     const body = {
         ...req.body,
-        skip:req.query.skip,
-        limit:req.query.limit
+        ...(req.query.skip && { skip: req.query.skip }),
+        ...(req.query.limit && { limit: req.query.limit })
     }
     const { code, message, res: data } = await projectService.getAllUserProjects(body);
     grpcToHttpResponse.call(res, code, message, data);
@@ -44,8 +44,8 @@ export async function getAllDeploymentsController(req: Request, res: Response) {
     const body = {
         ...req.body,
         projectId: req.params.projectId,
-        skip:req.query.skip,
-        limit:req.query.limit
+        ...(req.query.skip && { skip: req.query.skip }),
+        ...(req.query.limit && { limit: req.query.limit })
     }
     const { code, message, res: data } = await projectService.getAllDeployments(body);
     grpcToHttpResponse.call(res, code, message, data);
@@ -116,6 +116,11 @@ export async function deleteRepositoryController(req: Request, res: Response) {
 }
 
 export async function getFrameworksController(req: Request, res: Response) {
-    const { code, message, res: data } = await projectService.getFrameworks(req.body);
+    const body = {
+        ...req.body,
+        ...(req.query.skip && { skip: req.query.skip }),
+        ...(req.query.limit && { limit: req.query.limit })
+    }
+    const { code, message, res: data } = await projectService.getFrameworks(body);
     grpcToHttpResponse.call(res, code, message, data);
 }

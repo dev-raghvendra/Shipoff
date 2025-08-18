@@ -58,26 +58,25 @@ export class RepositoriesService {
         }
     }
 
-    async createRepository({authUserData, projectId, githubRepoId}:CreateRepositoryRequestBodyType){
+    async createRepository({authUserData,...body}:CreateRepositoryRequestBodyType){
        try {
           await this._authService.getPermissions({
             authUserData,
             permissions:["CREATE"],
             scope:"REPOSITORY",
-            resourceId:projectId
+            resourceId:body.projectId
           })
           const {githubInstallationId} =  await this._dbService.findUniqueGithubInstallation({
             where:{
                 userId:authUserData.userId
             }
           })
-          const {githubRepoFullName,githubRepoURI} = await this._githubService.getRepositoryDetails(githubInstallationId, githubRepoId);
           const createdRepo = await this._dbService.createRepository({
-              projectId,
               githubInstallationId,
-              githubRepoName: githubRepoFullName,
-              githubRepoId,
-              githubRepoURI
+              projectId:body.projectId,
+              githubRepoFullName: body.githubRepoFullName,
+              githubRepoId: body.githubRepoId,
+              githubRepoURI: body.githubRepoURI
           })
           return GrpcResponse.OK(createdRepo,"Repository created");
        } catch (e:any) {

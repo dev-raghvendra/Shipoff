@@ -1,29 +1,29 @@
-import { UserSchema } from "@shipoff/types";
+import { optNumWithDefaultValue, UserSchema } from "@shipoff/types";
 import z from "zod";
 
 export const GetDeploymentRequestSchema = z.object({
     authUserData: UserSchema,
-    projectId: z.string().min(5),
-    deploymentId: z.string().min(5),
+    projectId: z.string().min(1),
+    deploymentId: z.string().min(1),
 }).strict();
 
 export const GetAllDeploymentsRequestSchema = z.object({
     authUserData: UserSchema,
-    projectId: z.string().min(5),
-    skip: z.number().int().nonnegative().optional().default(0),
-    limit: z.number().int().nonnegative().min(1).optional().default(10),
+    projectId: z.string().min(1),
+    skip: optNumWithDefaultValue(0),
+    limit: optNumWithDefaultValue(10),
 }).strict();
 
 export const DeleteDeploymentRequestSchema = z.object({
     authUserData: UserSchema,
-    projectId: z.string().min(5),
-    deploymentId: z.string().min(5),
+    projectId: z.string().min(1),
+    deploymentId: z.string().min(1),
 }).strict();
 
 export const RedeployRequestSchema = z.object({
     authUserData: UserSchema,
-    projectId: z.string().min(5),
-    deploymentId: z.string().min(5),
+    projectId: z.string().min(1),
+    deploymentId: z.string().min(1),
 }).strict();
 
 export const CreateDeploymentRequestSchema = z.object({
@@ -32,12 +32,12 @@ export const CreateDeploymentRequestSchema = z.object({
 }).strict();
 
 export const DeploymentDBSchema = z.object({
-    projectId:z.string().min(5),
-    commitHash:z.string().min(5),
+    projectId:z.string().min(1),
+    commitHash:z.string().min(1),
     status:z.enum([ "QUEUED", "INACTIVE", "FAILED", "PRODUCTION", "BUILDING"]).default("QUEUED"),
-    commitMessage:z.string().min(5),
-    author:z.string().min(5),
-    repositoryId:z.string().min(5),
+    commitMessage:z.string().min(1),
+    author:z.string().min(1),
+    repositoryId:z.string().min(1),
     production:z.boolean().optional(),
 }).strict();
 

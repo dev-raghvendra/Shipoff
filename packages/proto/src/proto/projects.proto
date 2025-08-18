@@ -4,13 +4,9 @@ syntax = "proto3";
 import "common.proto";
 import "google/protobuf/empty.proto";
 
+
 // Enums
-enum Runtime {
-    UNSPECIFIED_RUNTIME = 0;
-    NODEJS = 1;
-    PYTHON = 2;
-    PHP = 3;
-}
+
 
 // Types
 message Framework {
@@ -18,15 +14,20 @@ message Framework {
     string icon = 2;
     string displayName = 3; 
     string defaultBuildCommand = 4;
-    string defaultProductionCommand = 5;
-    Runtime runtime = 6;
+    string defaultProdCommand = 5;
+    string runtime = 6;
+    string name = 7;
 }
 
 message Repository {
     string repositoryId = 1;
     string projectId = 2;
     string githubRepoId = 3;
-    string githubRepoName = 4;
+    string githubRepoFullName = 4;
+    string githubRepoURI = 5;
+    string createdAt = 6;
+    string updatedAt = 7;
+    string githubInstallationId = 8;
 }
 
 message Deployment {
@@ -43,10 +44,13 @@ message Project {
     string projectId = 1;
     string name = 2;
     Framework framework = 3;
-    string createdAt = 4;
-    string updatedAt = 5; 
-    Repository repository = 6;
-    repeated EnviornmentVariables environmentVars = 7;
+    string domain = 4;
+    string buildCommand = 5;
+    string prodCommand = 6;
+    string createdAt = 7;
+    string updatedAt = 8;
+    Repository repository = 9;
+    repeated EnviornmentVariables environmentVars = 10;
 }
 
 message EnviornmentVariables {
@@ -78,25 +82,28 @@ message GithubInstallation {
 }
 
 message ProjectUpdates {
-    optional string name = 1;
-    optional string domain = 2;
-    optional string frameworkId = 3;
-    optional string buildCommand = 4;
-    optional string productionCommand = 5;
-    optional string branch = 6;
+     string name = 1;
+     string domain = 2;
+     string frameworkId = 3;
+     string buildCommand = 4;
+     string productionCommand = 5;
+     string branch = 6;
 }
 
 // Requests
+
 message CreateProjectRequest {
     User authUserData = 1;
     string name = 2;
     string githubRepoId = 3;
-    string frameworkId = 4;
-    string buildCommand = 5;
-    string productionCommand = 6;
-    string branch = 7;
-    repeated EnviornmentVariablesKeyValue environmentVars = 8;
-    string domain = 9;
+    string githubRepoFullName = 4;
+    string githubRepoURI = 5;
+    string frameworkId = 6;
+    string buildCommand = 7;
+    string prodCommand = 8;
+    string branch = 9;
+    repeated EnviornmentVariablesKeyValue environmentVars = 10;
+    string domain = 11;
 }
 
 message UpdateProjectRequest {
@@ -112,7 +119,7 @@ message GetRepositoryRequest {
 
 message GetAllUserProjectsRequest {
     User authUserData = 1;
-    int32 skip = 2;
+    int64 skip = 2;
     int32 limit = 3;
 }
 
@@ -129,7 +136,7 @@ message GetProjectRequest {
 message GetAllDeploymentsRequest {
     User authUserData = 1;
     string projectId = 2;
-    int32 skip = 3;
+    int64 skip = 3;
     int32 limit = 4;
 }
 
@@ -167,6 +174,8 @@ message CreateRepositoryRequest {
     User authUserData = 1;
     string githubRepoId = 2;
     string projectId = 3;
+    string githubRepoFullName = 4;
+    string githubRepoURI = 5;
 }
 
 message DeleteRepositoryRequest {
@@ -182,7 +191,7 @@ message GetEnvVarsRequest {
 message GetUserGithubReposRequest {
     User authUserData = 1;
     int64 skip = 2;
-    int64 limit = 3;
+    int32 limit = 3;
 }
 
 message GetGithubRepoRequest {
@@ -193,8 +202,7 @@ message GetGithubRepoRequest {
 message GithubWebhookRequest {
     string payload = 1;
     string signature = 2;
-    string event = 3;
-    string action = 4;
+    string eventType = 3;
 }
 
 message CreateGithubInstallationRequest {

@@ -7,6 +7,7 @@ export const TOPICS  = Object.freeze({
     DEPLOYMENT_TOPIC:"deployment:topic",
     CONTAINER_TOPIC:"container:topic",
     USER_TOPIC:"user:topic",
+    PROJECT_TOPIC:"project:topic"
 }) 
 
 export const CONTAINER_TOPIC_CONSUMER_GROUPS = Object.freeze({
@@ -19,6 +20,10 @@ export const DEPLOYMENT_TOPIC_CONSUMER_GROUPS = Object.freeze({
 
 export const USER_TOPIC_CONSUMER_GROUPS = Object.freeze({
     USER_SERVICE:"user-service-group",
+})
+
+export const PROJECT_TOPIC_CONSUMER_GROUPS = Object.freeze({
+    AUTH_SERVICE:"auth-service-group"
 })
 
 export const SECRETS = Object.freeze({

@@ -20,6 +20,11 @@ export type AuthEvent<T extends keyof typeof $AuthEvent> = {
     action:T;
 }
 
+export type ProjectEvent<T extends keyof typeof $ProjectEvent> = {
+    projectId:string;
+    userId:string
+    event:T;
+}
 
 export enum $AuthEvent {
     DELETED = "DELETED"
@@ -33,6 +38,11 @@ export enum $ContainerEvent {
 }
 
 export enum $DeploymentEvent {
+    CREATED = "CREATED",
+    DELETED = "DELETED",
+}
+
+export enum $ProjectEvent {
     CREATED = "CREATED",
     DELETED = "DELETED",
 }

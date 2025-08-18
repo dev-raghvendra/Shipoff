@@ -64,7 +64,7 @@ export class DeploymentsService {
             return this._errHandler(e, "GET-ALL-DEPLOYMENTS");
         }
     }
-
+    
     async deleteDeployment({authUserData, projectId, deploymentId}:DeleteDeploymentRequestBodyType) {
         try {
             await this._authService.getPermissions({

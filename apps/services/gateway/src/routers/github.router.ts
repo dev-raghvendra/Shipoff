@@ -7,6 +7,6 @@ const githubRouter = Router();
 githubRouter.get("/repos",authorizationMiddleware, getUserGithubRepositoriesController);
 githubRouter.get("/repos/:repoId", authorizationMiddleware, getGithubRepositoryDetailsController);
 githubRouter.get("/installation", authorizationMiddleware, getGithubInstallationController);
-githubRouter.post("/installation/callback", githubInstallationCallbackController);
+githubRouter.get("/installation/callback", githubInstallationCallbackController);
 
 export default githubRouter;

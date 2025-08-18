@@ -1,6 +1,6 @@
 import { Server, ServerCredentials } from "@grpc/grpc-js";
 import { ProjectsHandlers } from "@/handlers/projects.handlers";
-import { GithubRepositoriesHandlers } from "@/handlers/github.handlers";
+import { GithubHandlers } from "@/handlers/github.handlers";
 import { DeploymentsHandlers } from "@/handlers/deployments.handlers";
 import { GithubWebhookHandlers } from "@/handlers/github-webhook.handlers";
 import { RepositoriesHandlers } from "@/handlers/repositories.handlers";
@@ -13,10 +13,10 @@ import logger from "@shipoff/services-commons/libs/winston";
 const validateRPCBody = createValidator(RPC_SCHEMA);    
 const server = new Server();
 const projectsHandlers = new ProjectsHandlers();
-const githubRepositoriesHandlers = new GithubRepositoriesHandlers();
 const deploymentsHandlers = new DeploymentsHandlers();
 const githubWebhookHandlers = new GithubWebhookHandlers();
 const repositoriesHandlers = new RepositoriesHandlers();
+const githubHandlers = new GithubHandlers();
 
 server.addService(UnimplementedProjectsServiceService.definition, {
     CreateProject: validateRPCBody("CreateProject", projectsHandlers.handleCreateProject.bind(projectsHandlers)),
@@ -27,9 +27,9 @@ server.addService(UnimplementedProjectsServiceService.definition, {
     GetRepository: validateRPCBody("GetRepository", repositoriesHandlers.handleGetRepository.bind(repositoriesHandlers)),
     CreateRepository: validateRPCBody("CreateRepository", repositoriesHandlers.handleCreateRepository.bind(repositoriesHandlers)),
     DeleteRepository: validateRPCBody("DeleteRepository", repositoriesHandlers.handleDeleteUniqueRepository.bind(repositoriesHandlers)),
-    
-    GetGithubRepo: validateRPCBody("GetGithubRepo", githubRepositoriesHandlers.handleGetGithubRepo.bind(githubRepositoriesHandlers)),
-    GetUserGithubRepos: validateRPCBody("GetUserGithubRepos", githubRepositoriesHandlers.handleGetUserGithubRepositories.bind(githubRepositoriesHandlers)),
+
+    GetGithubRepo: validateRPCBody("GetGithubRepo", githubHandlers.handleGetGithubRepo.bind(githubHandlers)),
+    GetUserGithubRepos: validateRPCBody("GetUserGithubRepos", githubHandlers.handleGetUserGithubRepositories.bind(githubHandlers)),
 
     GetDeployment: validateRPCBody("GetDeployment", deploymentsHandlers.handleGetDeployment.bind(deploymentsHandlers)),
     GetAllDeployments: validateRPCBody("GetAllDeployments", deploymentsHandlers.handleGetAllDeployments.bind(deploymentsHandlers)),
@@ -40,7 +40,8 @@ server.addService(UnimplementedProjectsServiceService.definition, {
     DeleteEnvVars: validateRPCBody("DeleteEnvVars", projectsHandlers.handleDeleteProjectEnvironmentVariables.bind(projectsHandlers)),
     GetEnvVars: validateRPCBody("GetEnvVars", projectsHandlers.handleGetProjectEnvironmentVariables.bind(projectsHandlers)),
     GithubWebhook: validateRPCBody("GithubWebhook", githubWebhookHandlers.handleGithubWebhook.bind(githubWebhookHandlers)),
-    CreateGithubInstallation: validateRPCBody("CreateGithubInstallation", githubWebhookHandlers.handleCreateGithubInstallation.bind(githubWebhookHandlers))
+    CreateGithubInstallation: validateRPCBody("CreateGithubInstallation", githubHandlers.handleCreateGithubInstallation.bind(githubHandlers)),
+    GetFrameworks: validateRPCBody("GetFrameworks", projectsHandlers.handleGetFrameworks.bind(projectsHandlers)),
 });
 
 server.bindAsync(`${SECRETS.HOST}:${SECRETS.PORT}`,ServerCredentials.createInsecure(),(err)=>{
@@ -64,4 +65,5 @@ process.on("SIGINT", () => {
     logger.info("PROJECTS_SERVICE_STOPPED");
     server.tryShutdown(() => process.exit(0));
 });
+
 

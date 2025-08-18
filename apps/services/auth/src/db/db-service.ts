@@ -264,6 +264,18 @@ export class Database {
         }
     }
 
+    async deleteTeamLink(args:Prisma.TeamLinkDeleteArgs){
+        try {
+            const res = await this._client.teamLink.delete(args);
+            return res;
+        } catch (e:any) {
+            if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2025') {
+                throw new GrpcAppError(status.NOT_FOUND,"Team link not found",null);
+            }
+            throw new GrpcAppError(status.INTERNAL,"Unexpected error occurred",null);
+        }
+    }
+
     // DELETE METHODS
     async deleteTeamById({teamId}: DeleteTeamRequestDBBodyType) {
         try {

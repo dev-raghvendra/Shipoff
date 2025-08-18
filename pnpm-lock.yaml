@@ -103,6 +103,9 @@ importers:
       '@shipoff/proto':
         specifier: workspace:*
         version: link:../../../packages/proto
+      '@shipoff/redis':
+        specifier: workspace:*
+        version: link:../../../packages/redis
       '@shipoff/services-commons':
         specifier: workspace:*
         version: link:../../../packages/services-commons

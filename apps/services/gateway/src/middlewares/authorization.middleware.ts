@@ -4,7 +4,7 @@ import { NextFunction, Request, Response } from "express";
 export async function authorizationMiddleware(req: Request, res: Response, next: NextFunction) {
    try {
        const authHeader = req.headers.authorization;
-       const token = authHeader && authHeader.split(' ')[1]
+       const token = authHeader && authHeader.split('Bearer ')[1]
        if(!token){
            throw false;
         }

@@ -18,6 +18,7 @@ message BodyLessRequest {
 
 message BulkResourceRequest {
    User authUserData = 1;
-   int32 skip = 2;
+   int64 skip = 2;
    int32 limit = 3;
 }
+

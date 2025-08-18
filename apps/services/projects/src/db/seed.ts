@@ -11,9 +11,9 @@ async function seedFrameworks(){
             displayName:"React",
             icon:"https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/react/react-original.svg",
             applicationType:"STATIC",
-            defaultBuildCmd:"npm run build",
+            defaultBuildCommand:"npm run build",
             runtime:"NODEJS",
-            defaultProdCmd:null
+            defaultProdCommand:null
         },
         {
             frameworkId:generateId("Framework", {Framework:"fw"}),
@@ -21,9 +21,9 @@ async function seedFrameworks(){
             displayName:"Vue",
             icon:"https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/vuejs/vuejs-original.svg",
             applicationType:"STATIC",
-            defaultBuildCmd:"npm run build",
+            defaultBuildCommand:"npm run build",
             runtime:"NODEJS",
-            defaultProdCmd:null
+            defaultProdCommand:null
         },
         {
             frameworkId:generateId("Framework", {Framework:"fw"}),
@@ -31,9 +31,9 @@ async function seedFrameworks(){
             displayName:"Angular",
             icon:"https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/angularjs/angularjs-original.svg",
             applicationType:"STATIC",
-            defaultBuildCmd:"npm run build",
+            defaultBuildCommand:"npm run build",
             runtime:"NODEJS",
-            defaultProdCmd:null
+            defaultProdCommand:null
         },
         {
             frameworkId:generateId("Framework", {Framework:"fw"}),
@@ -41,9 +41,9 @@ async function seedFrameworks(){
             displayName:"Svelte",
             icon:"https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/svelte/svelte-original.svg",
             applicationType:"STATIC",
-            defaultBuildCmd:"npm run build",
+            defaultBuildCommand:"npm run build",
             runtime:"NODEJS",
-            defaultProdCmd:null
+            defaultProdCommand:null
         },
         {
             frameworkId:generateId("Framework", {Framework:"fw"}),
@@ -51,9 +51,9 @@ async function seedFrameworks(){
             displayName:"Next.js",
             icon:"https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nextjs/nextjs-original.svg",
             applicationType:"DYNAMIC",
-            defaultBuildCmd:"npm run build",
+            defaultBuildCommand:"npm run build",
             runtime:"NODEJS",
-            defaultProdCmd:"npm run start"
+            defaultProdCommand:"npm run start"
         },
         {
             frameworkId:generateId("Framework", {Framework:"fw"}),
@@ -61,9 +61,9 @@ async function seedFrameworks(){
             displayName:"Express",
             icon:"https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/express/express-original.svg",
             applicationType:"DYNAMIC",
-            defaultBuildCmd:"npm run build",
+            defaultBuildCommand:"npm run build",
             runtime:"NODEJS",
-            defaultProdCmd:"npm run start"
+            defaultProdCommand:"npm run start"
         },
         {
             frameworkId:generateId("Framework", {Framework:"fw"}),
@@ -71,9 +71,9 @@ async function seedFrameworks(){
             displayName:"NestJS",
             icon:"https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nestjs/nestjs-original.svg",
             applicationType:"DYNAMIC",
-            defaultBuildCmd:"npm run build",
+            defaultBuildCommand:"npm run build",
             runtime:"NODEJS",
-            defaultProdCmd:"npm run start"
+            defaultProdCommand:"npm run start"
         },
         {
             frameworkId:generateId("Framework", {Framework:"fw"}),
@@ -81,9 +81,9 @@ async function seedFrameworks(){
             displayName:"Fastify",
             icon:"https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/fastify/fastify-original.svg",
             applicationType:"DYNAMIC",
-            defaultBuildCmd:"npm run build",
+            defaultBuildCommand:"npm run build",
             runtime:"NODEJS",
-            defaultProdCmd:"npm run start"
+            defaultProdCommand:"npm run start"
         },
         {
             frameworkId:generateId("Framework", {Framework:"fw"}),
@@ -91,9 +91,9 @@ async function seedFrameworks(){
             displayName:"Nuxt.js",
             icon:"https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nuxtjs/nuxtjs-original.svg",
             applicationType:"DYNAMIC",
-            defaultBuildCmd:"npm run build",
+            defaultBuildCommand:"npm run build",
             runtime:"NODEJS",
-            defaultProdCmd:"npm run start"
+            defaultProdCommand:"npm run start"
         },
         {
             frameworkId:generateId("Framework", {Framework:"fw"}),
@@ -101,9 +101,9 @@ async function seedFrameworks(){
             displayName:"Django",
             icon:"https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/django/django-plain.svg",
             applicationType:"DYNAMIC",
-            defaultBuildCmd:"python manage.py collectstatic --noinput",
+            defaultBuildCommand:"python manage.py collectstatic --noinput",
             runtime:"PYTHON",
-            defaultProdCmd:"gunicorn wsgi:application"
+            defaultProdCommand:"gunicorn wsgi:application"
         },
         {
             frameworkId:generateId("Framework", {Framework:"fw"}),
@@ -111,9 +111,9 @@ async function seedFrameworks(){
             displayName:"Flask",
             icon:"https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/flask/flask-original.svg",
             applicationType:"DYNAMIC",
-            defaultBuildCmd:"pip install -r requirements.txt",
+            defaultBuildCommand:"pip install -r requirements.txt",
             runtime:"PYTHON",
-            defaultProdCmd:"gunicorn app:app"
+            defaultProdCommand:"gunicorn app:app"
         },
         {
             frameworkId:generateId("Framework", {Framework:"fw"}),
@@ -121,9 +121,9 @@ async function seedFrameworks(){
             displayName:"FastAPI",
             icon:"https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/fastapi/fastapi-original.svg",
             applicationType:"DYNAMIC",
-            defaultBuildCmd:"pip install -r requirements.txt",
+            defaultBuildCommand:"pip install -r requirements.txt",
             runtime:"PYTHON",
-            defaultProdCmd:"uvicorn main:app"
+            defaultProdCommand:"uvicorn main:app"
         },
         {
             frameworkId:generateId("Framework", {Framework:"fw"}),
@@ -131,9 +131,9 @@ async function seedFrameworks(){
             displayName:"Laravel",
             icon:"https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/laravel/laravel-original.svg",
             applicationType:"DYNAMIC",
-            defaultBuildCmd:"composer install --optimize-autoloader --no-dev",
+            defaultBuildCommand:"composer install --optimize-autoloader --no-dev",
             runtime:"PHP",
-            defaultProdCmd:"php artisan serve",
+            defaultProdCommand:"php artisan serve",
         },
         {
             frameworkId:generateId("Framework", {Framework:"fw"}),
@@ -141,9 +141,9 @@ async function seedFrameworks(){
             displayName:"Symfony",
             icon:"https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/symfony/symfony-original.svg",
             applicationType:"DYNAMIC",
-            defaultBuildCmd:"composer install --optimize-autoloader --no-dev",
+            defaultBuildCommand:"composer install --optimize-autoloader --no-dev",
             runtime:"PHP",
-            defaultProdCmd:"php -S localhost:8000 -t public"
+            defaultProdCommand:"php -S localhost:8000 -t public"
         },
         {
             frameworkId:generateId("Framework", {Framework:"fw"}),
@@ -151,9 +151,9 @@ async function seedFrameworks(){
             displayName:"Lumen",
             icon:"https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/lumen/lumen-original.svg",
             applicationType:"DYNAMIC",
-            defaultBuildCmd:"composer install --optimize-autoloader --no-dev",
+            defaultBuildCommand:"composer install --optimize-autoloader --no-dev",
             runtime:"PHP",
-            defaultProdCmd:"php -S localhost:8000 -t public"
+            defaultProdCommand:"php -S localhost:8000 -t public"
         }
     ];
     try {
@@ -167,3 +167,4 @@ async function seedFrameworks(){
 }
 
 seedFrameworks()
+

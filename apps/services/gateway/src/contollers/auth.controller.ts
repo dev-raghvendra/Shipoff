@@ -36,8 +36,8 @@ export async function createTeamController(req:Request,res:Response){
 export async function getTeamsController(req:Request,res:Response){
     const body = {
         ...req.body,
-        skip:req.query.skip,
-        limit:req.query.limit
+        ...(req.query.skip && { skip: req.query.skip }),
+        ...(req.query.limit && { limit: req.query.limit })
     }
     const {code, message, res:data} = await authService.getAllUserTeams(body);
     grpcToHttpResponse.call(res, code, message, data);

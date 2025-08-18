@@ -25,7 +25,8 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "inputs": ["src/**",".env*"]
     },
     "generate":{
        "dependsOn": ["^generate","^proto:gen"],

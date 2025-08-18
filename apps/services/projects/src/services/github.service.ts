@@ -3,8 +3,9 @@ import { Database, dbService } from "@/db/db-service";
 import githubExternalService, { GithubExternalService } from "@/externals/github.external.service";
 import { GetUserGithubRepositoriesRequestBodyType, GetGithubRepositoryDetailsRequestBodyType } from "@/types/repositories";
 import { BodyLessRequestBodyType } from "@shipoff/types";
+import { CreateGithubInstallationRequestBodyType } from "@/types/webhooks";
 
-export class GithubRepositoriesService {
+export class GithubService {
     private _dbService: Database;
     private _githubService: GithubExternalService;
     private _errHandler: ReturnType<typeof createGrpcErrorHandler>;
@@ -12,7 +13,7 @@ export class GithubRepositoriesService {
     constructor() {
         this._dbService = dbService;
         this._githubService = githubExternalService;
-        this._errHandler = createGrpcErrorHandler({ serviceName: "GITHUB_REPOSITORY_SERVICE" });
+        this._errHandler = createGrpcErrorHandler({ serviceName: "GITHUB_SERVICE" });
     }
 
         async getUserGithubRepositories({authUserData, skip, limit}:GetUserGithubRepositoriesRequestBodyType){
@@ -72,4 +73,21 @@ export class GithubRepositoriesService {
                 return this._errHandler(e, "GET-GITHUB-INSTALLATION");
             }
         }
+
+      async createGithubInstallation({authUserData:{userId}, installation_id}:CreateGithubInstallationRequestBodyType) {
+        try {
+            const {githubInstallationId,githubUserName} = await this._githubService.getInstallationDetails(installation_id);
+            const res = await this._dbService.createGithubInstallation({
+                data:{
+                    githubInstallationId,
+                    githubUserName,
+                    userId
+                }
+            })
+            return GrpcResponse.OK(res, "Github installation created successfully");
+        } catch (e:any) {
+            return this._errHandler(e, "CREATE-GITHUB-INSTALLATION");
+        }
+    }
+    
 }

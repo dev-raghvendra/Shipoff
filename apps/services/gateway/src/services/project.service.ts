@@ -1,5 +1,5 @@
 import { GetProjectClient } from "@shipoff/grpc-clients";
-import { BodyLessRequest, CreateProjectRequest, CreateRepositoryRequest, DeleteDeploymentRequest, DeleteEnvVarsRequest, DeleteProjectRequest, DeleteRepositoryRequest, EnviornmentVariables, EnviornmentVariablesKeyValue, GetAllDeploymentsRequest, GetAllUserProjectsRequest, GetDeploymentRequest, GetEnvVarsRequest, GetProjectRequest, GetRepositoryRequest, ProjectsServiceClient, RedeployRequest, UpdateProjectRequest, UpsertEnvVarsRequest, User } from "@shipoff/proto";
+import { BulkResourceRequest, CreateProjectRequest, CreateRepositoryRequest, DeleteDeploymentRequest, DeleteEnvVarsRequest, DeleteProjectRequest, DeleteRepositoryRequest, GetAllDeploymentsRequest, GetAllUserProjectsRequest, GetDeploymentRequest, GetEnvVarsRequest, GetProjectRequest, GetRepositoryRequest, ProjectsServiceClient, RedeployRequest, UpdateProjectRequest, UpsertEnvVarsRequest } from "@shipoff/proto";
 import { promisifyGrpcCall } from "@shipoff/services-commons/utils/rpc-utils";
 
 export class ProjectService {
@@ -161,7 +161,7 @@ export class ProjectService {
 
     async getFrameworks(data: any) {
         try {
-            const req = BodyLessRequest.fromObject(data);
+            const req = BulkResourceRequest.fromObject(data);
             const response = await promisifyGrpcCall(this._projectService.GetFrameworks.bind(this._projectService), req);
             return response;
         } catch (e:any) {
@@ -169,3 +169,5 @@ export class ProjectService {
         }
     }
 }
+
+

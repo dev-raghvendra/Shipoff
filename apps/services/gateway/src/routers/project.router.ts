@@ -5,6 +5,7 @@ const projectRouter = Router();
 
 projectRouter.post("/",authorizationMiddleware,createProjectController);
 projectRouter.get("/", authorizationMiddleware, getAllUserProjectsController);
+projectRouter.get("/frameworks",authorizationMiddleware,getFrameworksController);
 projectRouter.get("/:projectId", authorizationMiddleware, getProjectController);
 projectRouter.patch("/:projectId",authorizationMiddleware,updateProjectController)
 projectRouter.delete("/:projectId",authorizationMiddleware,deleteProjectController);
@@ -18,6 +19,5 @@ projectRouter.delete("/:projectId/env-vars/:env_name",authorizationMiddleware,de
 projectRouter.get("/:projectId/repository",authorizationMiddleware, getRepositoryController);
 projectRouter.post("/:projectId/repository",authorizationMiddleware, createRepositoryController);
 projectRouter.delete("/:projectId/repository",authorizationMiddleware, deleteRepositoryController);
-projectRouter.get("/frameworks",authorizationMiddleware,getFrameworksController);
 
 export default projectRouter;

@@ -1,7 +1,7 @@
 import { ServerUnaryCall, sendUnaryData, status } from "@grpc/grpc-js";
 import { DeploymentResponse, GithubWebhookRequest, google } from "@shipoff/proto";
 import { GithubWebhookService } from "services/github-webhook.service";
-import { CreateGithubInstallationRequestBodyType, GithubWebhookRequestType } from "types/webhooks";
+import { GithubWebhookRequestType } from "types/webhooks";
 
 export class GithubWebhookHandlers {
     private _githubWebhookService: GithubWebhookService;
@@ -14,7 +14,7 @@ export class GithubWebhookHandlers {
         try {
             const { code, message } = await this._githubWebhookService.webhooks(call.request.body);
             if (code !== 0) return callback({ code, message });
-            return callback(null);
+            return callback(null,google.protobuf.Empty.fromObject({}));
         } catch (e: any) {
             return callback({
                 code: status.INTERNAL,
@@ -23,16 +23,5 @@ export class GithubWebhookHandlers {
         }
     }
 
-    async handleCreateGithubInstallation(call: ServerUnaryCall<{ body: CreateGithubInstallationRequestBodyType }, DeploymentResponse>, callback: sendUnaryData<google.protobuf.Empty>) {
-        try {
-            const { code, message } = await this._githubWebhookService.createGithubInstallation(call.request.body);
-            if (code !== 0) return callback({ code, message });
-            return callback(null);
-        } catch (e: any) {
-            return callback({
-                code: status.INTERNAL,
-                message: "Internal server error"
-            });
-        }
-    }
+    
 }

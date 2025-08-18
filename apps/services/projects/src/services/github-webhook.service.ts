@@ -1,46 +1,45 @@
 import { createGrpcErrorHandler, GrpcResponse } from "@shipoff/services-commons";
 import { Database, dbService } from "@/db/db-service";
 import { DeploymentEventProducerService } from "@/producer/deployment.producer";
-import githubExternalService, { GithubExternalService } from "@/externals/github.external.service";
 import { verifySignature } from "@/libs/crypto";
 import { CreateDeploymentRequestDBBodyType } from "@/types/deployments";
-import { GithubWebhookRequestType, DeploymentWebhookPayload, CreateGithubInstallationRequestBodyType } from "@/types/webhooks";
+import { GithubWebhookRequestType, DeploymentWebhookPayload } from "@/types/webhooks";
+import { $DeploymentEvent } from "@shipoff/redis";
 
 export class GithubWebhookService {
     private _dbService: Database;
     private _errHandler: ReturnType<typeof createGrpcErrorHandler>;
-    private _githubService: GithubExternalService
     private _deploymentProducer: DeploymentEventProducerService;
 
     constructor() {
         this._dbService = dbService;
-        this._errHandler = createGrpcErrorHandler({ serviceName: "GITHUB_WEBHOOK_SERVICE" });   
-        this._githubService = githubExternalService;
+        this._errHandler = createGrpcErrorHandler({ serviceName: "GITHUB_WEBHOOK_SERVICE" }); 
         this._deploymentProducer = new DeploymentEventProducerService();
     }
 
     private async codePushed(payload:string,signature:string) {
        try {
           await verifySignature(payload, signature);
-          const body = JSON.parse(payload) as DeploymentWebhookPayload;
+          const parsedPayload = JSON.parse(payload) as DeploymentWebhookPayload;
           const repo = await this._dbService.findUniqueRepository({
             where:{
-                githubRepoId:body.repository.id.toString()
+                githubRepoId:parsedPayload.repository.id.toString()
             }
           })
-          if(body.ref !== repo.project.branch) return GrpcResponse.OK(null, "No new deployment, branch is same as last deployment");
+          if(parsedPayload.ref.replace("refs/heads/","") !== repo.project.branch) return GrpcResponse.OK(null, "No new deployment, branch is same as last deployment");
               const deploymentData  : CreateDeploymentRequestDBBodyType = {
               projectId:repo.projectId,
-              commitHash:body.head_commit?.id || "unknown",
+              commitHash:parsedPayload.head_commit?.id || "unknown",
               status:"QUEUED",
-              commitMessage:body.head_commit?.message || "no commit message",
-              author:body.head_commit?.author.name || "unknown",
+              commitMessage:parsedPayload.head_commit?.message || "no commit message",
+              author:parsedPayload.head_commit?.author.name || "unknown",
               repositoryId:repo.repositoryId
           }
           const res = await Promise.all([
               this._dbService.createDeployment(deploymentData),
               this._deploymentProducer.publishDeploymentRequested({
-                  repoFullName:repo.githubRepoName,
+                  event:$DeploymentEvent.CREATED,
+                  repoFullName:repo.githubRepoFullName,
                   branch:repo.project.branch,
                   projectId:repo.projectId,
                   domain:repo.project.domain
@@ -100,8 +99,9 @@ export class GithubWebhookService {
         }
     }
 
-    async webhooks({payload,signature,eventType,action}:GithubWebhookRequestType){
+    async webhooks({payload,signature,eventType}:GithubWebhookRequestType){
         try {
+            const {action} = JSON.parse(payload);
             switch(eventType) {
                 case "push":
                     return this.codePushed(payload, signature);
@@ -128,22 +128,7 @@ export class GithubWebhookService {
         }
     }
 
-    async createGithubInstallation({authUserData:{userId}, installation_id}:CreateGithubInstallationRequestBodyType) {
-        try {
-            const {githubInstallationId,githubUserName} = await this._githubService.getInstallationDetails(installation_id);
-            const res = await this._dbService.createGithubInstallation({
-                data:{
-                    githubInstallationId,
-                    githubUserName,
-                    userId
-                }
-            })
-            return GrpcResponse.OK(res, "Github installation created successfully");
-        } catch (e:any) {
-            return this._errHandler(e, "CREATE-GITHUB-INSTALLATION");
-        }
-    }
-    
+  
 }
 
 

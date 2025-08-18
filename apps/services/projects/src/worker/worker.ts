@@ -2,7 +2,8 @@ import crypto from "crypto";
 import { parentPort, workerData } from "worker_threads";
 
 try {
-    const hmac  =  crypto.createHmac("sha256", "secret");
+    const secret = workerData.secret;
+    const hmac  =  crypto.createHmac("sha256", secret);
     const {signature, payload} = workerData;
     hmac.update(payload, "utf8");
     const data = "sha256=" + hmac.digest("hex");

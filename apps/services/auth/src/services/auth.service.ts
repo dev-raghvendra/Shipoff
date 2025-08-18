@@ -57,7 +57,6 @@ class AuthService {
             const u = await this._dbService.createOAuthUser(body);
             return await this.createSession(u);
         } catch (e:any) {
-            console.log(e)
              if (e.code === status.ALREADY_EXISTS){
                 const {password, ...user} = await this._dbService.findUniqueUser({where:{email:body.email}});
                 return await this.createSession(user);

@@ -32,7 +32,7 @@ export class GithubService {
     async githubInstallationCallback(data: any) {
         try {
             const req = CreateGithubInstallationRequest.fromObject(data);
-            const response = await promisifyGrpcCall(this._githubService.GithubInstallationCallback.bind(this._githubService), req);
+            const response = await promisifyGrpcCall(this._githubService.CreateGithubInstallation.bind(this._githubService), req);
             return response;
         } catch (e:any) {
             return e;

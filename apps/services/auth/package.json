@@ -24,6 +24,7 @@
     "@prisma/client": "6.12.0",
     "@shipoff/proto": "workspace:*",
     "@shipoff/services-commons": "workspace:*",
+    "@shipoff/redis": "workspace:*",
     "bcrypt": "^6.0.0",
     "dotenv": "^17.2.1",
     "jsonwebtoken": "^9.0.2",

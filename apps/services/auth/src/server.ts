@@ -7,6 +7,7 @@ import TeamHandlers from "@/handlers/team.handler";
 import ProjectHandlers from "@/handlers/project.handlers";
 import logger from "@shipoff/services-commons/libs/winston";
 import SECRETS from "@/config/secrets";
+import { startProjectConsumer } from "./consumer/project.consumer";
 
 
 const validateRPCBody = createValidator(RPC_SCHEMA);
@@ -48,6 +49,11 @@ server.bindAsync(`${SECRETS.HOST}:${SECRETS.PORT}`,ServerCredentials.createInsec
       logger.info(`AUTH_GRPC_SERVER_LISTENING_ON ${SECRETS.HOST}:${SECRETS.PORT}`)
 })
 
+startProjectConsumer().then(() => {
+    logger.info("PROJECT_CONSUMER_STARTED");
+}).catch((err) => {
+    logger.error(`ERROR_STARTING_PROJECT_CONSUMER_IN_AUTH_SERVICE: ${JSON.stringify(err, null, 2)}`);
+});
 
 process.on("uncaughtException", (err) => {
     logger.error(`UNCAUGHT_EXCEPTION_AT_AUTH_SERVICE: ${err.message}`);
@@ -61,3 +67,4 @@ process.on("SIGINT", () => {
     logger.info("AUTH_SERVICE_STOPPED");
     process.exit(0);
 });
+

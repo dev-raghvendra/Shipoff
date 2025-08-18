@@ -58,11 +58,12 @@ export class GithubExternalService {
 
    async refreshAccessToken(installationId:string){
           try {
-             const route = `/installations/${installationId}/access_tokens`;
+             const route = `app/installations/${installationId}/access_tokens`;
+             const token = await createGithubJwt();
              const res  = await this._axiosInstance.post(route,undefined,{
                 installationId,
                 headers:{
-                    Authorization:`Bearer ${createGithubJwt()}`,
+                    Authorization:`Bearer ${token}`,
                     "X-GitHub-Api-Version":"2022-11-28"
                 }
             } as GithubAxiosRequestConfig);
@@ -84,6 +85,7 @@ export class GithubExternalService {
             throw new GrpcAppError(status.INTERNAL,"Unexpected error occured",e)
           }
     }
+    
 
     private formatRepositoryData(repo: any) {
         if (repo instanceof Array) {
@@ -170,10 +172,11 @@ export class GithubExternalService {
     async getInstallationDetails(installationId:string) {
         try {
             const route = `/app/installations/${installationId}`;
+            const token = await createGithubJwt();
             const res = await this._axiosInstance.get(route,{
                 headers:{
                     "X-GitHub-Api-Version":"2022-11-28",
-                    "Authorization": `Bearer ${createGithubJwt()}`
+                    "Authorization": `Bearer ${token}`
                 }
             });
             const installation = {

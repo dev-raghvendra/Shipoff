@@ -14,9 +14,9 @@ const MODEL_MAP = {
 } as const;
 export class Database {
     private _client : PrismaClient;
-    constructor(){this._client = new PrismaClient}
+    constructor(){this._client = new PrismaClient()}
      
-
+    
     async createProject(body:CreateProjectRequestDBBodyType){
       try {
         const projectId = generateId("Project", MODEL_MAP);
@@ -27,20 +27,19 @@ export class Database {
             domain:body.domain,
             frameworkId:body.frameworkId,
             branch:body.branch,
-            productionCommand:body.productionCommand,
+            prodCommand:body.prodCommand,
             buildCommand:body.buildCommand,
             repository:{
                 create:{
                     repositoryId:generateId("Repository", MODEL_MAP),
                     githubRepoId:body.githubRepoId,
-                    githubRepoName:body.githubRepoName,
+                    githubRepoFullName:body.githubRepoFullName,
                     githubRepoURI:body.githubRepoURI,
                     githubInstallationId:body.githubInstallationId
                 }
             },
             environmentVariables:{
                 create:body.environmentVars?.map(envVar=>({
-                projectId,
                 envName:envVar.envName,
                 envValue:envVar.envValue
                }))
@@ -63,11 +62,14 @@ export class Database {
       } catch (error) {
         if(error instanceof PrismaClientKnownRequestError) {
             if(error.code === "P2002") {
-               if(error.meta?.model=="Repository"){
-                  throw new GrpcAppError(status.ALREADY_EXISTS,"Project already exists with the provided github repo");
+                if((error.meta?.target as string[]).includes("envName")) {
+                  throw new GrpcAppError(status.ALREADY_EXISTS,"Environment variable names must be unique");
                }
-               else {
+               else if((error.meta?.target as string[]).includes("domain")) {
                   throw new GrpcAppError(status.ALREADY_EXISTS,"Project with the provided domain already exists");
+               }
+               else if((error.meta?.target as string[]).some(target=>target.includes("githubRepoId"))) {
+                   throw new GrpcAppError(status.ALREADY_EXISTS,"Github repository is already linked with a project");
                }
             }
         }
@@ -217,7 +219,7 @@ export class Database {
                     githubRepoId:body.githubRepoId,
                     projectId:body.projectId,
                     githubInstallationId:body.githubInstallationId,
-                    githubRepoName:body.githubRepoName,
+                    githubRepoFullName:body.githubRepoFullName,
                     githubRepoURI:body.githubRepoURI
                 }
             })
@@ -369,6 +371,7 @@ export class Database {
     }
 
     async createEnvironmentVariable({projectId,envVars}:UpsertEnvVarsRequestDBBodyType){
+        if(!envVars) throw new GrpcAppError(status.INVALID_ARGUMENT, "Environment variables are required");
         const values = envVars.map((_,i)=> `($1, $${i+2}, $${i+3})`).join(", ")
         const params = [projectId, ...envVars.flatMap(envVar=> [envVar.envName, envVar.envValue])];
         const q = `INSERT INTO "EnvironmentVariable" ("projectId","envName","envValue") VALUES ${values} ON CONFLICT ("projectId", "envName") DO UPDATE SET "envValue" = EXCLUDED."envValue"`

@@ -27,7 +27,6 @@ export const GithubWebhookSchema = z.object({
     payload: z.string().min(10),
     signature: z.string().min(10),
     eventType: GithubWebhookEvent,
-    action: z.string().min(2).optional(),
 }).strict();
 
 export const CreateGithubInstallationRequestSchema = z.object({

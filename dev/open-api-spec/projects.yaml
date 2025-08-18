@@ -492,6 +492,12 @@ components:
         githubRepoId:
           type: string
           example: "123456789"
+        githubRepoFullName:
+          type: string
+          example: "my-org/my-repo"
+        githubRepoURI:
+          type: string
+          example: "https://github.com/my-org/my-repo"
         frameworkId:
           type: string
           example: react-framework-id
@@ -552,6 +558,12 @@ components:
         githubRepoId:
           type: string
           example: 123456789
+        githubRepoFullName:
+          type: string
+          example: "my-org/my-repo"
+        githubRepoURI:
+          type: string
+          example: "https://github.com/my-org/my-repo"
 
     EnvironmentVariablesKeyValue:
       type: object

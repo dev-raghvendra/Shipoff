@@ -1,10 +1,13 @@
-import {z} from "zod"
+import {z, ZodType} from "zod"
 
 export const Scopes = z.enum(['PROJECT', 'DEPLOYMENT', 'TEAM', 'TEAM_MEMBER', 'PROJECT_MEMBER', 'TEAM_LINK', "REPOSITORY"]);
 export const Permissions = z.enum(['READ', 'CREATE', 'UPDATE', 'DELETE', 'SELF_DELETE', 'SELF_UPDATE', 'TRANSFER_OWNERSHIP']);
 export const Providers = z.enum(['GOOGLE', 'GITHUB', 'EMAIL']);
 export type ScopeType = z.infer<typeof Scopes>;
 export type ProvidersType = z.infer<typeof Providers>;
+export const optNumWithDefaultValue = (defaultNum:number)=>z.number().int().nonnegative().transform(val => val == 0 ? undefined : val ).optional().default(defaultNum);
+export const optionalString = ()=> z.string().transform(str=>str.trim() ? str : undefined).optional()
+export const optionalArray = <T extends ZodType>(schema:T)=>z.array(schema).transform(arr => arr.length ? arr : undefined).optional()
 
 export const UserSchema = z.object({
   fullName: z.string(),
@@ -19,8 +22,8 @@ export const UserSchema = z.object({
 
 export const BulkResourceRequestSchema = z.object({
    authUserData : UserSchema,
-   skip:z.number().nonnegative().optional().default(0),
-   limit:z.number().nonnegative().min(1).optional().default(5)
+   skip:optNumWithDefaultValue(0),
+   limit:optNumWithDefaultValue(5)
 })
 
 export type BulkResourceRequestBodyType = z.infer<typeof BulkResourceRequestSchema>

@@ -1,22 +1,24 @@
+import {optionalArray, optionalString, optNumWithDefaultValue, UserSchema} from "@shipoff/types"
 import z from "zod";
-import {UserSchema} from "@shipoff/types"
 
 export const EnvVarsSchema = z.object({
     envName:z.string(),
     envValue:z.string(),
 })
+
 export const CreateProjectRequestSchema = z.object({
      authUserData  : UserSchema,
-     name:z.string() ,
-     frameworkId : z.string(),
-     buildCommand:z.string(),
-     productionCommand:z.string().optional(),
-     branch:z.string(),
-     domain:z.string(),
-     githubRepoId:z.string(),
-     environmentVars:z.array(EnvVarsSchema).optional()
+     name:z.string().min(1) ,
+     frameworkId : z.string().min(1),
+     buildCommand:z.string().min(1),
+     prodCommand:optionalString(),
+     branch:z.string().min(1),
+     domain:z.string().min(1),
+     githubRepoId:z.string().min(1),
+     githubRepoURI:z.url(),
+     githubRepoFullName:z.string().min(1),
+     environmentVars:optionalArray(EnvVarsSchema)
 }).strict();
-
 
 export const GetProjectRequestSchema = z.object({
     authUserData: UserSchema,
@@ -25,17 +27,18 @@ export const GetProjectRequestSchema = z.object({
 
 export const GetAllUserProjectsRequestSchema = z.object({
     authUserData: UserSchema,
-    skip: z.number().int().nonnegative().optional().default(0),
-    limit: z.number().int().nonnegative().min(1).optional().default(10),
+    skip: optNumWithDefaultValue(0),
+    limit: optNumWithDefaultValue(5)
 }).strict();
 
+
 export const updatesSchema = z.object({
-    name: z.string().min(2).optional(),
-    domain: z.string().min(2).optional(),
-    frameworkId: z.string().min(2).optional(),
-    buildCommand: z.string().min(2).optional(),
-    productionCommand: z.string().min(2).optional(),
-    branch: z.string().min(2).optional(),
+    name: optionalString(),
+    domain: optionalString(),
+    frameworkId: optionalString(),
+    buildCommand: optionalString(),
+    prodCommand: optionalString(),
+    branch: optionalString(), 
 }).strict();
 export const UpdateProjectRequestSchema = z.object({
     authUserData: UserSchema,
@@ -51,7 +54,7 @@ export const DeleteProjectRequestSchema = z.object({
 export const UpsertEnvVarsRequestSchema = z.object({
     authUserData: UserSchema,
     projectId: z.string(),
-    envVars: z.array(z.object({
+    envVars:optionalArray(z.object({
         envName: z.string(),
         envValue: z.string(),
     })),
@@ -81,8 +84,6 @@ export type GetProjectRequestBodyType = z.infer<typeof GetProjectRequestSchema>;
 export type GetProjectRequestDBBodyType = Omit<GetProjectRequestBodyType, "authUserData">;
 export type CreateProjectRequestBodyType = z.infer<typeof CreateProjectRequestSchema>;
 export type CreateProjectRequestDBBodyType = Omit<CreateProjectRequestBodyType & {
-    githubRepoURI:string,
-    githubRepoName:string,
     githubInstallationId:string,
 }, "authUserData">
 

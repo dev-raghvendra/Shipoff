@@ -17,7 +17,7 @@ model Project {
   projectId              String    @id @default(uuid())
   name                   String  
   domain                 String     @unique
-  productionCommand      String?   @default("")
+  prodCommand            String?   @default("")
   buildCommand           String   @default("")
   frameworkId            String
   branch                 String?  @default("main")
@@ -46,17 +46,18 @@ model Framework {
   name              String   @unique
   displayName       String   @unique
   applicationType   ProjectType
-  defaultBuildCmd   String
-  defaultProdCmd    String?  @default("")
+  defaultBuildCommand   String
+  defaultProdCommand    String?  @default("")
   runtime           Runtime  
 
   project         Project[]
 }
 
+
 model Repository {
   repositoryId           String    @id @default(uuid())
   githubInstallationId   String 
-  githubRepoName         String    @unique
+  githubRepoFullName     String    @unique
   githubRepoId           String    @unique
   githubRepoURI          String    @unique
   projectId              String    @unique

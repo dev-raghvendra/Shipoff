@@ -5,15 +5,15 @@ import { GrpcResponse } from "@shipoff/services-commons/utils/rpc-utils";
 import { BodyLessRequestBodyType, BulkResourceRequestBodyType } from "@shipoff/types";
 import { Database, dbService } from "@/db/db-service";
 import authExternalService, { AuthExternalService } from "@/externals/auth.external.service";
-import githubExternalService, { GithubExternalService } from "@/externals/github.external.service";
-import { CreateProjectRequestBodyType, CreateProjectRequestDBBodyType, DeleteEnvVarsRequestBodyType, GetEnvVarsRequestBodyType, GetProjectRequestBodyType, UpdateProjectRequestBodyType, UpsertEnvVarsRequestBodyType } from "@/types/projects";
+import { CreateProjectRequestBodyType, DeleteEnvVarsRequestBodyType, GetEnvVarsRequestBodyType, GetProjectRequestBodyType, UpdateProjectRequestBodyType, UpsertEnvVarsRequestBodyType } from "@/types/projects";
+import { ProjectProducer } from "@/producer/project.producer";
 
 export class ProjectsService {
     private _dbService: Database;
     private _authService: AuthExternalService;
-    private _githubService: GithubExternalService;
     private _errHandler : ReturnType<typeof createGrpcErrorHandler>
     private _selectProjectFeilds:Prisma.ProjectSelect
+    private _projectProducer: ProjectProducer;
 
     constructor() {
         this._errHandler = createGrpcErrorHandler({serviceName:"PROJECT_SERVICE"});
@@ -21,16 +21,10 @@ export class ProjectsService {
                 repository:true,
                 name:true,
                 domain:true,
-                framework:{
-                    select:{
-                        frameworkId:true,
-                        displayName:true,
-                        icon:true
-                    }
-                },
+                framework:true,
                 branch:true,
                 buildCommand:true,
-                productionCommand:true,
+                prodCommand:true,
                 projectId:true,
                 environmentVariables:{
                     select:{
@@ -43,30 +37,24 @@ export class ProjectsService {
             }
         this._dbService = dbService;
         this._authService = authExternalService;
-        this._githubService = githubExternalService
+        this._projectProducer = new ProjectProducer();
     }
 
-    async createProject({authUserData:{userId},frameworkId,githubRepoId,...body}: CreateProjectRequestBodyType) {
+    async createProject({authUserData:{userId},...body}: CreateProjectRequestBodyType) {
         try {
-           const fw = await this._dbService.findUniqueFrameworkById(frameworkId);   
-           if(!fw.defaultProdCmd) delete body.productionCommand;
-           const githubInstallation = await this._dbService.findUniqueGithubInstallation({
+           const fw = await this._dbService.findUniqueFrameworkById(body.frameworkId);
+           if(!fw.defaultProdCommand) delete body.prodCommand;
+           const {githubInstallationId} = await this._dbService.findUniqueGithubInstallation({
             where:{
                 userId
             }
            });
-           const {githubRepoFullName:githubRepoName, githubRepoURI} = await this._githubService.getRepositoryDetails(githubInstallation.githubInstallationId,
-            githubRepoId
-           );
-           const projectData : CreateProjectRequestDBBodyType = {
-            ...body,
-            frameworkId,
-            githubRepoURI,
-            githubRepoName,
-            githubRepoId,
-            githubInstallationId:githubInstallation.githubInstallationId
-           }
-           const project = await this._dbService.createProject(projectData);
+           const project = await this._dbService.createProject({...body, githubInstallationId});
+           await this._projectProducer.publishProjectEvent({
+             event:"CREATED",
+             projectId: project.projectId,
+             userId
+           })
            return GrpcResponse.OK(project, "Project created");
         } catch (e:any) {
             return this._errHandler(e, "CREATE-PROJECT");
@@ -108,8 +96,8 @@ export class ProjectsService {
             });
             if(body.updates.frameworkId){
                 const fw = await this._dbService.findUniqueFrameworkById(body.updates.frameworkId);
-                if(!fw.defaultProdCmd){
-                    delete body.updates.productionCommand;
+                if(!fw.defaultProdCommand){
+                  delete body.updates.prodCommand;
                 }
             }
             const project = await this._dbService.updateProjectById(body as any);
@@ -129,6 +117,11 @@ export class ProjectsService {
                 permissions:["DELETE"]
             });
             const project = await this._dbService.deleteProjectById(projectId);
+            await this._projectProducer.publishProjectEvent({
+                event:"DELETED",
+                projectId,
+                userId:authUserData.userId
+            })
             return GrpcResponse.OK(project, "Project deleted");
         } catch (e:any) {
             return this._errHandler(e, "DELETE-PROJECT");
