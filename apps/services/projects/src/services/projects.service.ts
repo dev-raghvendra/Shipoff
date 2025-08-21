@@ -1,6 +1,6 @@
 import { status } from "@grpc/grpc-js";
 import { Prisma } from "@prisma/index";
-import { createGrpcErrorHandler, GrpcAppError } from "@shipoff/services-commons";
+import { createAsyncErrHandler, createGrpcErrorHandler, GrpcAppError } from "@shipoff/services-commons";
 import { GrpcResponse } from "@shipoff/services-commons/utils/rpc-utils";
 import { BodyLessRequestBodyType, BulkResourceRequestBodyType } from "@shipoff/types";
 import { Database, dbService } from "@/db/db-service";
@@ -12,11 +12,13 @@ export class ProjectsService {
     private _dbService: Database;
     private _authService: AuthExternalService;
     private _errHandler : ReturnType<typeof createGrpcErrorHandler>
+    private _asyncErrHandler: ReturnType<typeof createAsyncErrHandler>
     private _selectProjectFeilds:Prisma.ProjectSelect
     private _projectProducer: ProjectProducer;
 
     constructor() {
         this._errHandler = createGrpcErrorHandler({serviceName:"PROJECT_SERVICE"});
+        this._asyncErrHandler = createAsyncErrHandler({serviceName:"PROJECT_SERVICE"});
         this._selectProjectFeilds = {
                 repository:true,
                 name:true,
@@ -50,11 +52,12 @@ export class ProjectsService {
             }
            });
            const project = await this._dbService.createProject({...body, githubInstallationId});
-           await this._projectProducer.publishProjectEvent({
-             event:"CREATED",
-             projectId: project.projectId,
-             userId
-           })
+           this._asyncErrHandler.call(this._projectProducer.publishProjectEvent({
+               event:"CREATED",
+               projectId: project.projectId,
+               userId
+           }),"CREATE-PROJECT");
+
            return GrpcResponse.OK(project, "Project created");
         } catch (e:any) {
             return this._errHandler(e, "CREATE-PROJECT");
@@ -117,11 +120,11 @@ export class ProjectsService {
                 permissions:["DELETE"]
             });
             const project = await this._dbService.deleteProjectById(projectId);
-            await this._projectProducer.publishProjectEvent({
+            this._asyncErrHandler.call(this._projectProducer.publishProjectEvent({
                 event:"DELETED",
                 projectId,
                 userId:authUserData.userId
-            })
+            }),"DELETE-PROJECT");
             return GrpcResponse.OK(project, "Project deleted");
         } catch (e:any) {
             return this._errHandler(e, "DELETE-PROJECT");

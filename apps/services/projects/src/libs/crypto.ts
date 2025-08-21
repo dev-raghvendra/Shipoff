@@ -24,7 +24,6 @@ export function verifySignature(payload:string, signature:string){
             }
         })
         worker.on("error",(err)=>{
-            console.error("Worker error:", err);
             rej(new GrpcAppError(status.INTERNAL,"Internal server error",err));
         })
     })

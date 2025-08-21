@@ -168,16 +168,26 @@ export class Database {
     async findUniqueDeploymentById(deploymentId: string) {
         const res = await this._client.deployment.findUnique({
             where: { deploymentId },
-            include:{
-               repository:true,
-               project:{
-                select:{
-                    domain:true,
-                    branch:true,
-                    name:true,
+            select:{
+                    project:{
+                        select:{
+                            projectId:true,
+                            domain:true,
+                            branch:true
+                        }
+                    },
+                    repository:{
+                        select:{
+                            githubRepoFullName:true,
+                            githubRepoId:true
+                        }
+                    },
+                    commitHash:true,
+                    deploymentId:true,
+                    commitMessage:true,
+                    author:true,
+                    createdAt:true
                 }
-               }
-            }
         });
         if(res)return res;
         throw new GrpcAppError(status.NOT_FOUND, "Deployment not found", {
@@ -194,7 +204,27 @@ export class Database {
     async deleteDeploymentById(deploymentId: string) {
         try {
             const res = await this._client.deployment.delete({
-                where: { deploymentId }
+                where: { deploymentId },
+                select:{
+                    project:{
+                        select:{
+                            projectId:true,
+                            domain:true,
+                            branch:true
+                        }
+                    },
+                    repository:{
+                        select:{
+                            githubRepoFullName:true,
+                            githubRepoId:true
+                        }
+                    },
+                    commitHash:true,
+                    deploymentId:true,
+                    commitMessage:true,
+                    author:true,
+                    createdAt:true
+                }
             });
             return res;
         } catch (e:any) {

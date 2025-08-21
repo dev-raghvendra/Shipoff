@@ -13,7 +13,7 @@ export class DeploymentEventProducerService {
         this._redisClient = GetRedisClient();
     }
 
-    async publishDeploymentRequested(message:DeploymentEvent<$DeploymentEvent.CREATED>){
+    async publishDeploymentRequested(message:DeploymentEvent<keyof typeof $DeploymentEvent>) {
         try {
             const topic = TOPICS.DEPLOYMENT_TOPIC;
             const flattenedMessage = flatenObject(message);

@@ -1,18 +1,23 @@
-import { createGrpcErrorHandler, GrpcResponse } from "@shipoff/services-commons";
+import { createAsyncErrHandler, createGrpcErrorHandler, GrpcResponse } from "@shipoff/services-commons";
 import { Database, dbService } from "@/db/db-service";
 import authExternalService, { AuthExternalService } from "@/externals/auth.external.service";
 import { DeleteDeploymentRequestBodyType, GetAllDeploymentsRequestBodyType, GetDeploymentRequestBodyType, RedeployRequestBodyType } from "@/types/deployments";
+import { DeploymentEventProducerService } from "@/producer/deployment.producer";
 
 
 export class DeploymentsService {
     private _dbService: Database;
     private _authService: AuthExternalService;
     private _errHandler : ReturnType<typeof createGrpcErrorHandler>
+    private _asyncErrHandler: ReturnType<typeof createAsyncErrHandler>  
+    private _deploymentProducer : DeploymentEventProducerService;
 
     constructor() {
         this._errHandler = createGrpcErrorHandler({serviceName:"DEPLOYMENT_SERVICE"});
+        this._asyncErrHandler = createAsyncErrHandler({serviceName:"DEPLOYMENT_SERVICE"});
         this._dbService = dbService;
         this._authService = authExternalService;
+        this._deploymentProducer = new DeploymentEventProducerService();
     }
     async getDeployment({authUserData, deploymentId,projectId}: GetDeploymentRequestBodyType) {
         try {
@@ -74,7 +79,14 @@ export class DeploymentsService {
                 resourceId: projectId,
                 errMsg: "You do not have permission to delete this deployment"
             });
-            await this._dbService.deleteDeploymentById(deploymentId);
+            const deployment = await this._dbService.deleteDeploymentById(deploymentId);
+            this._asyncErrHandler.call(this._deploymentProducer.publishDeploymentRequested({
+                event: "DELETED",
+                projectId,
+                domain: deployment.project.domain,
+                repoFullName: deployment.repository.githubRepoFullName,
+                branch: deployment.project.branch as string
+            }),"DELETE-DEPLOYMENT");
             return GrpcResponse.OK({}, "Deployment deleted");
         } catch (e:any) {
             return this._errHandler(e, "DELETE-DEPLOYMENT");
@@ -91,8 +103,13 @@ export class DeploymentsService {
                 errMsg: "You do not have permission to redeploy this deployment"
             });
             const deployment = await this._dbService.findUniqueDeploymentById(deploymentId);
-            // Here we will add a message in the redis stream to trigger the redeployment
-            // For now, we will just return the deployment as a placeholder
+            this._asyncErrHandler.call(this._deploymentProducer.publishDeploymentRequested({
+                event:"CREATED",
+                projectId,
+                repoFullName:deployment.repository.githubRepoFullName,
+                branch:deployment.project.branch as string,
+                domain:deployment.project.domain as string
+            }),"REDEPLOY-DEPLOYMENT");  
             return GrpcResponse.OK(deployment, "Deployment redeployed");
         } catch (e:any) {
             return this._errHandler(e, "REDEPLOY-DEPLOYMENT");

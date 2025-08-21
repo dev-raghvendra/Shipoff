@@ -1,5 +1,6 @@
 import { status } from "@grpc/grpc-js";
 import {GrpcResponse} from "./rpc-utils";
+import logger from "../libs/winston";
 
 export class GrpcAppError  {
   public code: number;
@@ -26,4 +27,12 @@ export function createGrpcErrorHandler({
     }
     return GrpcResponse.INTERNAL("Unexpected error occurred",origin,serviceName,error);
   }
+}
+
+export function createAsyncErrHandler({serviceName}:{serviceName:string}){
+   return function(this:Promise<any>,origin:string){
+      this.catch((err) => {
+          logger.error(`UNEXPECTED_ERROR_OCCURED_IN_${serviceName}_AT_${origin}: ${err}`);
+      });
+   }
 }

@@ -37,9 +37,9 @@ export class AuthExternalService {
 
     async getUserProjectIds(authUserData: UserType) {
         try {
-            const req = new BodyLessRequest({
-            authUserData: new User(authUserData),
-        });
+            const req = BodyLessRequest.fromObject({
+                authUserData
+            })
         const res = await promisifyGrpcCall(this._authService.GetAllUserProjectIds, req, status.NOT_FOUND);
         return res.res;
         } catch (e:any) {

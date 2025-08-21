@@ -43,20 +43,21 @@ export class GithubExternalService {
             if(customConfig.installationId && !this._exceptionRoutes.some(route=>customConfig.url?.includes(route))){
                 const cachedToken = this._accessTokenCache.get(customConfig.installationId);
                 if(cachedToken && cachedToken.expiresAt > Date.now()){
-                    config.headers["Authorization"] = `Bearer ${cachedToken.token}`;
+                    config.headers["Authorization"] = `token ${cachedToken.token}`;
                 }
                 else{
                     if(cachedToken) this._accessTokenCache.delete(customConfig.installationId)
                     await this.refreshAccessToken(customConfig.installationId)
                     const newToken = this._accessTokenCache.get(customConfig.installationId);
-                    config.headers["Authorization"] = `Bearer ${newToken?.token}`;
+                    config.headers["Authorization"] = `token ${newToken?.token}`;
                 }
             }
+            (config as any).installationId ? delete (config as any).installationId : null;
             return config;
         })
     }
 
-   async refreshAccessToken(installationId:string){
+    async refreshAccessToken(installationId:string){
           try {
              const route = `app/installations/${installationId}/access_tokens`;
              const token = await createGithubJwt();
@@ -69,7 +70,7 @@ export class GithubExternalService {
             } as GithubAxiosRequestConfig);
              res.data && this._accessTokenCache.set(installationId, {
                 token: res.data.token,
-                expiresAt: Date.now() + (res.data.expires_in * 1000 - 3000) 
+                expiresAt: new Date(res.data.expires_at).getTime() - 3000
             });
             return res.data.token;
           } catch (e:any) {
@@ -86,7 +87,6 @@ export class GithubExternalService {
           }
     }
     
-
     private formatRepositoryData(repo: any) {
         if (repo instanceof Array) {
             return repo.map(r => ({
@@ -108,21 +108,22 @@ export class GithubExternalService {
             };
         }
     }
-    
-    async  getUserRepositories(installationId:string,limit:number,skip:number): Promise<GitHubRepository[]> {
+
+    async  getUserRepositories(installationId:string,limit?:number,skip?:number): Promise<GitHubRepository[]> {
         try {
-            const route = `/installations/${installationId}/repositories`;
+            const pagination = {
+                    ...(limit ? {per_page: limit} : {}),
+                    ...(skip && limit ? {page: Math.floor(skip/limit) + 1} : {})
+            }
+            const route = `/installation/repositories`;
             const res = await this._axiosInstance.get(route,{
                 headers:{
                     "X-GitHub-Api-Version":"2022-11-28"
                 },
                 installationId,
-                params:{
-                    per_page:limit,
-                    page:Math.floor(skip/limit) + 1
-                }
+                params:pagination
             } as GithubAxiosRequestConfig);
-            return this.formatRepositoryData(res.data) as GitHubRepository[];
+            return this.formatRepositoryData(res.data.repositories) as GitHubRepository[];
         } catch (e:any) {
             if(e instanceof AxiosError){
                 if(e.response?.headers["x-ratelimit-remaining"]==0){
@@ -144,28 +145,14 @@ export class GithubExternalService {
 
     async getRepositoryDetails(installationId:string, repoId:string):Promise<GitHubRepository> {
         try {
-            const route = `/repositories/${repoId}`;
-            const res = await this._axiosInstance.get(route,{
-                headers:{
-                    "X-GitHub-Api-Version":"2022-11-28",
-                },
-                installationId
-            } as GithubAxiosRequestConfig);
-            return this.formatRepositoryData(res.data) as GitHubRepository;
+            const repos = await this.getUserRepositories(installationId,100,0);
+            const repo = repos.find(r=>r.githubRepoId === repoId);
+            if (!repo) {
+                throw new GrpcAppError(status.NOT_FOUND,"Repository not found");
+            }
+            return repo;
         } catch (e:any) {
-            if (e instanceof GrpcAppError) {
-                throw e;
-            }
-            else if (e.response && e.response.status === 404) {
-                throw new GrpcAppError(status.NOT_FOUND,"Repository not found or user doesn't have access to it.");
-            }
-            else if (e.response && e.response.status === 403) {
-                throw new GrpcAppError(status.PERMISSION_DENIED,"User doesn't have permission to access this resource.");
-            }
-            else if(e.response?.headers["x-ratelimit-remaining"]==0){
-                throw new GrpcAppError(status.UNAVAILABLE,"User have made too many attempts, please try after sometime");
-            }
-            throw new GrpcAppError(status.INTERNAL,"Unexpected error occured",e);
+           throw e;
         }
     }
     
