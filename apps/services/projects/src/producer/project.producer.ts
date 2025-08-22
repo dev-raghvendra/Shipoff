@@ -17,7 +17,7 @@ export class ProjectProducer {
         try {
             const topic = TOPICS.PROJECT_TOPIC;
             const flattenedMessage = flatenObject(message) 
-            const messageId = await this._redisClient.xadd(topic,"*", ...flattenedMessage) 
+            const messageId = await this._redisClient.xadd(topic,"MAXLEN","100", "*", ...flattenedMessage) 
             return messageId;
         } catch (e:any) {
             throw new GrpcAppError(status.INTERNAL, "Failed to publish project created event",e)

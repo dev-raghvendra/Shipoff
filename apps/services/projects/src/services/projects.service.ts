@@ -67,7 +67,7 @@ export class ProjectsService {
     async getProject({authUserData,projectId}:GetProjectRequestBodyType){
         try {
             await this._authService.getPermissions({authUserData,permissions:["READ"],scope:"PROJECT",resourceId:projectId,errMsg:"You do not have permission to read this project"});
-            const project = await this._dbService.finUniqueProjectById(projectId,this._selectProjectFeilds);
+            const project = await this._dbService.findUniqueProjectById(projectId,this._selectProjectFeilds);
             return GrpcResponse.OK(project, "Project found");
         } catch (e:any) {
             return this._errHandler(e,"GET-PROJECT");

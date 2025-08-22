@@ -6,7 +6,7 @@
     "dev": "nodemon --exec ts-node -r tsconfig-paths/register ./src/server.ts",
     "generate": "prisma generate",
     "migrate:dev": "prisma migrate dev ",
-    "seed:db":"ts-node -r tsconfig-paths/register ./src/db/seed.ts"
+    "seed:db": "ts-node -r tsconfig-paths/register ./src/db/seed.ts"
   },
   "devDependencies": {
     "@shipoff/types": "workspace:*",
@@ -29,7 +29,6 @@
     "dotenv": "^17.2.1",
     "ioredis": "^5.7.0",
     "jsonwebtoken": "^9.0.2",
-    "octokit": "^5.0.3",
     "zod": "^4.0.5"
   },
   "license": "ISC"

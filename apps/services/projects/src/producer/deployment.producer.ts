@@ -17,8 +17,8 @@ export class DeploymentEventProducerService {
         try {
             const topic = TOPICS.DEPLOYMENT_TOPIC;
             const flattenedMessage = flatenObject(message);
-        const messageId = await this._redisClient.xadd(topic, "*", ...flattenedMessage)
-        return messageId;
+            const messageId = await this._redisClient.xadd(topic,"MAXLEN","100","*", ...flattenedMessage)
+            return messageId;
         } catch (e:any) {
             throw new GrpcAppError(status.INTERNAL, "Failed to publish deployment requested event", e);
         }

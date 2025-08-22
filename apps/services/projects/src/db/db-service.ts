@@ -14,9 +14,10 @@ const MODEL_MAP = {
 } as const;
 export class Database {
     private _client : PrismaClient;
-    constructor(){this._client = new PrismaClient()}
-     
-    
+    constructor(){
+        this._client = new PrismaClient();
+    }
+
     async createProject(body:CreateProjectRequestDBBodyType){
       try {
         const projectId = generateId("Project", MODEL_MAP);
@@ -79,7 +80,7 @@ export class Database {
       }
     }
 
-    async finUniqueProjectById(projectId:string,select?:Prisma.ProjectSelect){
+    async findUniqueProjectById(projectId:string,select?:Prisma.ProjectSelect){
         const res = await this._client.project.findUnique({where:{projectId},select});
         if(res)return res;
         throw new GrpcAppError(status.NOT_FOUND, "Project not found", {
