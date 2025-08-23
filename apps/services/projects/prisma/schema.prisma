@@ -24,6 +24,7 @@ model Project {
   createdAt              DateTime?  @default(now())
   updatedAt              DateTime?  @updatedAt
   framework              Framework  @relation(fields: [frameworkId], references: [frameworkId])
+  outDir                 String?   @default("")
 
   repository            Repository ?
   deployments           Deployment[]
@@ -49,6 +50,7 @@ model Framework {
   defaultBuildCommand   String
   defaultProdCommand    String?  @default("")
   runtime           Runtime  
+  outDir            String?  @default("")
 
   project         Project[]
 }

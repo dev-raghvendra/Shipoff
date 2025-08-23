@@ -210,6 +210,10 @@ message CreateGithubInstallationRequest {
     string installation_id = 2;
 }
 
+message IGetProjectRequest {
+    string projectId = 1;
+}
+
 // Responses
 message ProjectResponse {
     int32 code = 1;
@@ -329,4 +333,8 @@ service ProjectsService {
     rpc CreateGithubInstallation (CreateGithubInstallationRequest) returns (google.protobuf.Empty);
 
     rpc GetGithubRepoAccessToken (GetGithubRepoAccessTokenRequest) returns (GetGithubRepoAccessTokenResponse);
+
+    //internal rpcs
+    rpc IGetProject (IGetProjectRequest) returns (ProjectResponse);
+
 }

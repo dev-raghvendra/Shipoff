@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+message Container {
+    string containerId = 1;
+    string name = 2;
+    string domain = 3;
+    string status = 4;
+    string projectId = 5;
+    int32 nodePort = 6;
+    string createdAt = 7;
+    string updatedAt = 8;
+}
+
+message ContainerResponse {
+    int32 code = 1;
+    string message = 2;
+    Container container = 3;
+}
+
+message GetContainerRequest {
+    string domain = 1;
+}
+
+service OrchestratorService {
+    rpc GetContainer (GetContainerRequest) returns (ContainerResponse);
+}

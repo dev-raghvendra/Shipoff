@@ -1,6 +1,6 @@
 import { status } from "@grpc/grpc-js";
 import {GrpcResponse} from "./rpc-utils";
-import logger from "../libs/winston";
+import {logger} from "../libs/winston";
 
 export class GrpcAppError  {
   public code: number;

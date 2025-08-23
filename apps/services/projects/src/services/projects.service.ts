@@ -5,8 +5,9 @@ import { GrpcResponse } from "@shipoff/services-commons/utils/rpc-utils";
 import { BodyLessRequestBodyType, BulkResourceRequestBodyType } from "@shipoff/types";
 import { Database, dbService } from "@/db/db-service";
 import authExternalService, { AuthExternalService } from "@/externals/auth.external.service";
-import { CreateProjectRequestBodyType, DeleteEnvVarsRequestBodyType, GetEnvVarsRequestBodyType, GetProjectRequestBodyType, UpdateProjectRequestBodyType, UpsertEnvVarsRequestBodyType } from "@/types/projects";
+import { CreateProjectRequestBodyType, DeleteEnvVarsRequestBodyType, GetEnvVarsRequestBodyType, GetProjectRequestBodyType, IGetProjectRequestBodyType, UpdateProjectRequestBodyType, UpsertEnvVarsRequestBodyType } from "@/types/projects";
 import { ProjectProducer } from "@/producer/project.producer";
+
 
 export class ProjectsService {
     private _dbService: Database;
@@ -74,10 +75,18 @@ export class ProjectsService {
         }
     }
 
+    async IGetProject({projectId}:IGetProjectRequestBodyType){
+        try {
+            const project = await this._dbService.findUniqueProjectById(projectId,this._selectProjectFeilds);
+            return GrpcResponse.OK(project, "Project found");
+        } catch (e:any) {
+            return this._errHandler(e,"GET-PROJECT");
+        }
+    }
+
     async getAllUserProjects({authUserData}:BodyLessRequestBodyType){
         try {
             const projectIds = await this._authService.getUserProjectIds(authUserData);
-            if(!projectIds.length) throw new GrpcAppError(status.NOT_FOUND, "User does not have any projects");
             const projects = await this._dbService.findManyProjects({where:{
                 projectId:{in:projectIds}
             },

@@ -1,6 +1,6 @@
 import { status } from "@grpc/grpc-js";
 import { GetAuthClient } from "@shipoff/grpc-clients";
-import { AuthServiceClient ,User, HasPermissionsRequest, BodyLessRequest} from "@shipoff/proto";
+import { AuthServiceClient , HasPermissionsRequest, BodyLessRequest} from "@shipoff/proto";
 import { GrpcAppError, promisifyGrpcCall } from "@shipoff/services-commons";
 import { UserType, ScopesType, PermissionsType } from "@shipoff/types";
 
@@ -41,7 +41,7 @@ export class AuthExternalService {
                 authUserData
             })
         const res = await promisifyGrpcCall(this._authService.GetAllUserProjectIds, req, status.NOT_FOUND);
-        return res.res;
+        return res.res as string[];
         } catch (e:any) {
             if(e.code === status.NOT_FOUND){
                 throw new GrpcAppError(status.NOT_FOUND, "No projects found for this user");

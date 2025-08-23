@@ -9,10 +9,8 @@ export type ContainerEvent <T extends keyof typeof $ContainerEvent> = {
 
 export type DeploymentEvent <T extends keyof typeof $DeploymentEvent> =  {
     event:T;
-    repoFullName:string;
-    branch:string;
     projectId:string;
-    domain:string;
+    deploymentId:string;
 }
 
 export type AuthEvent<T extends keyof typeof $AuthEvent> = {

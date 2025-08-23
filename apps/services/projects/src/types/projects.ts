@@ -71,6 +71,11 @@ export const GetEnvVarsRequestSchema = z.object({
     projectId: z.string(),
 }).strict();
 
+export const IGetProjectRequestSchema = z.object({
+    projectId: z.string()
+}).strict();
+
+export type IGetProjectRequestBodyType = z.infer<typeof IGetProjectRequestSchema>;
 
 export type GetAllUserProjectRequestBodyType = z.infer<typeof GetAllUserProjectsRequestSchema>;
 export type GetAllUserProjectRequestDBBodyType = Omit<GetAllUserProjectRequestBodyType, "authUserData">;

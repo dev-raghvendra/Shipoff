@@ -79,13 +79,11 @@ export class DeploymentsService {
                 resourceId: projectId,
                 errMsg: "You do not have permission to delete this deployment"
             });
-            const deployment = await this._dbService.deleteDeploymentById(deploymentId);
+            await this._dbService.deleteDeploymentById(deploymentId);
             this._asyncErrHandler.call(this._deploymentProducer.publishDeploymentRequested({
                 event: "DELETED",
                 projectId,
-                domain: deployment.project.domain,
-                repoFullName: deployment.repository.githubRepoFullName,
-                branch: deployment.project.branch as string
+                deploymentId
             }),"DELETE-DEPLOYMENT");
             return GrpcResponse.OK({}, "Deployment deleted");
         } catch (e:any) {
@@ -106,9 +104,7 @@ export class DeploymentsService {
             this._asyncErrHandler.call(this._deploymentProducer.publishDeploymentRequested({
                 event:"CREATED",
                 projectId,
-                repoFullName:deployment.repository.githubRepoFullName,
-                branch:deployment.project.branch as string,
-                domain:deployment.project.domain as string
+                deploymentId
             }),"REDEPLOY-DEPLOYMENT");  
             return GrpcResponse.OK(deployment, "Deployment redeployed");
         } catch (e:any) {

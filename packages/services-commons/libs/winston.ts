@@ -15,6 +15,5 @@ const devLogger = createLogger({
 
 const productionLogger = {}
 
-const logger = process.env.ENV==="production" ? productionLogger : devLogger
-
-export default logger as winston.Logger
+export const logger = (process.env.ENV==="production" ? productionLogger : devLogger) as winston.Logger
+ 

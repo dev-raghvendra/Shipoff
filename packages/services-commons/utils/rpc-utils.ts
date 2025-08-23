@@ -1,7 +1,7 @@
 import { status } from "@grpc/grpc-js";
 import { ZodObject, ZodType } from 'zod';
 import { convertDatesToISO } from "./db-utils";
-import logger from "../libs/winston";
+import {logger} from "../libs/winston";
 
 export type RPC_SCHEMA_T<RPC_T extends string> = {
     [K in RPC_T]: {

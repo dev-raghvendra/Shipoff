@@ -1,7 +1,7 @@
 import { Redis } from "ioredis";
 import { PROJECT_TOPIC_CONSUMER_GROUPS, TOPICS } from "../config/config";
 import { GetRedisClient } from "../redis-client/client";
-import logger from "../../services-commons/libs/winston";
+import {logger} from "../../services-commons/libs/winston";
 import { $ProjectEvent, ProjectEvent } from "../types";
 import { createObject } from "../../services-commons";
 

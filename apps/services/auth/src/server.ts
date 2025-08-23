@@ -5,7 +5,7 @@ import {createValidator} from "@shipoff/services-commons"
 import { RPC_SCHEMA } from "@/config/rpc-schema";
 import TeamHandlers from "@/handlers/team.handler";
 import ProjectHandlers from "@/handlers/project.handlers";
-import logger from "@shipoff/services-commons/libs/winston";
+import {logger} from "@shipoff/services-commons";
 import SECRETS from "@/config/secrets";
 import { startProjectConsumer } from "./consumer/project.consumer";
 

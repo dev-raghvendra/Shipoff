@@ -1,6 +1,6 @@
 import { createRPCEntry, RPC_SCHEMA_T } from "@shipoff/services-commons";
 import { DeleteDeploymentRequestSchema, GetAllDeploymentsRequestSchema, GetDeploymentRequestSchema, RedeployRequestSchema } from "@/types/deployments";
-import { CreateProjectRequestSchema, DeleteEnvVarsRequestSchema, DeleteProjectRequestSchema, GetAllUserProjectsRequestSchema, GetEnvVarsRequestSchema, GetProjectRequestSchema, UpdateProjectRequestSchema, UpsertEnvVarsRequestSchema } from "@/types/projects";
+import { CreateProjectRequestSchema, DeleteEnvVarsRequestSchema, DeleteProjectRequestSchema, GetAllUserProjectsRequestSchema, GetEnvVarsRequestSchema, GetProjectRequestSchema, IGetProjectRequestSchema, UpdateProjectRequestSchema, UpsertEnvVarsRequestSchema } from "@/types/projects";
 import { CreateRepositoryRequestSchema, DeleteRepositoryRequestSchema, GetGithubRepositoryAccessTokenRequestSchema, GetGithubRepositoryDetailsRequestSchema, GetRepositoryRequestSchema, GetUserGithubRepositoriesRequestSchema } from "@/types/repositories";
 
 import { BodyLessRequestSchema, BulkResourceRequestSchema } from "@shipoff/types";
@@ -33,5 +33,6 @@ export const RPC_SCHEMA: RPC_SCHEMA_T<RPCs> = {
     CreateGithubInstallation: createRPCEntry(CreateGithubInstallationRequestSchema),
     GetGithubRepoAccessToken:createRPCEntry(GetGithubRepositoryAccessTokenRequestSchema),
     GetGithubInstallation: createRPCEntry(BodyLessRequestSchema),
+    IGetProject: createRPCEntry(IGetProjectRequestSchema),
 } as const;
 

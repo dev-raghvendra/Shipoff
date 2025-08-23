@@ -1,6 +1,6 @@
 import express, {  Request, Response } from 'express';
 import cors,{CorsOptions} from "cors"
-import logger from "@shipoff/services-commons/libs/winston";
+import {logger} from "@shipoff/services-commons/libs/winston";
 import authRouter from './routers/auth.router';
 import projectRouter from './routers/project.router';
 import webhookRouter from './routers/webhook.router';

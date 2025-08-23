@@ -1,6 +1,6 @@
 import { ZodTypeAny, parseAsync } from "zod";
 import { ServerUnaryCall, sendUnaryData, status } from "@grpc/grpc-js";
-import logger from "../libs/winston";
+import {logger} from "../libs/winston";
 
 // Protobuf-compatible message type check
 interface ProtobufMessage {
