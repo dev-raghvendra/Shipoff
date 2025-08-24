@@ -76,7 +76,8 @@ export class RepositoriesService {
               projectId:body.projectId,
               githubRepoFullName: body.githubRepoFullName,
               githubRepoId: body.githubRepoId,
-              githubRepoURI: body.githubRepoURI
+              githubRepoURI: body.githubRepoURI,
+              branch: body.branch
           })
           return GrpcResponse.OK(createdRepo,"Repository created");
        } catch (e:any) {

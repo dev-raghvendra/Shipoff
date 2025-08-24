@@ -1,4 +1,4 @@
-import {z, ZodType} from "zod"
+import {z, ZodRawShape, ZodType} from "zod"
 
 export const Scopes = z.enum(['PROJECT', 'DEPLOYMENT', 'TEAM', 'TEAM_MEMBER', 'PROJECT_MEMBER', 'TEAM_LINK', "REPOSITORY"]);
 export const Permissions = z.enum(['READ', 'CREATE', 'UPDATE', 'DELETE', 'SELF_DELETE', 'SELF_UPDATE', 'TRANSFER_OWNERSHIP']);
@@ -8,6 +8,7 @@ export type ProvidersType = z.infer<typeof Providers>;
 export const optNumWithDefaultValue = (defaultNum:number)=>z.number().int().nonnegative().transform(val => val == 0 ? undefined : val ).optional().default(defaultNum);
 export const optionalString = ()=> z.string().transform(str=>str.trim() ? str : undefined).optional()
 export const optionalArray = <T extends ZodType>(schema:T)=>z.array(schema).transform(arr => arr.length ? arr : undefined).optional()
+export const optionalObject = <T extends ZodRawShape>(schema:T)=>z.object(schema).transform(obj=>Object.entries(obj).some(([_, v])=>v === "")?undefined:obj).optional()
 
 export const UserSchema = z.object({
   fullName: z.string(),

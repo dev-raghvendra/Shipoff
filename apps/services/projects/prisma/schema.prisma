@@ -14,21 +14,20 @@ enum ProjectType {
 }
 
 model Project {
-  projectId              String    @id @default(uuid())
+  projectId              String      @id @default(uuid())
   name                   String  
-  domain                 String     @unique
-  prodCommand            String?   @default("")
-  buildCommand           String   @default("")
+  domain                 String      @unique
+  prodCommand            String?     @default("N/A")
+  buildCommand           String      
   frameworkId            String
-  branch                 String?  @default("main")
-  createdAt              DateTime?  @default(now())
-  updatedAt              DateTime?  @updatedAt
-  framework              Framework  @relation(fields: [frameworkId], references: [frameworkId])
-  outDir                 String?   @default("")
+  createdAt              DateTime?   @default(now())
+  updatedAt              DateTime?   @updatedAt
+  framework              Framework   @relation(fields: [frameworkId], references: [frameworkId])
+  outDir                 String    
 
-  repository            Repository ?
-  deployments           Deployment[]
-  environmentVariables  EnvironmentVariable[]
+  repository             Repository ?
+  deployments            Deployment[]
+  environmentVariables   EnvironmentVariable[]
 }
 
 model GithubInstallation {
@@ -48,29 +47,30 @@ model Framework {
   displayName       String   @unique
   applicationType   ProjectType
   defaultBuildCommand   String
-  defaultProdCommand    String?  @default("")
+  defaultProdCommand    String?  @default("N/A")
   runtime           Runtime  
-  outDir            String?  @default("")
+  outDir            String
 
   project         Project[]
 }
 
 
 model Repository {
-  repositoryId           String    @id @default(uuid())
+  repositoryId           String      @id @default(uuid())
   githubInstallationId   String 
-  githubRepoFullName     String    @unique
-  githubRepoId           String    @unique
-  githubRepoURI          String    @unique
-  projectId              String    @unique
-  createdAt              DateTime? @default(now())
-  updatedAt              DateTime? @updatedAt
+  githubRepoFullName     String      @unique
+  githubRepoId           String      @unique
+  githubRepoURI          String      @unique
+  projectId              String      @unique
+  branch                 String?     @default("main")
+  createdAt              DateTime?   @default(now())
+  updatedAt              DateTime?   @updatedAt
 
 
 
   deployments            Deployment[]
   project                Project @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
-githubInstallation     GithubInstallation @relation(fields: [githubInstallationId], references: [githubInstallationId])
+  githubInstallation     GithubInstallation @relation(fields: [githubInstallationId], references: [githubInstallationId])
 }
 
 

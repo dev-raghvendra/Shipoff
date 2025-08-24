@@ -1,5 +1,5 @@
-import {z} from "zod";
-import {optNumWithDefaultValue, UserSchema} from "@shipoff/types";
+import { z } from "zod";
+import { optionalObject, optionalString, optNumWithDefaultValue, UserSchema } from "@shipoff/types";
 
 
 export const GetRepositoryRequestSchema = z.object({
@@ -12,6 +12,7 @@ export const CreateRepositoryRequestSchema = z.object({
     projectId: z.string().min(1),
     githubRepoId:z.string().min(1),
     githubRepoFullName:z.string().min(1),
+    branch:z.string().min(1),
     githubRepoURI:z.string().min(1)
 }).strict();
 
@@ -19,6 +20,21 @@ export const DeleteRepositoryRequestSchema = z.object({
     authUserData: UserSchema,
     projectId: z.string().min(1),
 }).strict();
+
+export const RepositoryUpdatesSchema = z.object({
+    branch: optionalString(),
+    github: optionalObject({
+        githubRepoId: z.string().min(2),
+        githubRepoURI: z.url(),
+        githubRepoFullName: z.string().min(2)
+    })
+}).strict();
+
+export const UpdateRepositoryRequestSchema = z.object({
+    authUserData:UserSchema,
+    projectId:z.string(),
+    updates:RepositoryUpdatesSchema
+}).strict()
 
 
 export const GetGithubRepositoryAccessTokenRequestSchema = z.object({
@@ -37,6 +53,10 @@ export const GetGithubRepositoryDetailsRequestSchema = z.object({
     githubRepoId: z.string().min(1),
 }).strict();
 
+
+
+export type UpdateRepositoryRequestBodyType = z.infer<typeof UpdateRepositoryRequestSchema>;
+export type UpdateRepositoryRequestDBBodyType = z.infer<typeof RepositoryUpdatesSchema> 
 export type GetGithubRepositoryAccessTokenRequestBodyType = z.infer<typeof GetGithubRepositoryAccessTokenRequestSchema>;
 export type GetGithubRepositoryDetailsRequestBodyType = z.infer<typeof GetGithubRepositoryDetailsRequestSchema>;
 export type GetGithubRepositoryDetailsRequestDBBodyType = Omit<GetGithubRepositoryDetailsRequestBodyType, "authUserData">;

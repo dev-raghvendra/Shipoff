@@ -57,7 +57,6 @@ export class DeploymentsService {
                     project:{
                       select:{
                       domain:true,
-                      branch:true,
                       name:true,
                 }
                 },

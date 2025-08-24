@@ -27,15 +27,16 @@ export class Database {
             name: body.name,
             domain:body.domain,
             frameworkId:body.frameworkId,
-            branch:body.branch,
             prodCommand:body.prodCommand,
             buildCommand:body.buildCommand,
+            outDir:body.outDir,
             repository:{
                 create:{
                     repositoryId:generateId("Repository", MODEL_MAP),
                     githubRepoId:body.githubRepoId,
                     githubRepoFullName:body.githubRepoFullName,
                     githubRepoURI:body.githubRepoURI,
+                    branch:body.branch,
                     githubInstallationId:body.githubInstallationId
                 }
             },
@@ -80,9 +81,13 @@ export class Database {
       }
     }
 
-    async findUniqueProjectById(projectId:string,select?:Prisma.ProjectSelect){
+    async findUniqueProjectById<T extends Prisma.ProjectSelect | undefined>(projectId:string,select:T): Promise<
+  T extends undefined
+    ? Prisma.ProjectGetPayload<{}>
+    : Prisma.ProjectGetPayload<{ select: T }>
+>{
         const res = await this._client.project.findUnique({where:{projectId},select});
-        if(res)return res;
+        if(res)return res as any; 
         throw new GrpcAppError(status.NOT_FOUND, "Project not found", {
             projectId
         });
@@ -94,13 +99,16 @@ export class Database {
         throw new GrpcAppError(status.NOT_FOUND, "User does not have any projects");
     }
 
-    async updateProjectById({projectId,...data}:UpdateProjectRequestDBBodyType){
+    async updateProjectById({projectId,framework,...rest}:UpdateProjectRequestDBBodyType){
         try {
             const res = await this._client.project.update({
                 where:{
                     projectId
                 },
-                data
+                data:{
+                    ...rest,
+                    ...(framework ? {...framework} : {})
+                }
             })
             return res;
         } catch (e:any) {
@@ -112,7 +120,7 @@ export class Database {
                 }
                 else if(e.code === "P2002") {
                     throw new GrpcAppError(status.ALREADY_EXISTS, "Project with domain name already exists", {
-                        domain: data.domain
+                        domain: rest.domain
                     });
                 }
             }
@@ -173,14 +181,14 @@ export class Database {
                     project:{
                         select:{
                             projectId:true,
-                            domain:true,
-                            branch:true
+                            domain:true
                         }
                     },
                     repository:{
                         select:{
                             githubRepoFullName:true,
-                            githubRepoId:true
+                            githubRepoId:true,
+                            branch:true
                         }
                     },
                     commitHash:true,
@@ -210,14 +218,14 @@ export class Database {
                     project:{
                         select:{
                             projectId:true,
-                            domain:true,
-                            branch:true
+                            domain:true
                         }
                     },
                     repository:{
                         select:{
                             githubRepoFullName:true,
-                            githubRepoId:true
+                            githubRepoId:true,
+                            branch:true
                         }
                     },
                     commitHash:true,

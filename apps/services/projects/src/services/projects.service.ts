@@ -1,6 +1,5 @@
-import { status } from "@grpc/grpc-js";
 import { Prisma } from "@prisma/index";
-import { createAsyncErrHandler, createGrpcErrorHandler, GrpcAppError } from "@shipoff/services-commons";
+import { createAsyncErrHandler, createGrpcErrorHandler } from "@shipoff/services-commons";
 import { GrpcResponse } from "@shipoff/services-commons/utils/rpc-utils";
 import { BodyLessRequestBodyType, BulkResourceRequestBodyType } from "@shipoff/types";
 import { Database, dbService } from "@/db/db-service";
@@ -25,7 +24,6 @@ export class ProjectsService {
                 name:true,
                 domain:true,
                 framework:true,
-                branch:true,
                 buildCommand:true,
                 prodCommand:true,
                 projectId:true,
@@ -46,7 +44,9 @@ export class ProjectsService {
     async createProject({authUserData:{userId},...body}: CreateProjectRequestBodyType) {
         try {
            const fw = await this._dbService.findUniqueFrameworkById(body.frameworkId);
-           if(!fw.defaultProdCommand) delete body.prodCommand;
+           if(fw.applicationType==="STATIC"){
+               delete body.prodCommand;
+           }
            const {githubInstallationId} = await this._dbService.findUniqueGithubInstallation({
             where:{
                 userId
@@ -106,13 +106,10 @@ export class ProjectsService {
                 errMsg:"You do not have permission to update this project",
                 permissions:["UPDATE"]
             });
-            if(body.updates.frameworkId){
-                const fw = await this._dbService.findUniqueFrameworkById(body.updates.frameworkId);
-                if(!fw.defaultProdCommand){
-                  delete body.updates.prodCommand;
-                }
+            if(body.updates.framework){
+               await this._dbService.findUniqueFrameworkById(body.updates.framework.frameworkId);
             }
-            const project = await this._dbService.updateProjectById(body as any);
+            const project = await this._dbService.updateProjectById(body);
             return GrpcResponse.OK(project, "Project updated");
         } catch (e:any) {
             return this._errHandler(e, "UPDATE-PROJECT");

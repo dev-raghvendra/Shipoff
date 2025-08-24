@@ -28,6 +28,7 @@ message Repository {
     string createdAt = 6;
     string updatedAt = 7;
     string githubInstallationId = 8;
+    string branch = 9;
 }
 
 message Deployment {
@@ -50,6 +51,7 @@ message Project {
     string createdAt = 7;
     string updatedAt = 8;
     Repository repository = 9;
+    string outDir = 11;
     repeated EnviornmentVariables environmentVars = 10;
 }
 
@@ -84,10 +86,12 @@ message GithubInstallation {
 message ProjectUpdates {
      string name = 1;
      string domain = 2;
-     string frameworkId = 3;
-     string buildCommand = 4;
-     string productionCommand = 5;
-     string branch = 6;
+     message framework {
+         string frameworkId = 1;
+         string buildCommand = 2;
+         string prodCommand = 3;
+     }
+     string outDir = 4;
 }
 
 // Requests
@@ -102,8 +106,9 @@ message CreateProjectRequest {
     string buildCommand = 7;
     string prodCommand = 8;
     string branch = 9;
-    repeated EnviornmentVariablesKeyValue environmentVars = 10;
-    string domain = 11;
+    string outDir = 10;
+    repeated EnviornmentVariablesKeyValue environmentVars = 11;
+    string domain = 12;
 }
 
 message UpdateProjectRequest {
@@ -174,8 +179,22 @@ message CreateRepositoryRequest {
     User authUserData = 1;
     string githubRepoId = 2;
     string projectId = 3;
-    string githubRepoFullName = 4;
-    string githubRepoURI = 5;
+    string branch = 4;
+    string githubRepoFullName = 5;
+    string githubRepoURI = 6;
+}
+
+message UpdateRepositoryRequest {
+    User authUserData = 1;
+    string projectId = 2;
+    message updates {
+        string branch = 3;
+        message github {
+          string githubRepoId = 1;
+          string githubRepoURI = 2;
+          string githubRepoFullName = 3;
+        }
+    }
 }
 
 message DeleteRepositoryRequest {
@@ -318,6 +337,7 @@ service ProjectsService {
 
     // Repository
     rpc GetRepository (GetRepositoryRequest) returns (RepositoryResponse);
+    rpc UpdateRepository (UpdateRepositoryRequest) returns (RepositoryResponse);
     rpc CreateRepository (CreateRepositoryRequest) returns (RepositoryResponse);
     rpc DeleteRepository (DeleteRepositoryRequest) returns (RepositoryResponse);
 

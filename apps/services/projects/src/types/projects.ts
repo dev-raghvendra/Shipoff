@@ -1,4 +1,4 @@
-import {optionalArray, optionalString, optNumWithDefaultValue, UserSchema} from "@shipoff/types"
+import {optionalArray, optionalObject, optionalString, optNumWithDefaultValue, UserSchema} from "@shipoff/types"
 import z from "zod";
 
 export const EnvVarsSchema = z.object({
@@ -17,6 +17,7 @@ export const CreateProjectRequestSchema = z.object({
      githubRepoId:z.string().min(1),
      githubRepoURI:z.url(),
      githubRepoFullName:z.string().min(1),
+     outDir:z.string().min(2),
      environmentVars:optionalArray(EnvVarsSchema)
 }).strict();
 
@@ -35,11 +36,15 @@ export const GetAllUserProjectsRequestSchema = z.object({
 export const updatesSchema = z.object({
     name: optionalString(),
     domain: optionalString(),
-    frameworkId: optionalString(),
-    buildCommand: optionalString(),
-    prodCommand: optionalString(),
-    branch: optionalString(), 
+    framework:optionalObject({
+        frameworkId: z.string().min(2),
+        buildCommand: z.string().min(2),
+        prodCommand: z.string().min(2),
+    }),
+    outDir: optionalString()
 }).strict();
+
+
 export const UpdateProjectRequestSchema = z.object({
     authUserData: UserSchema,
     projectId: z.string(),
@@ -75,8 +80,8 @@ export const IGetProjectRequestSchema = z.object({
     projectId: z.string()
 }).strict();
 
-export type IGetProjectRequestBodyType = z.infer<typeof IGetProjectRequestSchema>;
 
+export type IGetProjectRequestBodyType = z.infer<typeof IGetProjectRequestSchema>;
 export type GetAllUserProjectRequestBodyType = z.infer<typeof GetAllUserProjectsRequestSchema>;
 export type GetAllUserProjectRequestDBBodyType = Omit<GetAllUserProjectRequestBodyType, "authUserData">;
 export type DeleteProjectRequestBodyType = z.infer<typeof DeleteProjectRequestSchema>;
