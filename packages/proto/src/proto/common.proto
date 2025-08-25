@@ -22,3 +22,8 @@ message BulkResourceRequest {
    int32 limit = 3;
 }
 
+
+message EnviornmentVariablesKeyValue {
+    string envName = 1;
+    string envValue = 2;
+}

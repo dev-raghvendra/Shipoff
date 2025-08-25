@@ -11,14 +11,13 @@ CREATE TYPE "Runtime" AS ENUM ('NODEJS', 'PYTHON', 'PHP');
 CREATE TABLE "Project" (
     "projectId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "projectType" "ProjectType" NOT NULL,
     "domain" TEXT NOT NULL,
-    "productionCommand" TEXT DEFAULT '',
-    "buildCommand" TEXT NOT NULL DEFAULT '',
+    "prodCommand" TEXT DEFAULT 'N/A',
+    "buildCommand" TEXT NOT NULL,
     "frameworkId" TEXT NOT NULL,
-    "branch" TEXT DEFAULT 'main',
     "createdAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3),
+    "outDir" TEXT NOT NULL,
 
     CONSTRAINT "Project_pkey" PRIMARY KEY ("projectId")
 );
@@ -41,9 +40,10 @@ CREATE TABLE "Framework" (
     "name" TEXT NOT NULL,
     "displayName" TEXT NOT NULL,
     "applicationType" "ProjectType" NOT NULL,
-    "defaultBuildCmd" TEXT NOT NULL,
-    "defaultProdCmd" TEXT DEFAULT '',
+    "defaultBuildCommand" TEXT NOT NULL,
+    "defaultProdCommand" TEXT DEFAULT 'N/A',
     "runtime" "Runtime" NOT NULL,
+    "outDir" TEXT NOT NULL,
 
     CONSTRAINT "Framework_pkey" PRIMARY KEY ("frameworkId")
 );
@@ -52,10 +52,11 @@ CREATE TABLE "Framework" (
 CREATE TABLE "Repository" (
     "repositoryId" TEXT NOT NULL,
     "githubInstallationId" TEXT NOT NULL,
-    "githubRepoName" TEXT NOT NULL,
+    "githubRepoFullName" TEXT NOT NULL,
     "githubRepoId" TEXT NOT NULL,
     "githubRepoURI" TEXT NOT NULL,
     "projectId" TEXT NOT NULL,
+    "branch" TEXT DEFAULT 'main',
     "createdAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3),
 
@@ -100,7 +101,7 @@ CREATE UNIQUE INDEX "Framework_name_key" ON "Framework"("name");
 CREATE UNIQUE INDEX "Framework_displayName_key" ON "Framework"("displayName");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Repository_githubRepoName_key" ON "Repository"("githubRepoName");
+CREATE UNIQUE INDEX "Repository_githubRepoFullName_key" ON "Repository"("githubRepoFullName");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Repository_githubRepoId_key" ON "Repository"("githubRepoId");

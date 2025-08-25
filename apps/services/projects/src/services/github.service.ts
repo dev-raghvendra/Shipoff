@@ -44,7 +44,7 @@ export class GithubService {
             }
         }
 
-        async getGithubRepoAccessToken({githubRepoId}:{githubRepoId:string}){
+        async IGetGithubRepoAccessToken({githubRepoId}:{githubRepoId:string}){
             try {
                 const repo = await this._dbService.findUniqueRepository({
                     where:{

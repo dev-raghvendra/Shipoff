@@ -18,6 +18,7 @@ RUN aws --version
 WORKDIR /app
 
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+COPY build.sh /build.sh
+RUN chmod +x /entrypoint.sh /build.sh
 
 ENTRYPOINT ["/entrypoint.sh"]

@@ -1,5 +1,5 @@
 import { ServerUnaryCall, sendUnaryData, status } from "@grpc/grpc-js";
-import { GetUserGithubReposRequest, AllGithubReposResponse, GetGithubRepoRequest, GithubRepoResponse, GetGithubRepoAccessTokenRequest, GetGithubRepoAccessTokenResponse, BodyLessRequest, GithubInstallation, GithubInstallationResponse, DeploymentResponse, google } from "@shipoff/proto";
+import { GetUserGithubReposRequest, AllGithubReposResponse, GetGithubRepoRequest, GithubRepoResponse, IGetGithubRepoAccessTokenRequest, BodyLessRequest, GithubInstallationResponse, DeploymentResponse, google, GetGithubRepoAccessTokenResponse } from "@shipoff/proto";
 import { BodyLessRequestBodyType } from "@shipoff/types";
 import { GithubService } from "@/services/github.service";
 import { GetUserGithubRepositoriesRequestBodyType, GetGithubRepositoryDetailsRequestBodyType, GetGithubRepositoryAccessTokenRequestBodyType } from "@/types/repositories";
@@ -40,9 +40,9 @@ export class GithubHandlers {
         }
     }  
 
-    async handleGithubRepoAccessToken(call: ServerUnaryCall<GetGithubRepoAccessTokenRequest & { body: GetGithubRepositoryAccessTokenRequestBodyType }, GetGithubRepoAccessTokenResponse>, callback: sendUnaryData<GetGithubRepoAccessTokenResponse>) {
+    async handleGithubRepoAccessToken(call: ServerUnaryCall<IGetGithubRepoAccessTokenRequest & { body: GetGithubRepositoryAccessTokenRequestBodyType }, GetGithubRepoAccessTokenResponse>, callback: sendUnaryData<GetGithubRepoAccessTokenResponse>) {
         try {
-            const { code, res, message } = await this._githubService.getGithubRepoAccessToken(call.request);
+            const { code, res, message } = await this._githubService.IGetGithubRepoAccessToken(call.request);
             if (code !== 0) return callback({ code, message });
             const response = GetGithubRepoAccessTokenResponse.fromObject({ code, message, res });
             return callback(null, response);

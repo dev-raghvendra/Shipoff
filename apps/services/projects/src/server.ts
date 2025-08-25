@@ -5,7 +5,7 @@ import { DeploymentsHandlers } from "@/handlers/deployments.handlers";
 import { GithubWebhookHandlers } from "@/handlers/github-webhook.handlers";
 import { RepositoriesHandlers } from "@/handlers/repositories.handlers";
 import { createValidator } from "@shipoff/services-commons";
-import { IGetProjectRequest, UnimplementedProjectsServiceService } from "@shipoff/proto";
+import { UnimplementedProjectsServiceService } from "@shipoff/proto";
 import { RPC_SCHEMA } from "@/config/rpc-schema";
 import { SECRETS } from "@/config/secrets";
 import {logger} from "@shipoff/services-commons/libs/winston";
@@ -43,7 +43,7 @@ server.addService(UnimplementedProjectsServiceService.definition, {
     CreateGithubInstallation: validateRPCBody("CreateGithubInstallation", githubHandlers.handleCreateGithubInstallation.bind(githubHandlers)),
     GetFrameworks: validateRPCBody("GetFrameworks", projectsHandlers.handleGetFrameworks.bind(projectsHandlers)),
     GetGithubInstallation:validateRPCBody("GetGithubInstallation", githubHandlers.handleGetGithubInstallation.bind(githubHandlers)),
-    IGetProjectRequest: validateRPCBody("IGetProject", projectsHandlers.IHandleGetProject.bind(projectsHandlers)),
+    IGetProjectRequest: validateRPCBody("IGetProject", projectsHandlers.handleIGetProject.bind(projectsHandlers)),
 });
 
 server.bindAsync(`${SECRETS.HOST}:${SECRETS.PORT}`,ServerCredentials.createInsecure(),(err)=>{

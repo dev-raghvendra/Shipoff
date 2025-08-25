@@ -1,4 +1,5 @@
 syntax = "proto3";
+import "common.proto";
 
 message Container {
     string containerId = 1;
@@ -14,13 +15,28 @@ message Container {
 message ContainerResponse {
     int32 code = 1;
     string message = 2;
-    Container container = 3;
+    Container res = 3;
 }
 
-message GetContainerRequest {
+message IGetContainerRequest {
     string domain = 1;
 }
 
-service OrchestratorService {
-    rpc GetContainer (GetContainerRequest) returns (ContainerResponse);
+message IGetContainerCredsRequest {
+    string jwt = 1;
 }
+
+message ContainerCredsResponse {
+    int32 code = 1;
+    string message = 2;
+    repeated EnviornmentVariablesKeyValue res = 3;
+}
+
+
+
+service OrchestratorService {
+    rpc IGetContainer (IGetContainerRequest) returns (ContainerResponse);
+    rpc IGetBuildContainerCreds (IGetContainerCredsRequest) returns (ContainerCredsResponse);
+    rpc IGetProdContainerCreds (IGetContainerCredsRequest) returns (ContainerCredsResponse);
+}
+

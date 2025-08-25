@@ -1,7 +1,7 @@
 import { createRPCEntry, RPC_SCHEMA_T } from "@shipoff/services-commons";
 import { DeleteDeploymentRequestSchema, GetAllDeploymentsRequestSchema, GetDeploymentRequestSchema, RedeployRequestSchema } from "@/types/deployments";
 import { CreateProjectRequestSchema, DeleteEnvVarsRequestSchema, DeleteProjectRequestSchema, GetAllUserProjectsRequestSchema, GetEnvVarsRequestSchema, GetProjectRequestSchema, IGetProjectRequestSchema, UpdateProjectRequestSchema, UpsertEnvVarsRequestSchema } from "@/types/projects";
-import { CreateRepositoryRequestSchema, DeleteRepositoryRequestSchema, GetGithubRepositoryAccessTokenRequestSchema, GetGithubRepositoryDetailsRequestSchema, GetRepositoryRequestSchema, GetUserGithubRepositoriesRequestSchema } from "@/types/repositories";
+import { CreateRepositoryRequestSchema, DeleteRepositoryRequestSchema, GetGithubRepositoryAccessTokenRequestSchema, GetGithubRepositoryDetailsRequestSchema, GetRepositoryRequestSchema, GetUserGithubRepositoriesRequestSchema, UpdateRepositoryRequestSchema } from "@/types/repositories";
 
 import { BodyLessRequestSchema, BulkResourceRequestSchema } from "@shipoff/types";
 import { UnimplementedProjectsServiceService } from "@shipoff/proto";
@@ -31,8 +31,9 @@ export const RPC_SCHEMA: RPC_SCHEMA_T<RPCs> = {
     GetUserGithubRepos: createRPCEntry(GetUserGithubRepositoriesRequestSchema),
     GithubWebhook: createRPCEntry(GithubWebhookSchema),
     CreateGithubInstallation: createRPCEntry(CreateGithubInstallationRequestSchema),
-    GetGithubRepoAccessToken:createRPCEntry(GetGithubRepositoryAccessTokenRequestSchema),
+    IGetGithubRepoAccessToken:createRPCEntry(GetGithubRepositoryAccessTokenRequestSchema),
     GetGithubInstallation: createRPCEntry(BodyLessRequestSchema),
     IGetProject: createRPCEntry(IGetProjectRequestSchema),
+    UpdateRepository: createRPCEntry(UpdateRepositoryRequestSchema),
 } as const;
 

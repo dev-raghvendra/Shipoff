@@ -3,6 +3,7 @@ import path from "path";
 import {cwd} from "process";
 configDotenv({path:path.join(cwd(),"../../../packages/grpc-clients",".env")});
 export const CONFIG = {
-    GRPC_AUTH_SERVICE_URL: String(process.env.GRPC_AUTH_SERVICE_URL || "localhost:50051"),
+    GRPC_AUTH_SERVICE_URL: String(process.env.GRPC_AUTH_SERVICE_URL || "localhost:50050"),
     GRPC_PROJECT_SERVICE_URL: String(process.env.GRPC_PROJECT_SERVICE_URL || "localhost:50051"),
+    GRPC_ORCHESTRATOR_SERVICE_URL: String(process.env.GRPC_ORCHESTRATOR_SERVICE_URL || "localhost:50052"),
 } as const

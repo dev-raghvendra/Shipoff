@@ -26,7 +26,7 @@ export class GithubWebhookService {
                 githubRepoId:parsedPayload.repository.id.toString()
             }
           })
-          if(parsedPayload.ref.replace("refs/heads/","") !== repo.project.branch) return GrpcResponse.OK(null, "No new deployment, branch is same as last deployment");
+          if(parsedPayload.ref.replace("refs/heads/","") !== repo.branch) return GrpcResponse.OK(null, "No new deployment, branch is same as last deployment");
               const deploymentData  : CreateDeploymentRequestDBBodyType = {
               projectId:repo.projectId,
               commitHash:parsedPayload.head_commit?.id || "unknown",
@@ -35,18 +35,15 @@ export class GithubWebhookService {
               author:parsedPayload.head_commit?.author.name || "unknown",
               repositoryId:repo.repositoryId
           }
-          const res = await Promise.all([
-              this._dbService.createDeployment(deploymentData),
-              this._deploymentProducer.publishDeploymentRequested({
-                  event:$DeploymentEvent.CREATED,
-                  repoFullName:repo.githubRepoFullName,
-                  branch:repo.project.branch,
-                  projectId:repo.projectId,
-                  domain:repo.project.domain
-              })
-          ]);
-          
-          return GrpcResponse.OK(res, "Deployment created");
+            const deployment = await this._dbService.createDeployment(deploymentData);
+            await this._deploymentProducer.publishDeploymentRequested({
+                event:$DeploymentEvent.CREATED,
+                projectId:repo.projectId,
+                domain:repo.project.domain,
+                deploymentId:deployment.deploymentId
+            });
+
+          return GrpcResponse.OK(deployment, "Deployment created");
        } catch (e:any) {
            return this._errHandler(e, "CREATE-DEPLOYMENT");
        }

@@ -11,6 +11,7 @@ export type DeploymentEvent <T extends keyof typeof $DeploymentEvent> =  {
     event:T;
     projectId:string;
     deploymentId:string;
+    domain:string
 }
 
 export type AuthEvent<T extends keyof typeof $AuthEvent> = {

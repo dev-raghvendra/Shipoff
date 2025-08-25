@@ -22,7 +22,7 @@ CREATE TABLE "User" (
     "avatarUri" TEXT NOT NULL,
     "emailVerified" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3),
     "provider" "ProviderType" NOT NULL,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("userId")
@@ -35,7 +35,7 @@ CREATE TABLE "Team" (
     "description" TEXT,
     "planType" TEXT NOT NULL DEFAULT 'free',
     "createdAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3),
 
     CONSTRAINT "Team_pkey" PRIMARY KEY ("teamId")
 );
@@ -55,7 +55,7 @@ CREATE TABLE "ProjectMember" (
     "role" "ProjectRoleType" NOT NULL,
     "projectId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3),
 
     CONSTRAINT "ProjectMember_pkey" PRIMARY KEY ("userId","projectId")
 );
@@ -66,8 +66,8 @@ CREATE TABLE "TeamMemberInvitation" (
     "role" "TeamRoleType" NOT NULL,
     "teamId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
-    "expiresAt" TIMESTAMP(3) NOT NULL DEFAULT (now() + interval '7 days'),
-    "updatedAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "expiresAt" TIMESTAMP(3) DEFAULT (now() + interval '7 days'),
+    "updatedAt" TIMESTAMP(3),
 
     CONSTRAINT "TeamMemberInvitation_pkey" PRIMARY KEY ("inviteId")
 );
@@ -79,7 +79,7 @@ CREATE TABLE "ProjectMemberInvitation" (
     "projectId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
     "expiresAt" TIMESTAMP(3) DEFAULT (now() + interval '7 days'),
-    "updatedAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3),
 
     CONSTRAINT "ProjectMemberInvitation_pkey" PRIMARY KEY ("inviteId")
 );
@@ -96,12 +96,6 @@ CREATE TABLE "TeamLink" (
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
--- CreateIndex
-CREATE UNIQUE INDEX "User_password_key" ON "User"("password");
-
--- CreateIndex
-CREATE UNIQUE INDEX "User_avatarUri_key" ON "User"("avatarUri");
-
 -- AddForeignKey
 ALTER TABLE "TeamMember" ADD CONSTRAINT "TeamMember_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("teamId") ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -113,3 +107,6 @@ ALTER TABLE "ProjectMember" ADD CONSTRAINT "ProjectMember_userId_fkey" FOREIGN K
 
 -- AddForeignKey
 ALTER TABLE "TeamMemberInvitation" ADD CONSTRAINT "TeamMemberInvitation_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("teamId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TeamLink" ADD CONSTRAINT "TeamLink_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("teamId") ON DELETE CASCADE ON UPDATE CASCADE;

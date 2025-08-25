@@ -11,11 +11,11 @@ export function createJwt(payload : object,expiry: StringValue | number = "1d"  
     })
 }
 
-export function verifyJwt(token:string){
+export function verifyJwt<T extends {}>(token:string):Promise<T>{
     return new Promise((res,rej)=>{
         jwt.verify(token, secret, (err, decoded)=>{
             if(err) return rej(false);
-            return res(decoded)
+            return res(decoded as T)
         })
     })
 }

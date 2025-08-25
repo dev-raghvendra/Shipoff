@@ -61,10 +61,6 @@ message EnviornmentVariables {
     string envValue = 3;
 }
 
-message EnviornmentVariablesKeyValue {
-    string envName = 1;
-    string envValue = 2;
-}
 
 message GithubRepository {
     string githubRepoId = 1;
@@ -299,7 +295,7 @@ message DeleteEnvVarsResponse {
     EnviornmentVariables res = 3;
 }
 
-message GetGithubRepoAccessTokenRequest {
+message IGetGithubRepoAccessTokenRequest {
     string githubRepoId = 1;
 }
 
@@ -352,9 +348,9 @@ service ProjectsService {
     rpc GithubWebhook (GithubWebhookRequest) returns (google.protobuf.Empty);
     rpc CreateGithubInstallation (CreateGithubInstallationRequest) returns (google.protobuf.Empty);
 
-    rpc GetGithubRepoAccessToken (GetGithubRepoAccessTokenRequest) returns (GetGithubRepoAccessTokenResponse);
-
+    
     //internal rpcs
+    rpc IGetGithubRepoAccessToken (IGetGithubRepoAccessTokenRequest) returns (GetGithubRepoAccessTokenResponse);
     rpc IGetProject (IGetProjectRequest) returns (ProjectResponse);
 
 }

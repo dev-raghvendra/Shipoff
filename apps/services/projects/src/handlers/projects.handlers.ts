@@ -38,7 +38,7 @@ export class ProjectsHandlers {
         }
     }
 
-    async IHandleGetProject(call:ServerUnaryCall<IGetProjectRequest & {body:IGetProjectRequestBodyType},ProjectResponse>,callback:sendUnaryData<ProjectResponse>) {
+    async handleIGetProject(call:ServerUnaryCall<IGetProjectRequest & {body:IGetProjectRequestBodyType},ProjectResponse>,callback:sendUnaryData<ProjectResponse>) {
         try {
             const {code,res,message} = await this._projectsService.IGetProject(call.request.body);
             if(code !== status.OK) return callback({code,message});
@@ -149,5 +149,6 @@ export class ProjectsHandlers {
             });
         }
     }
+    
 
 }

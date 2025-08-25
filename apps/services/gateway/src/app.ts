@@ -5,6 +5,7 @@ import authRouter from './routers/auth.router';
 import projectRouter from './routers/project.router';
 import webhookRouter from './routers/webhook.router';
 import githubRouter from './routers/github.router';
+import internalsRouter from './routers/internals.router';
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use(express.json());
 app.use("/apis/v1/auth",authRouter);
 app.use("/apis/v1/projects",projectRouter);
 app.use("/apis/v1/github",githubRouter);
+app.use("/apis/v1/internals",internalsRouter)
 
 
 app.use((_, res:Response) => {
