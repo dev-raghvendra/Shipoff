@@ -9,9 +9,9 @@ export class ContainerHandler {
         this._containerService = new ContainerService();
     }
 
-    async handleGetContainerByDomain(call:ServerUnaryCall<IGetContainerRequest & {body:GetContainerByDomainBodyType},ContainerResponse>,callback:sendUnaryData<ContainerResponse>){
+    async handleIGetContainerByDomain(call:ServerUnaryCall<IGetContainerRequest & {body:GetContainerByDomainBodyType},ContainerResponse>,callback:sendUnaryData<ContainerResponse>){
         try {
-            const {code,res,message} = await this._containerService.getContainerByDomain(call.request.body.domain);
+            const {code,res,message} = await this._containerService.IGetContainerByDomain(call.request.body.domain);
             if(code!==status.OK) return callback({code:code,message:message});
             const response = ContainerResponse.fromObject({code,res,message});
             return callback(null,response);
@@ -20,9 +20,9 @@ export class ContainerHandler {
         }
     }
 
-    async handleGetBuildContainerCreds(call:ServerUnaryCall<IGetContainerCredsRequest & {body:GetContainerCredsBodyType},ContainerCredsResponse>,callback:sendUnaryData<ContainerCredsResponse>){
+    async handleIGetBuildContainerCreds(call:ServerUnaryCall<IGetContainerCredsRequest & {body:GetContainerCredsBodyType},ContainerCredsResponse>,callback:sendUnaryData<ContainerCredsResponse>){
         try {
-            const {code,res,message} = await this._containerService.getBuildContainerCreds(call.request.body.jwt);
+            const {code,res,message} = await this._containerService.IGetBuildContainerCreds(call.request.body.jwt);
             if(code!==status.OK) return callback({code:code,message:message});
             const response = ContainerCredsResponse.fromObject({code,res,message});
             return callback(null,response);
@@ -31,9 +31,9 @@ export class ContainerHandler {
         }
     }
 
-    async handleGetProdContainerCreds(call:ServerUnaryCall<IGetContainerCredsRequest & {body:GetContainerCredsBodyType},ContainerCredsResponse>,callback:sendUnaryData<ContainerCredsResponse>){
+    async handleIGetProdContainerCreds(call:ServerUnaryCall<IGetContainerCredsRequest & {body:GetContainerCredsBodyType},ContainerCredsResponse>,callback:sendUnaryData<ContainerCredsResponse>){
         try {
-            const {code,res,message} = await this._containerService.getProdContainerCreds(call.request.body.jwt);
+            const {code,res,message} = await this._containerService.IGetProdContainerCreds(call.request.body.jwt);
             if(code!==status.OK) return callback({code:code,message:message});
             const response = ContainerCredsResponse.fromObject({code,res,message});
             return callback(null,response);

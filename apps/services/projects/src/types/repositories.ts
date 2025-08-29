@@ -28,7 +28,7 @@ export const RepositoryUpdatesSchema = z.object({
         githubRepoURI: z.url(),
         githubRepoFullName: z.string().min(2)
     })
-}).strict();
+}).strict();    
 
 export const UpdateRepositoryRequestSchema = z.object({
     authUserData:UserSchema,
@@ -64,7 +64,7 @@ export type GetUserGithubRepositoriesRequestBodyType = z.infer<typeof GetUserGit
 export type GetUserGithubRepositoriesRequestDBBodyType = Omit<GetUserGithubRepositoriesRequestBodyType, "authUserData">;
 export type GetRepositoryRequestBodyType = z.infer<typeof GetRepositoryRequestSchema>;
 export type GetRepositoryRequestDBBodyType = Omit<GetRepositoryRequestBodyType, "authUserData">;
-export type CreateRepositoryRequestBodyType = z.infer<typeof CreateRepositoryRequestSchema>;
-export type CreateRepositoryRequestDBBodyType = Omit<CreateRepositoryRequestBodyType & {githubInstallationId:string}, "authUserData">;
+export type CreateRepositoryRequestBodyType = Omit<z.infer<typeof CreateRepositoryRequestSchema>,"githubRepoFullName" | "githubRepoURI">;
+export type CreateRepositoryRequestDBBodyType = Omit<z.infer<typeof CreateRepositoryRequestSchema> & {githubInstallationId:string}, "authUserData">;
 export type DeleteRepositoryRequestBodyType = z.infer<typeof DeleteRepositoryRequestSchema>;
 export type DeleteRepositoryRequestDBBodyType = Omit<DeleteRepositoryRequestBodyType, "authUserData">;

@@ -9,7 +9,6 @@ export const SECRETS ={
     GITHUB_PAYLOAD_SECRET: String(process.env.GITHUB_PAYLOAD_SECRET),
     HOST: String(process.env.HOST),
     PORT: Number(process.env.PORT) || 50051,
-    GITHUB_APP_ID: Number(process.env.GITHUB_APP_ID),
-    ENV: String(process.env.ENV || "development"),
+    GITHUB_APP_ID: Number(process.env.GITHUB_APP_ID)
 } as const
 

@@ -1,0 +1,178 @@
+openapi: 3.0.3
+info:
+  title: Orchestrator Service API
+  description: Container orchestration service for managing build and production containers
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8000/apis/v1/internals
+    description: Development server
+  - url: https://api.shipoff.in/apis/v1/internals
+    description: Production server
+
+security:
+  - BearerAuth: []
+
+paths:
+  /containers/{type}/creds:
+    get:
+      tags:
+        - Container Management
+      summary: Get container credentials
+      description: Get environment variables and credentials for build or production containers
+      parameters:
+        - name: type
+          in: path
+          required: true
+          description: Container type (build or prod)
+          schema:
+            type: string
+            enum: [build, prod]
+            example: build
+      responses:
+        '200':
+          description: Container credentials retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContainerCredsResponse'
+        '400':
+          description: Bad request - Invalid container type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Container not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # Internal service endpoints (not exposed via gateway)
+  /containers:
+    get:
+      tags:
+        - Internal Container Operations
+      summary: Get container by domain (Internal)
+      description: Internal endpoint to get container information by domain
+      security: []
+      parameters:
+        - name: domain
+          in: query
+          required: true
+          description: Container domain
+          schema:
+            type: string
+            example: myapp.example.com
+      responses:
+        '200':
+          description: Container retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContainerResponse'
+        '404':
+          description: Container not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Container:
+      type: object
+      properties:
+        containerId:
+          type: string
+          example: "container_123456"
+        name:
+          type: string
+          example: "my-app-container"
+        domain:
+          type: string
+          example: "myapp.example.com"
+        status:
+          type: string
+          example: "running"
+          enum: [running, stopped, building, failed, pending]
+        projectId:
+          type: string
+          example: "project_789012"
+        nodePort:
+          type: integer
+          format: int32
+          example: 3000
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+    ContainerResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: "Container retrieved successfully"
+        res:
+          $ref: '#/components/schemas/Container'
+
+    EnvironmentVariablesKeyValue:
+      type: object
+      required:
+        - envName
+        - envValue
+      properties:
+        envName:
+          type: string
+          example: "DATABASE_URL"
+        envValue:
+          type: string
+          example: "postgresql://user:pass@host:5432/db"
+
+    ContainerCredsResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: "Container credentials retrieved successfully"
+        res:
+          type: array
+          items:
+            $ref: '#/components/schemas/EnvironmentVariablesKeyValue'
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: "Error message"
+        res:
+          type: object
+          nullable: true

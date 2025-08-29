@@ -1,3 +1,4 @@
+import { CONFIG } from "@/config/config";
 import { status } from "@grpc/grpc-js";
 import { GrpcAppError } from "@shipoff/services-commons";
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
@@ -29,7 +30,7 @@ export class GithubExternalService {
     private _exceptionRoutes : string[]
 
     constructor() {
-        this._BASE_URI = "https://api.github.com";
+        this._BASE_URI = CONFIG.GITHUB_API_BASE_URL;
         this._accessTokenCache = new Map();
         this._exceptionRoutes = [`/access_tokens`]
         this._axiosInstance = axios.create({

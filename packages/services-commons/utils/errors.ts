@@ -1,6 +1,7 @@
 import { status } from "@grpc/grpc-js";
 import {GrpcResponse} from "./rpc-utils";
 import {logger} from "../libs/winston";
+import { JsonWebTokenError, TokenExpiredError } from "jsonwebtoken";
 
 export class GrpcAppError  {
   public code: number;
@@ -22,10 +23,10 @@ export function createGrpcErrorHandler({
   serviceName: string;
 }) {
   return function handleError(error: GrpcAppError,origin: string) {
-    if(error.code!==status.INTERNAL){
-        return GrpcResponse.ERROR(error.code,error.message,error.res);
+    if(!Object.values(status).includes(error.code)){
+      return GrpcResponse.INTERNAL("Unexpected error occurred",origin,serviceName,error);
     }
-    return GrpcResponse.INTERNAL("Unexpected error occurred",origin,serviceName,error);
+    return GrpcResponse.ERROR(error.code,error.message,error.res);
   }
 }
 
@@ -34,5 +35,14 @@ export function createAsyncErrHandler({serviceName}:{serviceName:string}){
       this.catch((err) => {
           logger.error(`UNEXPECTED_ERROR_OCCURED_IN_${serviceName}_AT_${origin}: ${err}`);
       });
+   }
+}
+
+export function createJwtErrHandler({invalidErrMsg="Invalid access token",expiredErrMsg="Access token expired"}:{invalidErrMsg?:string,expiredErrMsg?:string}){
+   return function(e: JsonWebTokenError){
+      if(e instanceof TokenExpiredError){
+         return GrpcResponse.ERROR(status.UNAUTHENTICATED, expiredErrMsg)
+      }
+      return GrpcResponse.ERROR(status.UNAUTHENTICATED, invalidErrMsg)
    }
 }

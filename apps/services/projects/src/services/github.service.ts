@@ -51,7 +51,7 @@ export class GithubService {
                         githubRepoId
                     },
                     select:{
-                       githubInstallationId:true,
+                       githubInstallationId:true
                     }
                 })
                 const accessToken = await this._githubService.refreshAccessToken(repo.githubInstallationId);

@@ -1,20 +1,22 @@
 import jwt from "jsonwebtoken"
+import { JsonWebTokenError } from "jsonwebtoken"
 
-const secret = String(process.env.JWT_SECRET)
-
-export function createJwt(payload : object,expiry: StringValue | number = "1d"  ){
+export { JsonWebTokenError }
+export function createJwt(payload : object,expiry: StringValue | number = "1d"  ):Promise<string>{
+    const secret = String(process.env.JWT_SECRET)
     return new Promise((res,rej)=>{
         jwt.sign(payload, secret, {expiresIn:expiry}, (err, token)=>{
             if(err) return rej(err);
-            return res(token);
+            return res(token as string);
         })
     })
 }
 
 export function verifyJwt<T extends {}>(token:string):Promise<T>{
+    const secret = String(process.env.JWT_SECRET)
     return new Promise((res,rej)=>{
         jwt.verify(token, secret, (err, decoded)=>{
-            if(err) return rej(false);
+            if(err) return rej(err);
             return res(decoded as T)
         })
     })

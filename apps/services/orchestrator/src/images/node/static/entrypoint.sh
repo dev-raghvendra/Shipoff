@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 
@@ -27,178 +27,138 @@ error_exit(){
     exit 1
 }
 
-# Define sensitive environment variables to block from build process
-# Add any sensitive ENVs that should NOT be available to build
-BUILD_BLOCKED_ENVS="AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN BUCKET_NAME ENDPOINT_URL DATABASE_URL DB_PASSWORD API_SECRET PRIVATE_KEY TOKEN SECRET BUILD_SECRET"
-
-# Function to prepare isolated build environment
-prepare_build_env(){
-    local repo_dir=$1
-    local artifacts_dir=$2
+validate_creds(){
+    local status_code=$1
+    local error_msg="Failed to get creds from orchestrator"
     
-    # Create necessary directories
-    mkdir -p "$artifacts_dir"
-    mkdir -p /tmp/build_root/{bin,lib,lib64,usr/bin,usr/lib,etc,tmp,proc,dev}
-    
-    # Mount essential binaries and libraries for build process
-    # Node.js/npm related
-    [ -f /usr/bin/node ] && cp /usr/bin/node /tmp/build_root/usr/bin/
-    [ -f /usr/bin/npm ] && cp /usr/bin/npm /tmp/build_root/usr/bin/
-    [ -f /usr/bin/npx ] && cp /usr/bin/npx /tmp/build_root/usr/bin/
-    [ -f /usr/bin/yarn ] && cp /usr/bin/yarn /tmp/build_root/usr/bin/
-    
-    # Python related (if needed)
-    [ -f /usr/bin/python3 ] && cp /usr/bin/python3 /tmp/build_root/usr/bin/
-    [ -f /usr/bin/pip3 ] && cp /usr/bin/pip3 /tmp/build_root/usr/bin/
-    
-    # Essential system binaries
-    for binary in sh bash cp mv mkdir rm ls cat grep sed awk tar gzip; do
-        if [ -f "/bin/$binary" ]; then
-            cp "/bin/$binary" "/tmp/build_root/bin/"
-        elif [ -f "/usr/bin/$binary" ]; then
-            cp "/usr/bin/$binary" "/tmp/build_root/usr/bin/"
+    # Check HTTP status first
+    if [[ "$status_code" -ge 400 ]]; then
+        if [[ -f /tmp/creds.json ]] && [[ -s /tmp/creds.json ]] && jq empty /tmp/creds.json 2>/dev/null; then
+            local api_error=$(jq -r '.message // .error // empty' /tmp/creds.json 2>/dev/null)
+            if [[ -n "$api_error" ]]; then
+                error_msg="$api_error"
+            fi
         fi
-    done
-    
-    # Copy essential libraries
-    if [ -d /lib ]; then
-        cp -r /lib/* /tmp/build_root/lib/ 2>/dev/null || true
-    fi
-    if [ -d /lib64 ]; then
-        cp -r /lib64/* /tmp/build_root/lib64/ 2>/dev/null || true
-    fi
-    if [ -d /usr/lib ]; then
-        cp -r /usr/lib/* /tmp/build_root/usr/lib/ 2>/dev/null || true
+        error_exit "SYSTEM" "$error_msg"
     fi
     
-    # Copy essential configuration files
-    [ -f /etc/passwd ] && cp /etc/passwd /tmp/build_root/etc/
-    [ -f /etc/group ] && cp /etc/group /tmp/build_root/etc/
-    [ -f /etc/ld.so.conf ] && cp /etc/ld.so.conf /tmp/build_root/etc/
-    [ -d /etc/ssl ] && cp -r /etc/ssl /tmp/build_root/etc/ 2>/dev/null || true
-    
-    log "BUILD" "Build environment prepared with necessary binaries and libraries"
+    # For successful HTTP status, check if response indicates error
+    if [[ -f /tmp/creds.json ]] && [[ -s /tmp/creds.json ]] && jq empty /tmp/creds.json 2>/dev/null; then
+        # Check if res is null (indicates error even with 200)
+        if jq -e '.res == null' /tmp/creds.json >/dev/null 2>&1; then
+            local body_error=$(jq -r '.message // .error // "Failed to get creds from orchestrator"' /tmp/creds.json)
+            error_exit "SYSTEM" "$body_error"
+        fi
+    else
+        error_exit "SYSTEM" "$error_msg"
+    fi
 }
 
-# Function to run build in unshare isolated environment
-run_isolated_build(){
+# Define sensitive environment variables to unset from build process
+BUILD_BLOCKED_ENVS="AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY BUCKET_NAME ENDPOINT_URI S3_URI DOMAIN CONTAINER_SECRET REPO_BRANCH REPO_URI ORCHESTRATOR_ENDPOINT GITHUB_REPO_FULLNAME AWS_RESPONSE_CHECKSUM_VALIDATION AWS_REQUEST_CHECKSUM_CALCULATION"
+
+# Function to run build with filtered environment using env command
+run_filtered_build(){
     local repo_dir=$1
     local artifacts_dir=$2
     local build_command=$3
+    local out_dir=$4
+
+    # Create necessary directories
+    mkdir -p "$artifacts_dir"
     
-    # Prepare the build environment
-    prepare_build_env "$repo_dir" "$artifacts_dir"
+    # Execute build command with filtered environment
+    cd "$repo_dir"
     
-    # Build the environment variables string for the isolated process (exclude sensitive ones)
-    local build_env=""
-    for env_var in $(env | cut -d= -f1); do
-        # Check if this env var is in the blocked list
-        local is_blocked=""
-        for blocked_var in $BUILD_BLOCKED_ENVS; do
-            if [ "$env_var" = "$blocked_var" ]; then
-                is_blocked="yes"
-                break
-            fi
-        done
-        
-        # If not blocked, include it in build environment
-        if [ -z "$is_blocked" ]; then
-            local env_value=$(eval echo \$env_var)
-            if [ -n "$env_value" ]; then
-                build_env="$build_env export $env_var='$env_value';"
-            fi
-        fi
+    # Build the complete env command with proper argument handling
+    local env_cmd="env"
+    
+    # Add unset flags for blacklisted variables
+    for blocked_var in $BUILD_BLOCKED_ENVS; do
+        env_cmd="$env_cmd -u $blocked_var"
     done
     
-    log "BUILD" "Starting isolated build with unshare (PID, Mount namespaces)"
+    # Add build-specific variables
+    env_cmd="$env_cmd REPO_DIR=$repo_dir ARTIFACTS_DIR=$artifacts_dir"
     
-    # Create the isolation script
-
+    # Execute and capture exit code properly
+    log "BUILD" "Starting build with command: $build_command"
+    local build_exit_code=0
+    eval "$env_cmd sh -c '$build_command'" \
+        2> >(while IFS= read -r line; do log "BUILD" "ERROR: $line"; done) \
+        | while IFS= read -r line; do log "BUILD" "$line"; done
+    build_exit_code=${PIPESTATUS[0]}
     
-    # Create a temporary file to capture the exit status of the isolated process
-    local status_file="/tmp/build_status_$"
-    
-    # Run in isolated namespaces with bind mounts (keeping network access)
-    if ! unshare --pid --mount --fork sh -c "
-        # Mount proc for the new PID namespace
-        mount -t proc proc /tmp/build_root/proc
-        
-        # Bind mount the repository (read-only)
-        mkdir -p /tmp/build_root$repo_dir
-        mount --bind $repo_dir /tmp/build_root$repo_dir
-        mount -o remount,ro,bind /tmp/build_root$repo_dir
-        
-        # Bind mount artifacts directory (read-write)
-        mkdir -p /tmp/build_root$artifacts_dir
-        mount --bind $artifacts_dir /tmp/build_root$artifacts_dir
-        
-        # Bind mount build script
-        mount --bind /build.sh /tmp/build_root/tmp/build_script.sh
-        
-        # Change root and execute build
-
-        chroot /tmp/build_root /tmp/build_script.sh
-    " 2> >(while IFS= read -r line; do log "BUILD" "❌ $line"; done) \
-       | while IFS= read -r line; do log "BUILD" "$line"; done; then
-        error_exit "BUILD" "Build failed"
+    # Check if build failed and exit with same code
+    if [ $build_exit_code -ne 0 ]; then
+        error_exit "BUILD" "Build failed with exit code $build_exit_code"
     fi
-    
-    
+
+    if [ ! -d "$out_dir" ]; then
+        error_exit "BUILD" "Artifacts directory $out_dir does not exist"
+    fi
+
+    cp -r "$out_dir/." "$artifacts_dir/" || error_exit "BUILD" "Failed to copy artifacts from $out_dir to $artifacts_dir"
+
     # Check if build was successful
     if [ ! "$(ls -A $artifacts_dir 2>/dev/null)" ]; then
         error_exit "BUILD" "Build failed - no artifacts generated in $artifacts_dir"
     fi
     
-    # Cleanup
-    rm -rf /tmp/build_root /tmp/build_script.sh 2>/dev/null || true
-    
-    log "BUILD" "Build completed successfully in isolated environment"
+    log "BUILD" "Build completed successfully with filtered environment"
 }
 
 get_creds() {
-    curl "$ORCHESTRATOR" \
-        -H "Authorization: Bearer $BUILD_TOKEN" \
-        -s -o /tmp/creds.json || error_exit "SYSTEM" "Failed to fetch credentials from orchestrator"
+    # Capture HTTP status code
+    local http_code=$(curl "$ORCHESTRATOR_ENDPOINT/containers/build/creds" \
+        -H "Authorization: Bearer $CONTAINER_SECRET" \
+        -s -w "%{http_code}" -o /tmp/creds.json)
+    
+    # Check curl command itself (network errors)
+    if [[ $? -ne 0 ]]; then
+        error_exit "SYSTEM" "Failed to connect to orchestrator"
+    fi
+    
+    # Validate response
+    validate_creds "$http_code"
 
-  
-    jq -c '.res[]' /tmp/creds.json | while read -r env; do
+    # If we reach here, credentials are valid
+    while read -r env; do
         name=$(echo "$env" | jq -r '.envName')
         value=$(echo "$env" | jq -r '.envValue')
+        export "$name=$value"
+    done < <(jq -c '.res[]' /tmp/creds.json)
 
-    
-        # upper_snake=$(printf '%s' "$name" \
-        #     | sed -r 's/([a-z0-9])([A-Z])/\1_\2/g' \
-        #     | tr '[:lower:]' '[:upper:]')
-
-        export "$name"="$value"
-    done
+    log "SYSTEM" "Credentials loaded successfully"
 }
 
-
 # Main execution starts here
-log "SYSTEM" "📁 Cloning repository: $REPO_URI"
-
 get_creds
+log "SYSTEM" "📁 Cloning repository https://github.com/$GITHUB_REPO_FULLNAME with branch $REPO_BRANCH"
 
 # Set up directories
 REPO_DIR="/app/repo"
 ARTIFACTS_DIR="/app/artifacts"
+export AWS_REQUEST_CHECKSUM_CALCULATION=when_required
+export AWS_RESPONSE_CHECKSUM_VALIDATION=when_required
 
 # Clean any existing directories
 rm -rf "$REPO_DIR" "$ARTIFACTS_DIR" 2>/dev/null || true
 
 # Clone repository
 if ! git clone --branch "$REPO_BRANCH" --single-branch "$REPO_URI" "$REPO_DIR" 2>/var/log/git.log; then
-   error_exit "BUILD" "Failed to clone repository"
+   error_exit "BUILD" "Failed to clone repository: either the branch or repo does not exists or user hasn't granted access to it"
 fi
 
-# Run isolated build
-run_isolated_build "$REPO_DIR" "$ARTIFACTS_DIR" "$BUILD_COMMAND"
+# Run filtered build
+run_filtered_build "$REPO_DIR" "$ARTIFACTS_DIR" "$BUILD_COMMAND" "$OUT_DIR"
 
 log "SYSTEM" "📤 Deploying artifacts to $DOMAIN"
 
-# Deploy artifacts
-if ! aws s3 cp "$ARTIFACTS_DIR" "$S3_URI" --recursive --endpoint-url "$END_POINT_URI" 2>/var/log/aws.log; then
+cd "$ARTIFACTS_DIR"
+if ! aws s3 sync . "$S3_URI"  --endpoint-url "$ENDPOINT_URI"  2>/var/log/aws.log; then
+    log "RUNTIME" "AWS S3 upload error details:"
+    cat /var/log/aws.log | while IFS= read -r line; do log "RUNTIME" "❌ $line"; done
     error_exit "RUNTIME" "Failed to deploy artifacts to $DOMAIN"
 fi
 

@@ -1,4 +1,4 @@
-import { acceptProjectInvitationController, acceptTeamInvitationController, createProjectMemberInvitationController, createTeamController, createTeamMemberInviteController, deleteProjectMemberController, deleteTeamController, deleteTeamMemberController, getMeController, getProjectMemberController, getTeamController, getTeamMemberController, getTeamsController, loginController, OauthController, refreshTokenController, signinController } from "@/contollers/auth.controller";
+import { acceptProjectInvitationController, acceptTeamInvitationController, createProjectMemberInvitationController, createTeamController, createTeamMemberInviteController, deleteProjectMemberController, deleteTeamController, deleteTeamMemberController, getMeController, getProjectMemberController, getTeamController, getTeamMemberController, getTeamsController, getUserController, loginController, OauthController, refreshTokenController, signinController } from "@/contollers/auth.controller";
 import { authorizationMiddleware } from "@/middlewares/authorization.middleware";
 import { Router } from "express";
 
@@ -8,6 +8,7 @@ authRouter.post("/login",loginController);
 authRouter.post("/signin",signinController);
 authRouter.post("/oauth", OauthController);
 authRouter.get("/me", authorizationMiddleware, getMeController);
+authRouter.get("/users/:targetUserId",authorizationMiddleware,getUserController)
 authRouter.get("/refresh", authorizationMiddleware, refreshTokenController);
 authRouter.post("/teams", authorizationMiddleware, createTeamController);
 authRouter.get("/teams", authorizationMiddleware, getTeamsController);

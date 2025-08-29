@@ -10,7 +10,6 @@ servers:
   - url: https://api.shipoff.in/apis/v1/projects
     description: Production server
 
-    
 security:
   - BearerAuth: []
 
@@ -71,6 +70,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AllProjectsResponse'
+
+  /frameworks:
+    get:
+      tags:
+        - Frameworks
+      summary: Get frameworks
+      description: Get all available frameworks
+      responses:
+        '200':
+          description: Frameworks retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrameworkResponse'
 
   /{projectId}:
     get:
@@ -339,7 +352,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/UpsertEnvVarsResponse'
 
-  /{projectId}/env-vars/{env-name}:
+  /{projectId}/env-vars/{env_name}:
     delete:
       tags:
         - Environment Variables
@@ -352,7 +365,7 @@ paths:
           description: Project ID
           schema:
             type: string
-        - name: env-name
+        - name: env_name
           in: path
           required: true
           description: Environment variable name
@@ -431,6 +444,38 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+    patch:
+      tags:
+        - Repository
+      summary: Update repository
+      description: Update repository information
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRepositoryRequest'
+      responses:
+        '200':
+          description: Repository updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepositoryResponse'
+        '404':
+          description: Repository not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
     delete:
       tags:
         - Repository
@@ -457,20 +502,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /frameworks:
-    get:
-      tags:
-        - Frameworks
-      summary: Get frameworks
-      description: Get all available frameworks
-      responses:
-        '200':
-          description: Frameworks retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FrameworkResponse'
-
 components:
   securitySchemes:
     BearerAuth:
@@ -484,7 +515,10 @@ components:
       required:
         - name
         - githubRepoId
+        - githubRepoFullName
+        - githubRepoURI
         - frameworkId
+        - branch
       properties:
         name:
           type: string
@@ -504,12 +538,15 @@ components:
         buildCommand:
           type: string
           example: npm run build
-        productionCommand:
+        prodCommand:
           type: string
           example: npm start
         branch:
           type: string
           example: main
+        outDir:
+          type: string
+          example: dist
         environmentVars:
           type: array
           items:
@@ -521,31 +558,37 @@ components:
     UpdateProjectRequest:
       type: object
       properties:
-        name:
-          type: string
-          example: Updated Project Name
-        domain:
-          type: string
-          example: updated.example.com
-        frameworkId:
-          type: string
-          example: updated-framework-id
-        buildCommand:
-          type: string
-          example: npm run build:updated
-        productionCommand:
-          type: string
-          example: npm start:updated
-        branch:
-          type: string
-          example: develop
+        updates:
+          type: object
+          properties:
+            name:
+              type: string
+              example: Updated Project Name
+            domain:
+              type: string
+              example: updated.example.com
+            framework:
+              type: object
+              properties:
+                frameworkId:
+                  type: string
+                  example: updated-framework-id
+                buildCommand:
+                  type: string
+                  example: npm run build:updated
+                prodCommand:
+                  type: string
+                  example: npm start:updated
+            outDir:
+              type: string
+              example: build
 
     UpsertEnvVarsRequest:
       type: object
       required:
-        - environmentVars
+        - envs
       properties:
-        environmentVars:
+        envs:
           type: array
           items:
             $ref: '#/components/schemas/EnvironmentVariablesKeyValue'
@@ -554,16 +597,44 @@ components:
       type: object
       required:
         - githubRepoId
+        - branch
+        - githubRepoFullName
+        - githubRepoURI
       properties:
         githubRepoId:
           type: string
-          example: 123456789
+          example: "123456789"
+        branch:
+          type: string
+          example: main
         githubRepoFullName:
           type: string
           example: "my-org/my-repo"
         githubRepoURI:
           type: string
           example: "https://github.com/my-org/my-repo"
+
+    UpdateRepositoryRequest:
+      type: object
+      properties:
+        updates:
+          type: object
+          properties:
+            branch:
+              type: string
+              example: develop
+            github:
+              type: object
+              properties:
+                githubRepoId:
+                  type: string
+                  example: "987654321"
+                githubRepoURI:
+                  type: string
+                  example: "https://github.com/my-org/new-repo"
+                githubRepoFullName:
+                  type: string
+                  example: "my-org/new-repo"
 
     EnvironmentVariablesKeyValue:
       type: object
@@ -604,13 +675,15 @@ components:
         defaultBuildCommand:
           type: string
           example: npm run build
-        defaultProductionCommand:
+        defaultProdCommand:
           type: string
           example: npm start
         runtime:
           type: string
-          enum: [UNSPECIFIED_RUNTIME, NODEJS, PYTHON, PHP]
-          example: NODEJS
+          example: nodejs
+        name:
+          type: string
+          example: react
 
     Repository:
       type: object
@@ -621,9 +694,23 @@ components:
           type: string
         githubRepoId:
           type: string
-        githubRepoName:
+        githubRepoFullName:
           type: string
-          example: my-repo
+          example: "my-org/my-repo"
+        githubRepoURI:
+          type: string
+          example: "https://github.com/my-org/my-repo"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        githubInstallationId:
+          type: string
+        branch:
+          type: string
+          example: main
 
     Deployment:
       type: object
@@ -658,6 +745,15 @@ components:
           example: My Project
         framework:
           $ref: '#/components/schemas/Framework'
+        domain:
+          type: string
+          example: myproject.example.com
+        buildCommand:
+          type: string
+          example: npm run build
+        prodCommand:
+          type: string
+          example: npm start
         createdAt:
           type: string
           format: date-time
@@ -666,6 +762,9 @@ components:
           format: date-time
         repository:
           $ref: '#/components/schemas/Repository'
+        outDir:
+          type: string
+          example: dist
         environmentVars:
           type: array
           items:

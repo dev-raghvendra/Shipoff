@@ -39,11 +39,12 @@ server.addService(UnimplementedProjectsServiceService.definition, {
     UpsertEnvVars: validateRPCBody("UpsertEnvVars", projectsHandlers.handleUpsertProjectEnvironmentVariables.bind(projectsHandlers)),
     DeleteEnvVars: validateRPCBody("DeleteEnvVars", projectsHandlers.handleDeleteProjectEnvironmentVariables.bind(projectsHandlers)),
     GetEnvVars: validateRPCBody("GetEnvVars", projectsHandlers.handleGetProjectEnvironmentVariables.bind(projectsHandlers)),
+    GetFrameworks: validateRPCBody("GetFrameworks", projectsHandlers.handleGetFrameworks.bind(projectsHandlers)),
+    IGetProject: validateRPCBody("IGetProject", projectsHandlers.handleIGetProject.bind(projectsHandlers)),
     GithubWebhook: validateRPCBody("GithubWebhook", githubWebhookHandlers.handleGithubWebhook.bind(githubWebhookHandlers)),
     CreateGithubInstallation: validateRPCBody("CreateGithubInstallation", githubHandlers.handleCreateGithubInstallation.bind(githubHandlers)),
-    GetFrameworks: validateRPCBody("GetFrameworks", projectsHandlers.handleGetFrameworks.bind(projectsHandlers)),
     GetGithubInstallation:validateRPCBody("GetGithubInstallation", githubHandlers.handleGetGithubInstallation.bind(githubHandlers)),
-    IGetProjectRequest: validateRPCBody("IGetProject", projectsHandlers.handleIGetProject.bind(projectsHandlers)),
+    IGetGithubRepoAccessToken: validateRPCBody("IGetGithubRepoAccessToken", githubHandlers.handleIGithubRepoAccessToken.bind(githubHandlers))
 });
 
 server.bindAsync(`${SECRETS.HOST}:${SECRETS.PORT}`,ServerCredentials.createInsecure(),(err)=>{

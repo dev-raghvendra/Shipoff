@@ -2,20 +2,10 @@ import { GetOrchestratorClient } from "@shipoff/grpc-clients";
 import { IGetContainerCredsRequest, IGetContainerRequest, OrchestratorServiceClient } from "@shipoff/proto";
 import { promisifyGrpcCall } from "@shipoff/services-commons";
 
-export class InternalService {
+export class OrchestratorService {
   private _orchestratorService : OrchestratorServiceClient
   constructor() {
     this._orchestratorService = GetOrchestratorClient();
-  }
-
-  async getContainer(body:any){
-    try {
-        const req = IGetContainerRequest.fromObject(body)
-        const response = await promisifyGrpcCall(this._orchestratorService.IGetContainer.bind(this._orchestratorService), req);
-        return response;
-    } catch (e:any) {
-        return e;
-    }
   }
 
   async getBuildContainerCreds(body:any){
@@ -23,7 +13,7 @@ export class InternalService {
         const req = IGetContainerCredsRequest.fromObject(body)
         const response = await promisifyGrpcCall(this._orchestratorService.IGetBuildContainerCreds.bind(this._orchestratorService), req);
         return response;
-    } catch (e:any) {
+      } catch (e:any) {
         return e;
     }
   }

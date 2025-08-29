@@ -1,6 +1,7 @@
 import { CONFIG } from "@/config/config";
 import { SECRETS } from "@/config/secrets";
 import k8 from "@kubernetes/client-node"
+import { createJwt } from "@shipoff/services-commons";
 
 export class OrchestratorService {
     private _appsApi : k8.AppsV1Api;
@@ -19,7 +20,7 @@ export class OrchestratorService {
         this._batchApi = this._k8Config.makeApiClient(k8.BatchV1Api);
     }
 
-    async createBuildContainer({domain}: {domain:string}){
+    async createBuildContainer({domain,projectId}: {domain:string, projectId:string}){
         const res = await this._batchApi.createNamespacedJob({namespace:"default", body:{
             apiVersion:"batch/v1",
             kind:"Job",
@@ -34,6 +35,7 @@ export class OrchestratorService {
                         containers:[{
                             name:`build-container-${domain}-${Date.now()}`,
                             image:SECRETS.NODE_BUILDER_IMAGE,
+                            env:await this._getContainerEnvs("BUILD", projectId)
                         }],
                         restartPolicy:"Never"
                     }
@@ -44,7 +46,7 @@ export class OrchestratorService {
         return res;
     }
 
-    async createProdContainer({domain}: {domain:string}){
+    async createProdContainer({domain, projectId}: {domain:string, projectId:string}){
         const res = await this._appsApi.createNamespacedDeployment({namespace:"default",body:{
             apiVersion:"apps/v1",
             kind:"Deployment",
@@ -68,7 +70,8 @@ export class OrchestratorService {
                     spec:{
                         containers:[{
                             name:`prod-container-${domain}`,
-                            image:SECRETS.NODE_PROD_IMAGE
+                            image:SECRETS.NODE_PROD_IMAGE,
+                            env:await this._getContainerEnvs("PROD", projectId)
                         }]
                     }
                 }
@@ -78,4 +81,23 @@ export class OrchestratorService {
         return res;
     }
 
+
+     async generateContainerJwt(projectId:string){
+         try {
+            return await createJwt({projectId},"20m");
+         } catch (e:any) {
+            throw new Error(`Failed to generate JWT for container: ${e}`);
+         }
+    }
+
+
+    private async _getContainerEnvs(type:"BUILD"|"PROD",projectId:string){
+        return [{
+              name:"CONTAINER_SECRET",
+              value:await this.generateContainerJwt(projectId)
+        },{
+            name:"ORCHESTRATOR_ENDPOINT",
+            value:CONFIG.ORCHESTRATOR_ENDPOINT
+        }]
+    }
 }

@@ -24,6 +24,9 @@ export class GithubWebhookService {
           const repo = await this._dbService.findUniqueRepository({
             where:{
                 githubRepoId:parsedPayload.repository.id.toString()
+            },
+            include:{
+                project:true
             }
           })
           if(parsedPayload.ref.replace("refs/heads/","") !== repo.branch) return GrpcResponse.OK(null, "No new deployment, branch is same as last deployment");

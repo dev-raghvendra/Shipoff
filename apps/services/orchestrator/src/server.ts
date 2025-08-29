@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
+import { SECRETS } from "./config/secrets";
 import { createValidator, logger } from "@shipoff/services-commons";
 import { UnimplementedOrchestratorServiceService } from "@shipoff/proto";
-import { SECRETS } from "./config/secrets";
 import { Server, ServerCredentials } from "@grpc/grpc-js";
 import { RPC_SCHEMA } from "./config/rpc-schema";
 import { ContainerHandler } from "./handlers/container.handler";
@@ -11,13 +11,13 @@ const validateRPCBody = createValidator(RPC_SCHEMA);
 const containerHandlers = new ContainerHandler();
 
 server.addService(UnimplementedOrchestratorServiceService.definition, {
-    IGetContainer: validateRPCBody("IGetContainer", containerHandlers.handleGetContainerByDomain.bind(containerHandlers)),
-    IGetBuildContainerCreds: validateRPCBody("IGetBuildContainerCreds", containerHandlers.handleGetBuildContainerCreds.bind(containerHandlers)),
-    IGetProdContainerCreds: validateRPCBody("IGetProdContainerCreds", containerHandlers.handleGetProdContainerCreds.bind(containerHandlers))
+    IGetContainer: validateRPCBody("IGetContainer", containerHandlers.handleIGetContainerByDomain.bind(containerHandlers)),
+    IGetBuildContainerCreds: validateRPCBody("IGetBuildContainerCreds", containerHandlers.handleIGetBuildContainerCreds.bind(containerHandlers)),
+    IGetProdContainerCreds: validateRPCBody("IGetProdContainerCreds", containerHandlers.handleIGetProdContainerCreds.bind(containerHandlers))
 })
 
 
-mongoose.connect(SECRETS.MONGODB_URI).then(()=>{
+mongoose.connect(SECRETS.DATABASE_URI).then(()=>{
     logger.info("MONGO-DB_CONNECTED_IN_ORCHESTRATOR_SERVICE");
 }).catch((error) => {
     logger.error(`UNEXPECTED_ERR_OCCURED_WHILE_CONNECTING_MONGO-DB_IN_ORCHESTRATOR_SERVICE: ${error}`);

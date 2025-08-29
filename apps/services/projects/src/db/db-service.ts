@@ -81,15 +81,11 @@ export class Database {
       }
     }
 
-    async findUniqueProjectById<T extends Prisma.ProjectSelect | undefined>(projectId:string,select:T): Promise<
-  T extends undefined
-    ? Prisma.ProjectGetPayload<{}>
-    : Prisma.ProjectGetPayload<{ select: T }>
->{
-        const res = await this._client.project.findUnique({where:{projectId},select});
-        if(res)return res as any; 
+    async findUniqueProject<T extends Prisma.ProjectFindUniqueArgs>(args:T): Promise<Prisma.ProjectGetPayload<T>>{
+        const res = await this._client.project.findUnique(args);
+        if(res)return res as Prisma.ProjectGetPayload<T>; 
         throw new GrpcAppError(status.NOT_FOUND, "Project not found", {
-            projectId
+            projectId: args.where.projectId
         });
     }
 
@@ -266,25 +262,25 @@ export class Database {
         } catch (e:any) {
              if(e instanceof PrismaClientKnownRequestError) {
             if(e.code === "P2002") {
-                throw new GrpcAppError(status.ALREADY_EXISTS, "Project with this github repository already exists", {
+                if((e.meta?.target as string[]).includes("projectId")){
+                    throw new GrpcAppError(status.ALREADY_EXISTS, "Project is already linked to a repository", {
+                    domain:body.projectId
+                });
+                }
+                else{
+                    throw new GrpcAppError(status.ALREADY_EXISTS, "Project with this github repository already exists", {
                     domain:body.githubRepoId
                 });
+                }
+                }
             }
-        }
-        throw new GrpcAppError(status.INTERNAL, "Failed to create repository", {
-            e
-        });
+            throw new GrpcAppError(status.INTERNAL, "Failed to create repository", e);
         }
     }
 
-    async findUniqueRepository(args:Prisma.RepositoryFindUniqueArgs){
-        const res = await this._client.repository.findUnique({
-            ...args,
-            include:{
-                project:true
-            }
-        });
-        if(res)return res;
+    async findUniqueRepository<T extends Prisma.RepositoryFindUniqueArgs>(args:T):Promise<Prisma.RepositoryGetPayload<T>>{
+        const res = await this._client.repository.findUnique(args);
+        if(res)return res as Prisma.RepositoryGetPayload<T> ;
         throw new GrpcAppError(status.NOT_FOUND, "Repository not found", {
             args
         });

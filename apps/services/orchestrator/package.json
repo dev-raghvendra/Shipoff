@@ -3,9 +3,13 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "dev": "nodemon --exec ts-node -r tsconfig-paths/register ./src/server.ts"
+  },
   "devDependencies": {
-    "@shipoff/typescript-config": "workspace:*"
+    "@shipoff/typescript-config": "workspace:*",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2"
   },
   "keywords": [],
   "author": "",
@@ -15,8 +19,8 @@
     "@kubernetes/client-node": "^1.3.0",
     "@shipoff/grpc-clients": "workspace:*",
     "@shipoff/proto": "workspace:*",
-    "@shipoff/services-commons": "workspace:*",
     "@shipoff/redis": "workspace:*",
+    "@shipoff/services-commons": "workspace:*",
     "dotenv": "^17.2.1",
     "mongoose": "^8.18.0",
     "zod": "^4.0.5"

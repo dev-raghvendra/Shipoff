@@ -4,11 +4,10 @@ info:
   description: Webhook service for handling external webhook events
   version: 1.0.0
 
-
 servers:
-  - url: http://localhost:8000/apis/v1/webhook
+  - url: http://localhost:8000/apis/v1/webhooks
     description: Development server
-  - url: https://api.shipoff.in/apis/v1/webhook
+  - url: https://api.shipoff.in/apis/v1/webhooks
     description: Production server
 
 paths:
@@ -23,7 +22,7 @@ paths:
         - name: X-GitHub-Event
           in: header
           description: GitHub event type
-          required: false
+          required: true
           schema:
             type: string
             example: push
@@ -36,8 +35,8 @@ paths:
             example: 12345678-1234-1234-1234-123456789012
         - name: X-Hub-Signature-256
           in: header
-          description: GitHub webhook signature
-          required: false
+          description: GitHub webhook signature for verification
+          required: true
           schema:
             type: string
             example: sha256=abc123def456...
@@ -46,7 +45,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/GithubWebhookBody'
+              type: object
+              description: GitHub webhook payload (raw JSON)
+              example: 
+                ref: "refs/heads/main"
+                before: "abc123def456"
+                after: "def456abc123"
+                repository:
+                  id: 123456789
+                  name: "my-repo"
+                  full_name: "user/my-repo"
+                commits:
+                  - id: "abc123def456"
+                    message: "Fix authentication bug"
+                    author:
+                      name: "John Doe"
+                      email: "john@example.com"
       responses:
         '200':
           description: Webhook processed successfully
@@ -82,54 +96,6 @@ paths:
 
 components:
   schemas:
-    GithubWebhookBody:
-      type: object
-      required:
-        - payload
-        - signature
-        - event
-      properties:
-        payload:
-          type: string
-          description: JSON payload from GitHub webhook
-          example: '{"ref":"refs/heads/main","before":"abc123","after":"def456",...}'
-        signature:
-          type: string
-          description: GitHub webhook signature for verification
-          example: sha256=abc123def456789...
-        event:
-          type: string
-          description: GitHub event type
-          example: push
-          enum:
-            - push
-            - pull_request
-            - issues
-            - issue_comment
-            - pull_request_review
-            - pull_request_review_comment
-            - create
-            - delete
-            - fork
-            - watch
-            - release
-            - deployment
-            - deployment_status
-        action:
-          type: string
-          description: GitHub action type (optional, depends on event)
-          example: opened
-          enum:
-            - opened
-            - closed
-            - reopened
-            - edited
-            - assigned
-            - unassigned
-            - labeled
-            - unlabeled
-            - synchronize
-
     ErrorResponse:
       type: object
       properties:

@@ -13,6 +13,7 @@ export class ProjectExternalService {
         try {
             const req = IGetProjectRequest.fromObject({ projectId });
             const res = await promisifyGrpcCall(this._projectService.IGetProject, req );
+            console.log(res)
             return res.res;
         } catch (e:any) {
             throw new Error(`Failed to get project by ID: ${e.message}`);
@@ -25,7 +26,7 @@ export class ProjectExternalService {
             const res = await promisifyGrpcCall(this._projectService.IGetGithubRepoAccessToken, req );
             return res.res;
         } catch (e:any) {
-            throw new Error(`Failed to get access token for github repo: ${e}`);
+            throw new Error(`Failed to get access token for github repo: ${JSON.stringify(e,null,2)}`);
         }
     }
 }

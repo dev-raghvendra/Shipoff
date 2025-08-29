@@ -21,20 +21,13 @@ export class ProjectsService {
         this._asyncErrHandler = createAsyncErrHandler({serviceName:"PROJECT_SERVICE"});
         this._selectProjectFeilds = {
                 repository:true,
-                name:true,
-                domain:true,
                 framework:true,
-                buildCommand:true,
-                prodCommand:true,
-                projectId:true,
                 environmentVariables:{
                     select:{
                         envName:true,
                         envValue:true
                     }
-                },
-                createdAt:true,
-                updatedAt:true
+                }
             }
         this._dbService = dbService;
         this._authService = authExternalService;
@@ -68,7 +61,7 @@ export class ProjectsService {
     async getProject({authUserData,projectId}:GetProjectRequestBodyType){
         try {
             await this._authService.getPermissions({authUserData,permissions:["READ"],scope:"PROJECT",resourceId:projectId,errMsg:"You do not have permission to read this project"});
-            const project = await this._dbService.findUniqueProjectById(projectId,this._selectProjectFeilds);
+            const project = await this._dbService.findUniqueProject({where:{projectId},include:this._selectProjectFeilds});
             return GrpcResponse.OK(project, "Project found");
         } catch (e:any) {
             return this._errHandler(e,"GET-PROJECT");
@@ -77,7 +70,7 @@ export class ProjectsService {
 
     async IGetProject({projectId}:IGetProjectRequestBodyType){
         try {
-            const project = await this._dbService.findUniqueProjectById(projectId,this._selectProjectFeilds);
+            const project = await this._dbService.findUniqueProject({where:{projectId},include:this._selectProjectFeilds});
             return GrpcResponse.OK(project, "Project found");
         } catch (e:any) {
             return this._errHandler(e,"GET-PROJECT");
@@ -90,7 +83,11 @@ export class ProjectsService {
             const projects = await this._dbService.findManyProjects({where:{
                 projectId:{in:projectIds}
             },
-            select:this._selectProjectFeilds})
+            include:{
+                framework:true,
+                environmentVariables:this._selectProjectFeilds.environmentVariables,
+                repository:true
+            }})
             return GrpcResponse.OK(projects, "Projects found");
         } catch (e:any) {
             return this._errHandler(e,"GET-ALL-USER-PROJECTS");

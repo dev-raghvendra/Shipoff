@@ -1,5 +1,5 @@
 import { ServerUnaryCall, sendUnaryData, status } from "@grpc/grpc-js";
-import { GetUserGithubReposRequest, AllGithubReposResponse, GetGithubRepoRequest, GithubRepoResponse, IGetGithubRepoAccessTokenRequest, BodyLessRequest, GithubInstallationResponse, DeploymentResponse, google, GetGithubRepoAccessTokenResponse } from "@shipoff/proto";
+import { GetUserGithubReposRequest, AllGithubReposResponse, GetGithubRepoRequest, GithubRepoResponse, IGetGithubRepoAccessTokenRequest, BodyLessRequest, GithubInstallationResponse, DeploymentResponse, google, IGetGithubRepoAccessTokenResponse } from "@shipoff/proto";
 import { BodyLessRequestBodyType } from "@shipoff/types";
 import { GithubService } from "@/services/github.service";
 import { GetUserGithubRepositoriesRequestBodyType, GetGithubRepositoryDetailsRequestBodyType, GetGithubRepositoryAccessTokenRequestBodyType } from "@/types/repositories";
@@ -40,13 +40,14 @@ export class GithubHandlers {
         }
     }  
 
-    async handleGithubRepoAccessToken(call: ServerUnaryCall<IGetGithubRepoAccessTokenRequest & { body: GetGithubRepositoryAccessTokenRequestBodyType }, GetGithubRepoAccessTokenResponse>, callback: sendUnaryData<GetGithubRepoAccessTokenResponse>) {
+    async handleIGithubRepoAccessToken(call: ServerUnaryCall<IGetGithubRepoAccessTokenRequest & { body: GetGithubRepositoryAccessTokenRequestBodyType }, IGetGithubRepoAccessTokenResponse>, callback: sendUnaryData<IGetGithubRepoAccessTokenResponse>) {
         try {
-            const { code, res, message } = await this._githubService.IGetGithubRepoAccessToken(call.request);
+            const { code, res, message } = await this._githubService.IGetGithubRepoAccessToken(call.request.body);
             if (code !== 0) return callback({ code, message });
-            const response = GetGithubRepoAccessTokenResponse.fromObject({ code, message, res });
+            const response = IGetGithubRepoAccessTokenResponse.fromObject({ code, message, res });
             return callback(null, response);
         } catch (e: any) {
+            console.error(e);
             return callback({
                 code: status.INTERNAL,
                 message: "Internal server error"

@@ -66,17 +66,19 @@ export class RepositoriesService {
             scope:"REPOSITORY",
             resourceId:body.projectId
           })
+
           const {githubInstallationId} =  await this._dbService.findUniqueGithubInstallation({
             where:{
                 userId:authUserData.userId
             }
           })
+          const ghr = await this._githubService.getRepositoryDetails(githubInstallationId,body.githubRepoId);
           const createdRepo = await this._dbService.createRepository({
               githubInstallationId,
               projectId:body.projectId,
-              githubRepoFullName: body.githubRepoFullName,
-              githubRepoId: body.githubRepoId,
-              githubRepoURI: body.githubRepoURI,
+              githubRepoFullName: ghr.githubRepoFullName,
+              githubRepoId: ghr.githubRepoId,
+              githubRepoURI: ghr.githubRepoURI,
               branch: body.branch
           })
           return GrpcResponse.OK(createdRepo,"Repository created");

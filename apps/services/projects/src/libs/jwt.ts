@@ -15,4 +15,4 @@ export async function createGithubJwt(expiry?:string | "5m"){
     });
 }
 
-// createGithubJwt().then(token=>console.log(token))
+createGithubJwt().then(token=>console.log(token))

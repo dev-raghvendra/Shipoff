@@ -23,6 +23,15 @@ export async function getMeController(req:Request, res:Response){
     grpcToHttpResponse.call(res, code, message, data);
 }
 
+export async function getUserController(req:Request, res:Response){
+    const body = {
+        ...req.body,
+        targetUserId: req.params.targetUserId
+    }
+    const {code, message, res:data} = await authService.getUser(body);
+    grpcToHttpResponse.call(res, code, message, data);
+}
+
 export async function refreshTokenController(req:Request, res:Response){
     const {code, message, res:data} = await authService.refreshToken(req.body);
     grpcToHttpResponse.call(res, code, message, data);

@@ -1,4 +1,4 @@
-import {AcceptInvitationRequest, AuthServiceClient, BodyLessRequest, BulkResourceRequest, CreateProjectMemberInvitationRequest, CreateTeamMemberInvitationRequest, CreateTeamRequest, DeleteProjectMemberRequest, DeleteTeamMemberRequest, DeleteTeamRequest, GetProjectMemberRequest, GetTeamMemberRequest, GetTeamRequest, LoginRequest, OAuthRequest, SigninRequest, User} from "@shipoff/proto";
+import {AcceptInvitationRequest, AuthServiceClient, BodyLessRequest, BulkResourceRequest, CreateProjectMemberInvitationRequest, CreateTeamMemberInvitationRequest, CreateTeamRequest, DeleteProjectMemberRequest, DeleteTeamMemberRequest, DeleteTeamRequest, GetProjectMemberRequest, GetTeamMemberRequest, GetTeamRequest, GetUserRequest, LoginRequest, OAuthRequest, SigninRequest, User} from "@shipoff/proto";
 import {GetAuthClient} from "@shipoff/grpc-clients";
 import {promisifyGrpcCall} from "@shipoff/services-commons"
 import {logger} from "@shipoff/services-commons/libs/winston";
@@ -47,6 +47,16 @@ export class AuthService {
             return response;
         } catch (e:any) {
             (e);
+            return e;
+        }
+    }
+
+    async getUser(data:any){
+        try {
+            const req = GetUserRequest.fromObject(data);
+            const response = await promisifyGrpcCall(this._authService.GetUser.bind(this._authService), req);
+            return response;
+        } catch (e:any) {
             return e;
         }
     }

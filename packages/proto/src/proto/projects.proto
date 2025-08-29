@@ -176,8 +176,6 @@ message CreateRepositoryRequest {
     string githubRepoId = 2;
     string projectId = 3;
     string branch = 4;
-    string githubRepoFullName = 5;
-    string githubRepoURI = 6;
 }
 
 message UpdateRepositoryRequest {
@@ -299,7 +297,7 @@ message IGetGithubRepoAccessTokenRequest {
     string githubRepoId = 1;
 }
 
-message GetGithubRepoAccessTokenResponse {
+message IGetGithubRepoAccessTokenResponse {
     int32 code = 1;
     string message = 2;
     string res = 3;
@@ -350,7 +348,7 @@ service ProjectsService {
 
     
     //internal rpcs
-    rpc IGetGithubRepoAccessToken (IGetGithubRepoAccessTokenRequest) returns (GetGithubRepoAccessTokenResponse);
+    rpc IGetGithubRepoAccessToken (IGetGithubRepoAccessTokenRequest) returns (IGetGithubRepoAccessTokenResponse);
     rpc IGetProject (IGetProjectRequest) returns (ProjectResponse);
 
 }

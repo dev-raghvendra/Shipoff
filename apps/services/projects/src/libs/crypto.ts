@@ -1,3 +1,4 @@
+import { CONFIG } from "@/config/config";
 import { status } from "@grpc/grpc-js";
 import { GrpcAppError } from "@shipoff/services-commons";
 import { SECRETS } from "config/secrets";
@@ -6,7 +7,7 @@ import {Worker} from  "worker_threads";
 
 export function verifySignature(payload:string, signature:string){
     return new Promise((res,rej)=>{
-        const isDev = SECRETS.ENV === "development";
+        const isDev = CONFIG.ENV === "development";
         const fileName = isDev ? "worker.ts" : "worker.js"
         const worker = new Worker(path.resolve(__dirname, '../worker',fileName),{
             execArgv: isDev ? ['--require', 'ts-node/register'] : [],
