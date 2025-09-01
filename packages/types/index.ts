@@ -3,8 +3,10 @@ import {z, ZodRawShape, ZodType} from "zod"
 export const Scopes = z.enum(['PROJECT', 'DEPLOYMENT', 'TEAM', 'TEAM_MEMBER', 'PROJECT_MEMBER', 'TEAM_LINK', "REPOSITORY"]);
 export const Permissions = z.enum(['READ', 'CREATE', 'UPDATE', 'DELETE', 'SELF_DELETE', 'SELF_UPDATE', 'TRANSFER_OWNERSHIP']);
 export const Providers = z.enum(['GOOGLE', 'GITHUB', 'EMAIL']);
+export const Runtimes = z.enum(['NODEJS', 'PYTHON', 'PHP']);
 export type ScopeType = z.infer<typeof Scopes>;
 export type ProvidersType = z.infer<typeof Providers>;
+export type RuntimesType = z.infer<typeof Runtimes>;
 export const optNumWithDefaultValue = (defaultNum:number)=>z.number().int().nonnegative().transform(val => val == 0 ? undefined : val ).optional().default(defaultNum);
 export const optionalString = ()=> z.string().transform(str=>str.trim() ? str : undefined).optional()
 export const optionalArray = <T extends ZodType>(schema:T)=>z.array(schema).transform(arr => arr.length ? arr : undefined).optional()

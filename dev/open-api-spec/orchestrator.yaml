@@ -140,13 +140,13 @@ components:
     EnvironmentVariablesKeyValue:
       type: object
       required:
-        - envName
-        - envValue
+        - name
+        - value
       properties:
-        envName:
+        name:
           type: string
           example: "DATABASE_URL"
-        envValue:
+        value:
           type: string
           example: "postgresql://user:pass@host:5432/db"
 

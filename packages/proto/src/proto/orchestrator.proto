@@ -1,5 +1,6 @@
 syntax = "proto3";
 import "common.proto";
+import "google/protobuf/empty.proto";
 
 message Container {
     string containerId = 1;
@@ -18,25 +19,35 @@ message ContainerResponse {
     Container res = 3;
 }
 
-message IGetContainerRequest {
-    string domain = 1;
-}
-
-message IGetContainerCredsRequest {
+message IGetCloneURIRequest {
     string jwt = 1;
 }
 
-message ContainerCredsResponse {
+
+message CloneURIResponse {
     int32 code = 1;
     string message = 2;
-    repeated EnviornmentVariablesKeyValue res = 3;
+    CloneURIResBody res = 3;
+}
+
+message CloneURIResBody {
+    string REPO_CLONE_URI = 1;
+}
+
+message OrchestratorWebhookRequest {
+    string payload = 1;
+    string event = 2;
+}
+
+message IGetContainerRequest {
+    string projectId = 1;
 }
 
 
 
 service OrchestratorService {
     rpc IGetContainer (IGetContainerRequest) returns (ContainerResponse);
-    rpc IGetBuildContainerCreds (IGetContainerCredsRequest) returns (ContainerCredsResponse);
-    rpc IGetProdContainerCreds (IGetContainerCredsRequest) returns (ContainerCredsResponse);
+    rpc IGetCloneURI (IGetCloneURIRequest) returns (CloneURIResponse);
+    rpc IOrchestratorWebhook (OrchestratorWebhookRequest) returns (google.protobuf.Empty);
 }
 

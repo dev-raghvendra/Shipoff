@@ -3,13 +3,11 @@ import { grpcToHttpResponse } from "@/utils/res-utils";
 import { Request, Response } from "express";
 
 const orchestratorService = new OrchestratorService();
-export async function getContainerCredsController(req:Request,res:Response){
-    const {type} = req.params;
+export async function getCloneURIController(req:Request,res:Response){
     const body = {
         jwt: req.headers.authorization?.split("Bearer ")[1].trim()
     }
-    const {code,message,res:data} = type === "build"
-      ? await orchestratorService.getBuildContainerCreds(body)
-      : await orchestratorService.getProdContainerCreds(body);
+    const {code,message,res:data} = await orchestratorService.getCloneURI(body);
     grpcToHttpResponse.call(res,code,message,data)
 }
+

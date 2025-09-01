@@ -1,0 +1,27 @@
+FROM node:20-alpine
+
+RUN apk add --no-cache \
+    aws-cli \
+    git \
+    bash \
+    curl \
+    jq  \
+    unzip \
+    less \
+    groff
+
+RUN aws --version
+
+WORKDIR /app
+
+COPY ./node/static/entrypoint.sh /entrypoint.sh
+COPY ./util/log-util.sh /log-util.sh
+COPY ./util/build-util.sh /build-util.sh
+COPY ./util/webhook-util.sh /webhook-util.sh
+
+RUN chmod +x /entrypoint.sh 
+RUN chmod +r /log-util.sh
+RUN chmod +r /build-util.sh
+RUN chmod +r /webhook-util.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

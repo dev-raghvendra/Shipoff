@@ -1,16 +1,15 @@
-import { loadEnv } from "@shipoff/services-commons";
-loadEnv();
 export const SECRETS = {
     HOST:String(process.env.HOST),
     PORT:Number(process.env.PORT),
     DATABASE_URI:String(process.env.DATABASE_URI),
-    NODE_BUILDER_IMAGE:String(process.env.NODE_BUILDER_IMAGE),
-    NODE_PROD_IMAGE:String(process.env.NODE_PROD_IMAGE),
-    S3_BUCKET_URI:String(process.env.S3_BUCKET_URI),
-    S3_SECRET_KEY:String(process.env.S3_SECRET_KEY),
-    S3_ACCESS_KEY:String(process.env.S3_ACCESS_KEY),
-    S3_REGION:String(process.env.S3_REGION),
-    S3_ENDPOINT:String(process.env.S3_ENDPOINT),
-    S3_BUCKET_NAME:String(process.env.S3_BUCKET_NAME),
+    BUCKET_URI:String(process.env.BUCKET_URI),
+    ORCHESTRATOR_OCI_SECRET_KEY:String(process.env.ORCHESTRATOR_OCI_SECRET_KEY),
+    ORCHESTRATOR_OCI_ACCESS_KEY:String(process.env.ORCHESTRATOR_OCI_ACCESS_KEY),
+    BUCKET_REGION:String(process.env.BUCKET_REGION),
+    BUCKET_ENDPOINT:String(process.env.BUCKET_ENDPOINT),
+    BUCKET_NAME:String(process.env.BUCKET_NAME),
+    ORCHESTRATOR_WEBHOOK_PAYLOAD_SECRET:String(process.env.ORCHESTRATOR_WEBHOOK_PAYLOAD_SECRET)
 } as const
+
+
 

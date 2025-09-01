@@ -82,10 +82,10 @@ CREATE TABLE "Deployment" (
 -- CreateTable
 CREATE TABLE "EnvironmentVariable" (
     "projectId" TEXT NOT NULL,
-    "envName" TEXT NOT NULL,
-    "envValue" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "value" TEXT NOT NULL,
 
-    CONSTRAINT "EnvironmentVariable_pkey" PRIMARY KEY ("projectId","envName")
+    CONSTRAINT "EnvironmentVariable_pkey" PRIMARY KEY ("projectId","name")
 );
 
 -- CreateIndex

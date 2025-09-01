@@ -42,20 +42,14 @@ export class Database {
             },
             environmentVariables:{
                 create:body.environmentVars?.map(envVar=>({
-                envName:envVar.envName,
-                envValue:envVar.envValue
+                name:envVar.name,
+                value:envVar.value
                }))
             }
         },
         include:{
             repository:true,
-            framework:{
-                select:{
-                    frameworkId:true,
-                    displayName:true,
-                    icon:true
-                }
-            },
+            framework:true,
             environmentVariables:true
         }
     })
@@ -64,7 +58,7 @@ export class Database {
       } catch (error) {
         if(error instanceof PrismaClientKnownRequestError) {
             if(error.code === "P2002") {
-                if((error.meta?.target as string[]).includes("envName")) {
+                if((error.meta?.target as string[]).includes("name")) {
                   throw new GrpcAppError(status.ALREADY_EXISTS,"Environment variable names must be unique");
                }
                else if((error.meta?.target as string[]).includes("domain")) {
@@ -408,8 +402,8 @@ export class Database {
     async createEnvironmentVariable({projectId,envVars}:UpsertEnvVarsRequestDBBodyType){
         if(!envVars) throw new GrpcAppError(status.INVALID_ARGUMENT, "Environment variables are required");
         const values = envVars.map((_,i)=> `($1, $${i+2}, $${i+3})`).join(", ")
-        const params = [projectId, ...envVars.flatMap(envVar=> [envVar.envName, envVar.envValue])];
-        const q = `INSERT INTO "EnvironmentVariable" ("projectId","envName","envValue") VALUES ${values} ON CONFLICT ("projectId", "envName") DO UPDATE SET "envValue" = EXCLUDED."envValue"`
+        const params = [projectId, ...envVars.flatMap(envVar=> [envVar.name, envVar.value])];
+        const q = `INSERT INTO "EnvironmentVariable" ("projectId","name","value") VALUES ${values} ON CONFLICT ("projectId", "name") DO UPDATE SET "value" = EXCLUDED."value"`
         const res = await this._client.$executeRawUnsafe(q,...params);
         if(res) return res;
         throw new GrpcAppError(status.INTERNAL, "Failed to create environment variables", {
@@ -418,13 +412,13 @@ export class Database {
         });
     }
     
-    async deleteEnvironmentVariable({projectId,envName}:DeleteEnvVarsRequestDBBodyType){
+    async deleteEnvironmentVariable({projectId,name}:DeleteEnvVarsRequestDBBodyType){
         try {
             const res = await this._client.environmentVariable.delete({
                 where: {
-                    projectId_envName: {
+                    projectId_name: {
                         projectId,
-                        envName
+                        name
                     }
                 }
             });
@@ -434,7 +428,7 @@ export class Database {
                 if(e.code === "P2025") {
                     throw new GrpcAppError(status.NOT_FOUND, "Environment variable not found", {
                         projectId,
-                        envName
+                        name
                     });
                 }
             }

@@ -22,9 +22,9 @@ async function seedFrameworks(){
        displayName: "Vite",
        icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/vitejs/vitejs-original.svg",
        applicationType: "STATIC",
-       defaultBuildCommand: "vite build",
+       defaultBuildCommand: "npm run build",
        runtime: "NODEJS",
-       defaultProdCommand: "vite preview",
+       defaultProdCommand: "N/A",
        outDir: "dist"
     },
     {

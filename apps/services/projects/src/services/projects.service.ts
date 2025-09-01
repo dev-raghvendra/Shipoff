@@ -24,8 +24,8 @@ export class ProjectsService {
                 framework:true,
                 environmentVariables:{
                     select:{
-                        envName:true,
-                        envValue:true
+                        name:true,
+                        value:true
                     }
                 }
             }
@@ -73,7 +73,7 @@ export class ProjectsService {
             const project = await this._dbService.findUniqueProject({where:{projectId},include:this._selectProjectFeilds});
             return GrpcResponse.OK(project, "Project found");
         } catch (e:any) {
-            return this._errHandler(e,"GET-PROJECT");
+            return this._errHandler(e,"I-GET-PROJECT");
         }
     }
 

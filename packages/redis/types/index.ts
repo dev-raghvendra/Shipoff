@@ -1,10 +1,7 @@
 export type ContainerEvent <T extends keyof typeof $ContainerEvent> = {
     projectId:string;
-    domain:string;
     event: T;
-    podURL:string;
     containerId:string;
-    containerName:string;
 }
 
 export type DeploymentEvent <T extends keyof typeof $DeploymentEvent> =  {
@@ -30,10 +27,11 @@ export enum $AuthEvent {
 }
 
 export enum $ContainerEvent {
-    STARTING = "STARTING",
+    PROVISIONING = "PROVISIONING",  
     RUNNING = "RUNNING",
-    STOPPED = "STOPPED",
-    ERROR = "ERROR"
+    PRODUCTION = "PRODUCTION",
+    FAILED = "FAILED",
+    TERMINATED = "TERMINATED",
 }
 
 export enum $DeploymentEvent {

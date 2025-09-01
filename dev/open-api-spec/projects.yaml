@@ -639,13 +639,13 @@ components:
     EnvironmentVariablesKeyValue:
       type: object
       required:
-        - envName
-        - envValue
+        - name
+        - value
       properties:
-        envName:
+        name:
           type: string
           example: NODE_ENV
-        envValue:
+        value:
           type: string
           example: production
 
@@ -654,10 +654,10 @@ components:
       properties:
         projectId:
           type: string
-        envName:
+        name:
           type: string
           example: NODE_ENV
-        envValue:
+        value:
           type: string
           example: production
 

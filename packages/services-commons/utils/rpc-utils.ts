@@ -33,7 +33,8 @@ export class GrpcResponse {
   }
 
   static INTERNAL(message = "Internal server error", serviceName: string, origin: string, error:any, res: any = null) {
-    logger.error(`UNEXPECTED_ERROR_OCCURED_IN_${serviceName}_AT_${origin}: ${JSON.stringify(error, null, 2)}`);
+    const e = typeof error === "object" ? JSON.stringify(error,null,2) : error;
+    logger.error(`UNEXPECTED_ERROR_OCCURED_IN_${serviceName}_AT_${origin}: ${e}`);
     return this.ERROR(status.INTERNAL, message, res);
   }
 }

@@ -17,6 +17,7 @@ message Framework {
     string defaultProdCommand = 5;
     string runtime = 6;
     string name = 7;
+    string applicationType = 8;
 }
 
 message Repository {
@@ -57,8 +58,8 @@ message Project {
 
 message EnviornmentVariables {
     string projectId = 1;
-    string envName = 2;
-    string envValue = 3;
+    string name = 2;
+    string value = 3;
 }
 
 
@@ -168,7 +169,7 @@ message UpsertEnvVarsRequest {
 message DeleteEnvVarsRequest {
     User authUserData = 1;
     string projectId = 2;
-    string envName = 3;
+    string name = 3;
 }
 
 message CreateRepositoryRequest {

@@ -1,103 +1,51 @@
-import { CONFIG } from "@/config/config";
-import { SECRETS } from "@/config/secrets";
-import k8 from "@kubernetes/client-node"
-import { createJwt } from "@shipoff/services-commons";
+import { Database } from "@/db/db-service";
+import { ProjectExternalService } from "@/externals/project.external.service";
+import { GetCloneURIRequestBodyType, GetContainerRequestBodyType } from "@/types/container";
+import {
+    createGrpcErrorHandler,
+    createJwtErrHandler,
+    GrpcResponse,
+    JsonWebTokenError,
+    verifyJwt,
+} from "@shipoff/services-commons";
 
 export class OrchestratorService {
-    private _appsApi : k8.AppsV1Api;
-    private _coreApi : k8.CoreV1Api;
-    private _batchApi : k8.BatchV1Api;
-    private _k8Config : k8.KubeConfig
-
-    constructor(){
-        this._k8Config = new k8.KubeConfig();
-        CONFIG.ENV === "PRODUCTION"
-          ? this._k8Config.loadFromCluster()
-          : this._k8Config.loadFromDefault();
-
-        this._appsApi = this._k8Config.makeApiClient(k8.AppsV1Api);
-        this._coreApi = this._k8Config.makeApiClient(k8.CoreV1Api);
-        this._batchApi = this._k8Config.makeApiClient(k8.BatchV1Api);
-    }
-
-    async createBuildContainer({domain,projectId}: {domain:string, projectId:string}){
-        const res = await this._batchApi.createNamespacedJob({namespace:"default", body:{
-            apiVersion:"batch/v1",
-            kind:"Job",
-            metadata:{
-                name:`build-container-${domain}-${Date.now()}`,
-                namespace:"default"
-            },
-            spec:{
-                ttlSecondsAfterFinished:200,
-                template:{
-                    spec:{
-                        containers:[{
-                            name:`build-container-${domain}-${Date.now()}`,
-                            image:SECRETS.NODE_BUILDER_IMAGE,
-                            env:await this._getContainerEnvs("BUILD", projectId)
-                        }],
-                        restartPolicy:"Never"
-                    }
-                }
-            }
-        }
+    private _dbService: Database;
+    private _errHandler: ReturnType<typeof createGrpcErrorHandler>;
+    private _projectService: ProjectExternalService;
+    private _jwtErrHandler: ReturnType<typeof createJwtErrHandler>;
+    constructor() {
+        this._dbService = new Database();
+        this._errHandler = createGrpcErrorHandler({
+            serviceName: "CONTAINER_SERVICE",
         });
-        return res;
+        this._projectService = new ProjectExternalService();
+        this._jwtErrHandler = createJwtErrHandler({
+            expiredErrMsg: "Time limit exceeded.",
+            invalidErrMsg: "Malformed Clone request.",
+        });
     }
 
-    async createProdContainer({domain, projectId}: {domain:string, projectId:string}){
-        const res = await this._appsApi.createNamespacedDeployment({namespace:"default",body:{
-            apiVersion:"apps/v1",
-            kind:"Deployment",
-            metadata:{
-                name:`prod-container-${domain}`,
-                namespace:"default"
-            },
-            spec:{
-                replicas:1,
-                selector:{
-                   matchLabels:{
-                      app:`prod-container-${domain}`
-                   }
-                },
-                template:{
-                    metadata:{
-                        labels:{
-                            app:`prod-container-${domain}`
-                        }
-                    },
-                    spec:{
-                        containers:[{
-                            name:`prod-container-${domain}`,
-                            image:SECRETS.NODE_PROD_IMAGE,
-                            env:await this._getContainerEnvs("PROD", projectId)
-                        }]
-                    }
-                }
-            }
-        }})
-
-        return res;
+    async IGetContainerByDomain({projectId}: GetContainerRequestBodyType) {
+        try {
+            const container = await this._dbService.findContainer({
+                projectId,
+            });
+            return GrpcResponse.OK(container, "Container found");
+        } catch (e: any) {
+            return this._errHandler(e, "I-GET-CONTAINER");
+        }
     }
 
-
-     async generateContainerJwt(projectId:string){
-         try {
-            return await createJwt({projectId},"20m");
-         } catch (e:any) {
-            throw new Error(`Failed to generate JWT for container: ${e}`);
-         }
-    }
-
-
-    private async _getContainerEnvs(type:"BUILD"|"PROD",projectId:string){
-        return [{
-              name:"CONTAINER_SECRET",
-              value:await this.generateContainerJwt(projectId)
-        },{
-            name:"ORCHESTRATOR_ENDPOINT",
-            value:CONFIG.ORCHESTRATOR_ENDPOINT
-        }]
+    async IGetCloneURI({jwt}:GetCloneURIRequestBodyType){
+        try {
+            const {githubRepoId,githubRepoFullName} = await verifyJwt<{githubRepoId:string,githubRepoFullName:string}>(jwt)
+            const accessToken = await this._projectService.getRepositoryAccessToken(githubRepoId);
+            const REPO_CLONE_URI = `https://x-access-token:${accessToken}@github.com/${githubRepoFullName}` 
+            return GrpcResponse.OK({REPO_CLONE_URI},"Clone URI fetched");
+        } catch (e:any) {
+            if(e instanceof JsonWebTokenError) return this._jwtErrHandler(e)
+            return this._errHandler(e, "I-GET-CLONE-URI")
+        }
     }
 }

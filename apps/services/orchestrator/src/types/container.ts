@@ -1,5 +1,7 @@
 import z from "zod";
 
+ 
+
 export type Container = {
     containerId:string,
     name:string,
@@ -9,13 +11,31 @@ export type Container = {
     projectId:string
 }
 
-export const GetContainerByDomain = z.object({
-    domain: z.string().min(3).max(100)
+export const GetContainerRequestSchema = z.object({
+    projectId: z.string().min(3).max(100)
 }).strict();
 
-export const GetContainerCreds = z.object({
+export const GetCloneURIRequestSchema = z.object({
     jwt:z.string().min(10)
 }).strict();
 
-export type GetContainerByDomainBodyType = z.infer<typeof GetContainerByDomain>;
-export type GetContainerCredsBodyType = z.infer<typeof GetContainerCreds>;  
+export const OrchestratorWebhookRequestSchema = z.object({
+    payload:z.string().min(10),
+    event:z.enum(["TRAFFIC_DETECTED","STATE_CHANGED"])
+}).strict();
+
+export type TRAFFIC_DETECTED = {
+    projectId:string;
+    containerId:string;
+    action:"INGRESSED";
+}
+
+export type STATE_CHANGED = {
+    projectId:string;
+    containerId:string;
+    action:"PROVISIONING"|"RUNNING"|"FAILED"|"TERMINATED"|"PRODUCTION"
+}
+
+export type OrchestratorWebhookRequestBodyType = z.infer<typeof OrchestratorWebhookRequestSchema>;
+export type GetContainerRequestBodyType = z.infer<typeof GetContainerRequestSchema>;
+export type GetCloneURIRequestBodyType = z.infer<typeof GetCloneURIRequestSchema>;

@@ -2,8 +2,8 @@ import {optionalArray, optionalObject, optionalString, optNumWithDefaultValue, U
 import z from "zod";
 
 export const EnvVarsSchema = z.object({
-    envName:z.string(),
-    envValue:z.string(),
+    name:z.string(),
+    value:z.string(),
 })
 
 export const CreateProjectRequestSchema = z.object({
@@ -60,15 +60,15 @@ export const UpsertEnvVarsRequestSchema = z.object({
     authUserData: UserSchema,
     projectId: z.string(),
     envVars:optionalArray(z.object({
-        envName: z.string(),
-        envValue: z.string(),
+        name: z.string(),
+        value: z.string(),
     })),
 }).strict();
 
 export const DeleteEnvVarsRequestSchema = z.object({
     authUserData: UserSchema,
     projectId: z.string(),
-    envName: z.string(),
+    name: z.string(),
 }).strict();
 
 export const GetEnvVarsRequestSchema = z.object({

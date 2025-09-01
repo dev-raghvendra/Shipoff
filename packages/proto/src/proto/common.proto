@@ -24,6 +24,6 @@ message BulkResourceRequest {
 
 
 message EnviornmentVariablesKeyValue {
-    string envName = 1;
-    string envValue = 2;
+    string name = 1;
+    string value = 2;
 }

@@ -55,6 +55,7 @@ model Framework {
 }
 
 
+
 model Repository {
   repositoryId           String      @id @default(uuid())
   githubInstallationId   String 
@@ -92,12 +93,12 @@ model Deployment {
 
 model EnvironmentVariable {
   projectId  String
-  envName    String
-  envValue   String
+  name    String
+  value   String
 
   project    Project @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
 
-  @@id([projectId, envName])
+  @@id([projectId, name])
 }
 
 enum DeploymentStatus {

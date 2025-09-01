@@ -21,7 +21,9 @@
     "@shipoff/proto": "workspace:*",
     "@shipoff/redis": "workspace:*",
     "@shipoff/services-commons": "workspace:*",
+    "@shipoff/types": "workspace:*",
     "dotenv": "^17.2.1",
+    "ioredis": "^5.7.0",
     "mongoose": "^8.18.0",
     "zod": "^4.0.5"
   }

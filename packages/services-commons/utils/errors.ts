@@ -33,7 +33,8 @@ export function createGrpcErrorHandler({
 export function createAsyncErrHandler({serviceName}:{serviceName:string}){
    return function(this:Promise<any>,origin:string){
       this.catch((err) => {
-          logger.error(`UNEXPECTED_ERROR_OCCURED_IN_${serviceName}_AT_${origin}: ${err}`);
+          const e = typeof err === "object" ? JSON.stringify(err,null,2) : err;   
+          logger.error(`UNEXPECTED_ERROR_OCCURED_IN_${serviceName}_AT_${origin}: ${e}`);
       });
    }
 }
@@ -46,3 +47,12 @@ export function createJwtErrHandler({invalidErrMsg="Invalid access token",expire
       return GrpcResponse.ERROR(status.UNAUTHENTICATED, invalidErrMsg)
    }
 }
+
+export function createSyncErrHandler({serviceName}:{serviceName:string}){
+   return function(err: Error,origin: string){
+      const e = typeof err === "object" ? JSON.stringify(err,null,2) : err;
+      logger.error(`UNEXPECTED_ERROR_OCCURED_IN_${serviceName}_AT_${origin}: ${e}`);
+   }
+}
+
+export {TokenExpiredError}
