@@ -84,7 +84,7 @@ export class ContainerConfigUtil {
                 containerId
             },"30D",SECRETS.ORCHESTRATOR_WEBHOOK_PAYLOAD_SECRET),
         ])
-        return {envs:[...project.environmentVars,
+        return {envs:[...project.environmentVariables,
             {
                 name:"DOMAIN",
                 value:project.domain

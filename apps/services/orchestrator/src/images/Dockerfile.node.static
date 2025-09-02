@@ -6,9 +6,7 @@ RUN apk add --no-cache \
     bash \
     curl \
     jq  \
-    unzip \
-    less \
-    groff
+    unzip 
 
 RUN aws --version
 

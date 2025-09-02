@@ -5,11 +5,14 @@ run_filtered_build(){
     local repo_dir=$1
     local build_command=$2
     local out_dir=$3
-    local artifacts_dir=$4
+    local app_type=$4
+    local artifacts_dir=$5
 
     # Create necessary directories
-    mkdir -p "$artifacts_dir"
-    
+    if [ "$app_type" = "STATIC" ]; then
+        mkdir -p "$artifacts_dir"
+    fi
+
     # Execute build command with filtered environment
     cd "$repo_dir"
     
@@ -21,8 +24,6 @@ run_filtered_build(){
         env_cmd="$env_cmd -u $blocked_var"
     done
     
-    # Add build-specific variables
-    env_cmd="$env_cmd REPO_DIR=$repo_dir ARTIFACTS_DIR=$artifacts_dir"
     
     # Execute and capture exit code properly
     log "BUILD" "Starting build with command: $build_command"
@@ -38,16 +39,18 @@ run_filtered_build(){
     fi
 
     if [ ! -d "$out_dir" ]; then
-        error_exit "BUILD" "Artifacts directory $out_dir does not exist"
+        error_exit "BUILD" "Output directory $out_dir does not exist"
     fi
 
-    if [ -d "$artifacts_dir" ]; then
-      cp -r "$out_dir/." "$artifacts_dir/" || error_exit "BUILD" "Failed to copy artifacts from $out_dir to $artifacts_dir"
+    if [ "$app_type" = "STATIC" ]; then
+        if [ -d "$artifacts_dir" ]; then
+           cp -r "$out_dir/." "$artifacts_dir/" || error_exit "BUILD" "Failed to copy artifacts from $out_dir to $artifacts_dir"
 
      # Check if build was successful
-     if [ ! "$(ls -A $artifacts_dir 2>/dev/null)" ]; then
-        error_exit "BUILD" "Build failed - no artifacts generated in $artifacts_dir"
-     fi
+          if [ ! "$(ls -A $artifacts_dir 2>/dev/null)" ]; then
+             error_exit "BUILD" "Build failed - no artifacts generated in $artifacts_dir"
+          fi
+       fi
     fi
 
     log "BUILD" "Build completed successfully with filtered environment"

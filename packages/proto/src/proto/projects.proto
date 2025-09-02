@@ -53,7 +53,7 @@ message Project {
     string updatedAt = 8;
     Repository repository = 9;
     string outDir = 11;
-    repeated EnviornmentVariables environmentVars = 10;
+    repeated EnviornmentVariablesKeyValue environmentVariables = 10;
 }
 
 message EnviornmentVariables {

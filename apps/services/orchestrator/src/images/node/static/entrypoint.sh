@@ -35,14 +35,12 @@ fi
 send_webhook "STATE_CHANGED" "$RUNNING_WEBHOOK"
 
 # Run filtered build
-run_filtered_build "$REPO_DIR" "$BUILD_COMMAND" "$OUT_DIR" "$ARTIFACTS_DIR"
+run_filtered_build "$REPO_DIR" "$BUILD_COMMAND" "$OUT_DIR" "STATIC" "$ARTIFACTS_DIR"
 
 log "SYSTEM" "📤 Deploying artifacts to $DOMAIN"
 
 cd "$ARTIFACTS_DIR"
 if ! aws s3 sync . "$BUCKET_URI"  --endpoint-url "$BUCKET_ENDPOINT"  2>/var/log/aws.log; then
-    log "RUNTIME" "AWS S3 upload error details:"
-    cat /var/log/aws.log | while IFS= read -r line; do log "RUNTIME" "❌ $line"; done
     error_exit "RUNTIME" "Failed to deploy artifacts to $DOMAIN"
 fi
 

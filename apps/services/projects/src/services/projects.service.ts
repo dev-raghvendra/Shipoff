@@ -1,11 +1,12 @@
 import { Prisma } from "@prisma/index";
-import { createAsyncErrHandler, createGrpcErrorHandler } from "@shipoff/services-commons";
+import { createAsyncErrHandler, createGrpcErrorHandler, GrpcAppError } from "@shipoff/services-commons";
 import { GrpcResponse } from "@shipoff/services-commons/utils/rpc-utils";
 import { BodyLessRequestBodyType, BulkResourceRequestBodyType } from "@shipoff/types";
 import { Database, dbService } from "@/db/db-service";
 import authExternalService, { AuthExternalService } from "@/externals/auth.external.service";
 import { CreateProjectRequestBodyType, DeleteEnvVarsRequestBodyType, GetEnvVarsRequestBodyType, GetProjectRequestBodyType, IGetProjectRequestBodyType, UpdateProjectRequestBodyType, UpsertEnvVarsRequestBodyType } from "@/types/projects";
 import { ProjectProducer } from "@/producer/project.producer";
+import { status } from "@grpc/grpc-js";
 
 
 export class ProjectsService {
@@ -35,10 +36,14 @@ export class ProjectsService {
     }
 
     async createProject({authUserData:{userId},...body}: CreateProjectRequestBodyType) {
+        
         try {
            const fw = await this._dbService.findUniqueFrameworkById(body.frameworkId);
            if(fw.applicationType==="STATIC"){
                delete body.prodCommand;
+           }
+           else if(!body.environmentVars?.find(env=>env.name==="PORT")){
+              throw new GrpcAppError(status.INVALID_ARGUMENT, "PORT environment variable is required for dynamic projecs");
            }
            const {githubInstallationId} = await this._dbService.findUniqueGithubInstallation({
             where:{

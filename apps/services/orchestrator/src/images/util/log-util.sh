@@ -22,6 +22,7 @@ error_exit(){
     local phase=$1
     local message=$2
     log $phase "ERROR: ❌ $message"
+    log $phase "Operation failed."
     send_webhook "STATE_CHANGED" "$FAILED_WEBHOOK"
     exit 1
 }

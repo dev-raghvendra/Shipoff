@@ -23,7 +23,7 @@ export function createGrpcErrorHandler({
   serviceName: string;
 }) {
   return function handleError(error: GrpcAppError,origin: string) {
-    if(!Object.values(status).includes(error.code)){
+    if(!Object.values(status).includes(error.code) || error.code === status.INTERNAL){
       return GrpcResponse.INTERNAL("Unexpected error occurred",origin,serviceName,error);
     }
     return GrpcResponse.ERROR(error.code,error.message,error.res);

@@ -53,7 +53,7 @@ export class Database {
             environmentVariables:true
         }
     })
-      
+
       return res;
       } catch (error) {
         if(error instanceof PrismaClientKnownRequestError) {
@@ -64,7 +64,7 @@ export class Database {
                else if((error.meta?.target as string[]).includes("domain")) {
                   throw new GrpcAppError(status.ALREADY_EXISTS,"Project with the provided domain already exists");
                }
-               else if((error.meta?.target as string[]).some(target=>target.includes("githubRepoId"))) {
+               else if((error.meta?.target as string[]).some(target=>target.includes("github"))) {
                    throw new GrpcAppError(status.ALREADY_EXISTS,"Github repository is already linked with a project");
                }
             }
