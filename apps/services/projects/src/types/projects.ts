@@ -36,6 +36,8 @@ export const GetAllUserProjectsRequestSchema = z.object({
 export const updatesSchema = z.object({
     name: optionalString(),
     domain: optionalString(),
+    prodCommand: optionalString(),
+    buildCommand: optionalString(),
     framework:optionalObject({
         frameworkId: z.string().min(2),
         buildCommand: z.string().min(2),
@@ -59,7 +61,7 @@ export const DeleteProjectRequestSchema = z.object({
 export const UpsertEnvVarsRequestSchema = z.object({
     authUserData: UserSchema,
     projectId: z.string(),
-    envVars:optionalArray(z.object({
+    envs:optionalArray(z.object({
         name: z.string(),
         value: z.string(),
     })),

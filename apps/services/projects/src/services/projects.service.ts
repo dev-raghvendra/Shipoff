@@ -111,7 +111,7 @@ export class ProjectsService {
             if(body.updates.framework){
                await this._dbService.findUniqueFrameworkById(body.updates.framework.frameworkId);
             }
-            const project = await this._dbService.updateProjectById(body);
+            const project = await this._dbService.updateProjectById({projectId:body.projectId,...body.updates});
             return GrpcResponse.OK(project, "Project updated");
         } catch (e:any) {
             return this._errHandler(e, "UPDATE-PROJECT");

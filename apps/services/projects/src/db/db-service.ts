@@ -399,16 +399,16 @@ export class Database {
         });
     }
 
-    async createEnvironmentVariable({projectId,envVars}:UpsertEnvVarsRequestDBBodyType){
-        if(!envVars) throw new GrpcAppError(status.INVALID_ARGUMENT, "Environment variables are required");
-        const values = envVars.map((_,i)=> `($1, $${i+2}, $${i+3})`).join(", ")
-        const params = [projectId, ...envVars.flatMap(envVar=> [envVar.name, envVar.value])];
+    async createEnvironmentVariable({projectId,envs}:UpsertEnvVarsRequestDBBodyType){
+        if(!envs) throw new GrpcAppError(status.INVALID_ARGUMENT, "Environment variables are required");
+        const values = envs.map((_,i)=> `($1, $${i+2}, $${i+3})`).join(", ")
+        const params = [projectId, ...envs.flatMap(envVar=> [envVar.name, envVar.value])];
         const q = `INSERT INTO "EnvironmentVariable" ("projectId","name","value") VALUES ${values} ON CONFLICT ("projectId", "name") DO UPDATE SET "value" = EXCLUDED."value"`
         const res = await this._client.$executeRawUnsafe(q,...params);
         if(res) return res;
         throw new GrpcAppError(status.INTERNAL, "Failed to create environment variables", {
             projectId,
-            envVars
+            envs
         });
     }
     

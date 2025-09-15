@@ -23,6 +23,7 @@ server.addService(UnimplementedProjectsServiceService.definition, {
     GetProject: validateRPCBody("GetProject", projectsHandlers.handleGetProject.bind(projectsHandlers)),
     DeleteProject: validateRPCBody("DeleteProject", projectsHandlers.handleDeleteProject.bind(projectsHandlers)),
     GetAllUserProjects: validateRPCBody("GetAllUserProjects", projectsHandlers.handleGetAllUserProjects.bind(projectsHandlers)),
+    UpdateProject: validateRPCBody("UpdateProject", projectsHandlers.handleUpdateProject.bind(projectsHandlers)),
 
     GetRepository: validateRPCBody("GetRepository", repositoriesHandlers.handleGetRepository.bind(repositoriesHandlers)),
     CreateRepository: validateRPCBody("CreateRepository", repositoriesHandlers.handleCreateRepository.bind(repositoriesHandlers)),

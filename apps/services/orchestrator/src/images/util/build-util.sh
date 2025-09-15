@@ -38,19 +38,17 @@ run_filtered_build(){
         error_exit "BUILD" "Build failed with exit code $build_exit_code"
     fi
 
-    if [ ! -d "$out_dir" ]; then
+    if [ "$app_type" = "STATIC" ] && [ ! -d "$out_dir" ]; then
         error_exit "BUILD" "Output directory $out_dir does not exist"
     fi
 
-    if [ "$app_type" = "STATIC" ]; then
-        if [ -d "$artifacts_dir" ]; then
+    if  [ "$app_type" = "STATIC" ] && [ -d "$artifacts_dir" ]; then
            cp -r "$out_dir/." "$artifacts_dir/" || error_exit "BUILD" "Failed to copy artifacts from $out_dir to $artifacts_dir"
 
      # Check if build was successful
           if [ ! "$(ls -A $artifacts_dir 2>/dev/null)" ]; then
              error_exit "BUILD" "Build failed - no artifacts generated in $artifacts_dir"
           fi
-       fi
     fi
 
     log "BUILD" "Build completed successfully with filtered environment"
@@ -104,4 +102,17 @@ get_clone_uri(){
     export REPO_CLONE_URI="$value"
 
     log "SYSTEM" "Clone URI loaded successfully" 
+}
+
+enforce_build_time_limit(){
+    local INTERVAL=10
+    local END=$((SECONDS+300))
+    
+    while [ $SECONDS -lt $END ]; do
+       if [ "$BUILD_COMPLETED" = true ]; then
+          return
+       fi
+       sleep $INTERVAL
+    done
+    error_exit "BUILD" "5 minute build time limit exceeded"
 }
