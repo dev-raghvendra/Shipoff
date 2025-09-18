@@ -1,12 +1,7 @@
 
 **Shipoff** — a developer-friendly PaaS that lets users create projects, pick a framework, supply build & run commands, choose a domain, and get **automatic deployments** on every push.
 
----
 
-## One-liner
-> Git push → Shipoff auto-builds & deploys your app (static SPAs or dynamic fullstack services) on the domain you chose.
-
----
 
 ## Table of contents
 - [About](#about)  
