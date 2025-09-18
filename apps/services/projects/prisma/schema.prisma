@@ -87,8 +87,28 @@ model Deployment {
   repositoryId    String
   production      Boolean?         @default(false)
 
+  buildEnviornment  BuildEnviornment[]
+  runtimeEnviornment  RuntimeEnviornment[]
   project         Project          @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
   repository      Repository       @relation(fields: [repositoryId], references: [repositoryId])
+}
+
+model BuildEnviornment{
+  buildId       String    @id @default(uuid())
+  deploymentId  String
+  startedAt     DateTime? @default(now())
+  finishedAt    DateTime?
+
+  deployment    Deployment @relation(fields: [deploymentId], references: [deploymentId], onDelete: Cascade)
+}
+
+model RuntimeEnviornment{
+  runtimeId     String    @id @default(uuid())
+  deploymentId  String
+  startedAt     DateTime? @default(now())
+  finishedAt    DateTime?
+
+  deployment    Deployment @relation(fields: [deploymentId], references: [deploymentId], onDelete: Cascade)
 }
 
 model EnvironmentVariable {
@@ -107,6 +127,7 @@ enum DeploymentStatus {
   FAILED
   PRODUCTION
   BUILDING
+  PROVISIONING
 }
 
 enum Runtime {

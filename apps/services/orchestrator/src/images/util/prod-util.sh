@@ -9,6 +9,7 @@ run_filtered_prod(){
     for blocked_var in $PROD_BLOCKED_ENVS; do
         env_cmd="$env_cmd -u $blocked_var"
     done
+    cd "$working_dir"
 
     env_cmd="$env_cmd WORKING_DIR=$working_dir"
 

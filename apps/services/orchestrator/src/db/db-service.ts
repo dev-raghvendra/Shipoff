@@ -11,7 +11,7 @@ export class Database{
 
     async findContainer(filter:FilterQuery<ContainerDocument>){
         try {
-            const container = await ContainerModel.findOne(filter)
+            const container = await ContainerModel.findOne(filter).sort({createdAt:-1});
             if(container) return container.toObject();
             throw new GrpcAppError(status.NOT_FOUND, "Container not found");
         } catch (e:any) {
@@ -40,6 +40,15 @@ export class Database{
             })
             if(container) return container.toObject();
             throw new GrpcAppError(status.NOT_FOUND, "Container not found");
+        } catch (e:any) {
+            throw new GrpcAppError(status.INTERNAL, e.message, e);
+        }
+    }
+
+    async deleteManyContainer(filter:FilterQuery<ContainerDocument>){
+        try {
+            await ContainerModel.deleteMany(filter)
+            return true;
         } catch (e:any) {
             throw new GrpcAppError(status.INTERNAL, e.message, e);
         }

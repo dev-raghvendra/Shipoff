@@ -1,3 +1,4 @@
+import { DeploymentStatus } from "@prisma/index";
 import { optNumWithDefaultValue, UserSchema } from "@shipoff/types";
 import z from "zod";
 
@@ -34,7 +35,7 @@ export const CreateDeploymentRequestSchema = z.object({
 export const DeploymentDBSchema = z.object({
     projectId:z.string().min(1),
     commitHash:z.string().min(1),
-    status:z.enum([ "QUEUED", "INACTIVE", "FAILED", "PRODUCTION", "BUILDING"]).default("QUEUED"),
+    status:z.enum(DeploymentStatus).default(DeploymentStatus.QUEUED),
     commitMessage:z.string().min(1),
     author:z.string().min(1),
     repositoryId:z.string().min(1),

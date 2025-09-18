@@ -25,8 +25,17 @@ export class GithubWebhookService {
             where:{
                 githubRepoId:parsedPayload.repository.id.toString()
             },
-            include:{
-                project:true
+            select:{
+                repositoryId:true,
+                projectId:true,
+                deploymentId:true,
+                project:{
+                    select:{
+                        domain:true,
+                        framework:true
+                    }
+                },
+                branch:true
             }
           })
           if(parsedPayload.ref.replace("refs/heads/","") !== repo.branch) return GrpcResponse.OK(null, "No new deployment, branch is same as last deployment");
@@ -43,7 +52,9 @@ export class GithubWebhookService {
                 event:$DeploymentEvent.CREATED,
                 projectId:repo.projectId,
                 domain:repo.project.domain,
-                deploymentId:deployment.deploymentId
+                deploymentId:deployment.deploymentId,
+                commitHash:deployment.commitHash,
+                projectType:repo.project.framework.applicationType
             });
 
           return GrpcResponse.OK(deployment, "Deployment created");

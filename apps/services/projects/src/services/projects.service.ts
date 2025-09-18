@@ -54,7 +54,8 @@ export class ProjectsService {
            this._asyncErrHandler.call(this._projectProducer.publishProjectEvent({
                event:"CREATED",
                projectId: project.projectId,
-               userId
+               userId,
+               projectType:fw.applicationType
            }),"CREATE-PROJECT");
 
            return GrpcResponse.OK(project, "Project created");
@@ -131,7 +132,8 @@ export class ProjectsService {
             this._asyncErrHandler.call(this._projectProducer.publishProjectEvent({
                 event:"DELETED",
                 projectId,
-                userId:authUserData.userId
+                userId:authUserData.userId,
+                projectType:project.framework.applicationType
             }),"DELETE-PROJECT");
             return GrpcResponse.OK(project, "Project deleted");
         } catch (e:any) {

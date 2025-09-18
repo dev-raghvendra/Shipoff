@@ -23,11 +23,12 @@ if ! git clone --branch "$REPO_BRANCH" --single-branch "$REPO_CLONE_URI" "$REPO_
 fi
 
 send_webhook "STATE_CHANGED" "$RUNNING_WEBHOOK"
+cd "$REPO_DIR"
+git checkout "$COMMIT_HASH"
 run_filtered_build "$REPO_DIR" "$BUILD_COMMAND" "$OUT_DIR"
 BUILD_COMPLETED="true"
 
 log "SYSTEM" "📤 Deploying artifacts to $DOMAIN"
-cd "$REPO_DIR"
 
 send_health_check  &
 run_filtered_prod "$REPO_DIR" "$PROD_COMMAND"

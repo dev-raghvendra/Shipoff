@@ -9,6 +9,7 @@ import { UnimplementedProjectsServiceService } from "@shipoff/proto";
 import { RPC_SCHEMA } from "@/config/rpc-schema";
 import { SECRETS } from "@/config/secrets";
 import {logger} from "@shipoff/services-commons/libs/winston";
+import { ContainerConsumer } from "@/consumer/container.consumer";
 
 const validateRPCBody = createValidator(RPC_SCHEMA);    
 const server = new Server();
@@ -17,6 +18,8 @@ const deploymentsHandlers = new DeploymentsHandlers();
 const githubWebhookHandlers = new GithubWebhookHandlers();
 const repositoriesHandlers = new RepositoriesHandlers();
 const githubHandlers = new GithubHandlers();
+const containerConsumer = new ContainerConsumer("PROJECT_SERVICE");
+
 
 server.addService(UnimplementedProjectsServiceService.definition, {
     CreateProject: validateRPCBody("CreateProject", projectsHandlers.handleCreateProject.bind(projectsHandlers)),
@@ -46,6 +49,12 @@ server.addService(UnimplementedProjectsServiceService.definition, {
     CreateGithubInstallation: validateRPCBody("CreateGithubInstallation", githubHandlers.handleCreateGithubInstallation.bind(githubHandlers)),
     GetGithubInstallation:validateRPCBody("GetGithubInstallation", githubHandlers.handleGetGithubInstallation.bind(githubHandlers)),
     IGetGithubRepoAccessToken: validateRPCBody("IGetGithubRepoAccessToken", githubHandlers.handleIGithubRepoAccessToken.bind(githubHandlers))
+});
+
+containerConsumer.startConsumer().then(() => {
+    logger.info("CONTAINER_CONSUMER_STARTED");
+}).catch((err) => {
+    logger.error(`ERROR_STARTING_CONTAINER_CONSUMER_IN_PROJECTS_SERVICE: ${JSON.stringify(err, null, 2)}`);
 });
 
 server.bindAsync(`${SECRETS.HOST}:${SECRETS.PORT}`,ServerCredentials.createInsecure(),(err)=>{

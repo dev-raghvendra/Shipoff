@@ -12,9 +12,9 @@ export class ContainerConfigUtil {
         this._projectService = new ProjectExternalService();
     };
 
-    async getBuildContainerConfig(projectId: string) {
+    async getBuildContainerConfig(projectId: string,deploymentId:string,commitHash:string) {
             const project = await this._projectService.getProjectById(projectId);
-            const commonConfig = await this._getCommonConfig(project,"build")
+            const commonConfig = await this._getCommonConfig(project,"build",deploymentId,commitHash)
             commonConfig.envs.push({
                 name: "BUILD_COMMAND",
                 value: project.buildCommand
@@ -36,13 +36,14 @@ export class ContainerConfigUtil {
             })
             return commonConfig
     }
-    async getProdContainerConfig(projectId: string) {
+    async getProdContainerConfig(projectId: string,deploymentId:string,commitHash:string) {
         const project = await this._projectService.getProjectById(projectId);
-        const commonConfig = await this._getCommonConfig(project,"prod")
+        const commonConfig = await this._getCommonConfig(project,"prod",deploymentId,commitHash)
         const ingressedWebhook = await createJwt<TRAFFIC_DETECTED>({
             projectId: project.projectId,
             action:"INGRESSED",
-            containerId:commonConfig.containerId
+            containerId:commonConfig.containerId,
+            deploymentId
         },"30D",SECRETS.ORCHESTRATOR_WEBHOOK_PAYLOAD_SECRET)
         commonConfig.envs.push({
             name:"PROD_COMMAND",
@@ -54,34 +55,39 @@ export class ContainerConfigUtil {
         return commonConfig
     }
 
-    private async _getCommonConfig(project:Project,type:"build"|"prod"){
+    private async _getCommonConfig(project:Project,type:"build"|"prod",deploymentId:string,commitHash:string){
         const image = `${project.framework.runtime}-${project.framework.applicationType}`.toLowerCase()
         const containerId = `${type}-container-${project.projectId}-${Date.now()}`
         const webhooks = await Promise.all([
             createJwt<STATE_CHANGED>({
                 projectId:project.projectId,
                 action:"PROVISIONING",
-                containerId
+                containerId,
+                deploymentId
             },"10M",SECRETS.ORCHESTRATOR_WEBHOOK_PAYLOAD_SECRET),
             createJwt<STATE_CHANGED>({
                 projectId:project.projectId,
                 action:"RUNNING",
-                containerId
+                containerId,
+                deploymentId
             },"10M",SECRETS.ORCHESTRATOR_WEBHOOK_PAYLOAD_SECRET),
             createJwt<STATE_CHANGED>({
                 projectId:project.projectId,
                 action:"PRODUCTION",
-                containerId
+                containerId,
+                deploymentId
             },"20M",SECRETS.ORCHESTRATOR_WEBHOOK_PAYLOAD_SECRET),
             createJwt<STATE_CHANGED>({
                 projectId:project.projectId,
                 action:"TERMINATED",
-                containerId
+                containerId,
+                deploymentId
             },"30D",SECRETS.ORCHESTRATOR_WEBHOOK_PAYLOAD_SECRET),
             createJwt<STATE_CHANGED>({
                 projectId:project.projectId,
                 action:"FAILED",
-                containerId
+                containerId,
+                deploymentId
             },"30D",SECRETS.ORCHESTRATOR_WEBHOOK_PAYLOAD_SECRET),
         ])
         return {envs:[...project.environmentVariables,
@@ -124,6 +130,9 @@ export class ContainerConfigUtil {
             },{
                 name:"CLONE_TOKEN",
                 value:await createJwt({githubRepoId:project.repository.githubRepoId,githubRepoFullName:project.repository.githubRepoFullName},"20m")
+            },{
+                name:"COMMIT_HASH",
+                value:commitHash
             }],image,containerId}
     }
 

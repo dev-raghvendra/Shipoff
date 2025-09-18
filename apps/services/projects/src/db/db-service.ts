@@ -123,7 +123,10 @@ export class Database {
     async deleteProjectById(projectId:string){
         try {
             const res = await this._client.project.delete({
-                where: { projectId }
+                where: { projectId },
+                include:{
+                    framework:true,
+                }
             });
             return res;
         } catch (e:any) {
@@ -192,6 +195,32 @@ export class Database {
         throw new GrpcAppError(status.NOT_FOUND, "Deployment not found", {
             deploymentId
         });
+    }
+
+    async updateDeploymentById(deploymentId:string, data:Partial<Omit<CreateDeploymentRequestDBBodyType,"projectId">>){
+        try {
+            const res = await this._client.deployment.update({
+                where:{deploymentId},
+                data
+            })
+            return res;
+        } catch (e:any) {
+            if(e instanceof PrismaClientKnownRequestError) {
+                if(e.code === "P2025") {
+                    throw new GrpcAppError(status.NOT_FOUND, "Deployment not found", {
+                        deploymentId
+                    });
+                }
+                else if(e.code === "P2002") {
+                    throw new GrpcAppError(status.ALREADY_EXISTS, "Deployment with this commit hash already exists", {
+                        commitHash: data.commitHash
+                    });
+                }
+            }
+            throw new GrpcAppError(status.INTERNAL, "Unexpected error occurred", {
+                error: e
+            });
+        }
     }
 
     async findManyDeployments(args:Prisma.DeploymentFindManyArgs){

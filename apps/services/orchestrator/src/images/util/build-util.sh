@@ -15,6 +15,7 @@ run_filtered_build(){
 
     # Execute build command with filtered environment
     cd "$repo_dir"
+
     
     # Build the complete env command with proper argument handling
     local env_cmd="env"

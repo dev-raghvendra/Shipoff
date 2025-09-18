@@ -23,7 +23,8 @@ export const USER_TOPIC_CONSUMER_GROUPS = Object.freeze({
 })
 
 export const PROJECT_TOPIC_CONSUMER_GROUPS = Object.freeze({
-    AUTH_SERVICE:"auth-service-group"
+    AUTH_SERVICE:"auth-service-group",
+    ORCHESTRATOR_SERVICE:"orchestrator-service-group",
 })
 
 export const SECRETS = Object.freeze({

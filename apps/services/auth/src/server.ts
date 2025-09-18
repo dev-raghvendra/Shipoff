@@ -7,7 +7,7 @@ import TeamHandlers from "@/handlers/team.handler";
 import ProjectHandlers from "@/handlers/project.handlers";
 import {logger} from "@shipoff/services-commons";
 import SECRETS from "@/config/secrets";
-import { startProjectConsumer } from "./consumer/project.consumer";
+import { ProjectConsumer } from "./consumer/project.consumer";
 
 
 const validateRPCBody = createValidator(RPC_SCHEMA);
@@ -15,6 +15,7 @@ const server = new Server();
 const authhandlers = new AuthHandlers();
 const teamHandlers = new TeamHandlers();
 const projectHandlers = new ProjectHandlers();
+const projectConsumer = new ProjectConsumer();
 
 server.addService(UnimplementedAuthServiceService.definition, {
     Login: validateRPCBody("Login", authhandlers.handleLogin.bind(authhandlers)),
@@ -49,7 +50,7 @@ server.bindAsync(`${SECRETS.HOST}:${SECRETS.PORT}`,ServerCredentials.createInsec
       logger.info(`AUTH_GRPC_SERVER_LISTENING_ON ${SECRETS.HOST}:${SECRETS.PORT}`)
 })
 
-startProjectConsumer().then(() => {
+projectConsumer.startProjectConsumer().then(() => {
     logger.info("PROJECT_CONSUMER_STARTED");
 }).catch((err) => {
     logger.error(`ERROR_STARTING_PROJECT_CONSUMER_IN_AUTH_SERVICE: ${JSON.stringify(err, null, 2)}`);

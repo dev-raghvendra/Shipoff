@@ -28,11 +28,13 @@ export type TRAFFIC_DETECTED = {
     projectId:string;
     containerId:string;
     action:"INGRESSED";
+    deploymentId:string;    
 }
 
 export type STATE_CHANGED = {
     projectId:string;
     containerId:string;
+    deploymentId:string;
     action:"PROVISIONING"|"RUNNING"|"FAILED"|"TERMINATED"|"PRODUCTION"
 }
 

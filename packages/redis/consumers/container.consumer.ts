@@ -1,10 +1,12 @@
 import Redis from "ioredis";
 import { GetRedisClient } from "../redis-client/client";
 import { CONTAINER_TOPIC_CONSUMER_GROUPS, TOPICS } from "../config/config";
+import { $ContainerEvent, ContainerEvent } from "../types";
+import { createObject, logger } from "../../services-commons";
 
 export class ContainerConsumer {
   private _redisClient: Redis;
-  private _serviceName:keyof typeof CONTAINER_TOPIC_CONSUMER_GROUPS;
+  readonly _serviceName:keyof typeof CONTAINER_TOPIC_CONSUMER_GROUPS;
   private _consumerName:string;
    constructor(serviceName:string){
     this._serviceName = serviceName.toUpperCase() as keyof typeof CONTAINER_TOPIC_CONSUMER_GROUPS;
@@ -14,47 +16,81 @@ export class ContainerConsumer {
   
 
 
-  async readNewMessages(cb:(message:any)=>Promise<void>){
+  async readNewMessages(cb: (message: ContainerEvent<keyof typeof $ContainerEvent>, ack: () => Promise<void>) => Promise<void>) {
       const groupName = CONTAINER_TOPIC_CONSUMER_GROUPS[this._serviceName];
       const streamName = TOPICS.CONTAINER_TOPIC;
-      while(true){
-         const messages = await this._redisClient.xreadgroup("GROUP", groupName, this._consumerName, "COUNT", 1, "BLOCK", 0, "STREAMS", streamName, ">");
-         if(messages.length){
-            await cb(messages[0])
-            await this.ackMessage((messages[0] as string[])[0]);
-         }
-      }
-  }
 
-  async readUnackedMessages(cb:(message:any)=>Promise<void>){
+      while (true) {
+        try {
+          const messages = await this._redisClient.xreadgroup(
+            "GROUP", groupName, this._consumerName,
+            "COUNT", 1,
+            "BLOCK", 0,
+            "STREAMS", streamName, ">"
+          );
+  
+          if (messages) {
+            const [_, records] = messages[0] as [string, Array<[string, string[]]>];
+            for (const [id, fields] of records) {
+              const event = createObject<ContainerEvent<keyof typeof $ContainerEvent>>(fields);
+              await cb(event,this.ackMessage.bind(this,id));
+            }
+          }
+        } catch (e: any) {
+          logger.error(
+            `UNEXPECTED_ERROR_OCCURED_WHILE_READING_NEW_MESSAGES_ON_${TOPICS.CONTAINER_TOPIC}_IN_${this._serviceName} ${JSON.stringify(e, null, 2)}`
+          );
+        }
+      }
+    }
+
+    async readUnackedMessages(cb: (message: ContainerEvent<keyof typeof $ContainerEvent>, ack: () => Promise<void>) => Promise<void>) {
       const groupName = CONTAINER_TOPIC_CONSUMER_GROUPS[this._serviceName];
-      const streamName = TOPICS.CONTAINER_TOPIC;
-      const unackedMessages = await this._redisClient.xautoclaim(streamName, groupName, this._consumerName, 0, "0-0","COUNT", 100);
-      for (const message of unackedMessages) {
-          await cb(message);
-          await this.ackMessage((message as string[])[0])
+      const streamName = TOPICS.PROJECT_TOPIC;
+      let crrId = "0-0";
+      try {
+        while (true) {
+          const [nextId, messages] = await this._redisClient.xautoclaim(
+            streamName, groupName, this._consumerName, 0, crrId, "COUNT", 100
+          ) as [string, Array<[string, string[]]>];
+        
+          crrId = nextId;
+          for (const [id, fields] of messages) {
+            const event = createObject<ContainerEvent<keyof typeof $ContainerEvent>>(fields);
+            await cb(event, this.ackMessage.bind(this, id));
+          }
+  
+          if(nextId=="0-0")
+            break;
+        }
+        return true;
+      } catch (e: any) {
+        logger.error(
+          `UNEXPECTED_ERROR_OCCURED_WHILE_READING_UNACKED_MESSAGES_ON_${TOPICS.CONTAINER_TOPIC}_IN_${this._serviceName}: ${JSON.stringify(e, null, 2)}`
+        );
       }
-  }
-
-  private async ackMessage(messageId:string){
+    }
+  
+    private async ackMessage(messageId: string) {
       const groupName = CONTAINER_TOPIC_CONSUMER_GROUPS[this._serviceName];
       const streamName = TOPICS.CONTAINER_TOPIC;
       await this._redisClient.xack(streamName, groupName, messageId);
-  }
-
-  async initializeConsumerGroup(){
+    }
+  
+    async initializeConsumerGroup() {
       try {
-         const streamName = TOPICS.CONTAINER_TOPIC;
-         const groupName = CONTAINER_TOPIC_CONSUMER_GROUPS[this._serviceName];
-         await this._redisClient.xgroup("CREATE", streamName, groupName, "$", "MKSTREAM");
-         return this;
-      } catch (e:any) {
-         if(e.message.includes("BUSYGROUP")){
+        const streamName = TOPICS.CONTAINER_TOPIC;
+        const groupName = CONTAINER_TOPIC_CONSUMER_GROUPS[this._serviceName];
+        await this._redisClient.xgroup("CREATE", streamName, groupName, "$", "MKSTREAM");
+        return this;
+      } catch (e: any) {
+        if (e.message.includes("BUSYGROUP")) {
           return this;
-         }
-         else throw e;
+        } else {
+          throw e;
+        }
       }
-  }
+    }
 }
 
 

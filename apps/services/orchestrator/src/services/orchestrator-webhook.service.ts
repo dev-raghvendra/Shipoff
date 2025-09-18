@@ -47,7 +47,8 @@ export class OrchestratorWebhookService {
         try {
             const res = payload.action == "INGRESSED"
                 ? await this._dbService.findAndUpdateContainer({
-                    containerId: payload.containerId
+                    projectId: payload.projectId,
+                    deploymentId: payload.deploymentId
                 }, {
                     lastIngressedAt: Date.now()
                 })
@@ -62,7 +63,8 @@ export class OrchestratorWebhookService {
     private async _stateChanged(payload: STATE_CHANGED) {
         try {
             const res = await this._dbService.upsertContainer({
-                containerId: payload.containerId
+                projectId: payload.projectId,
+                deploymentId:payload.deploymentId
             }, {
                 status: payload.action,
                 ...(payload.action === "TERMINATED" ? { terminatedAt: Date.now() } : {}),
@@ -70,7 +72,8 @@ export class OrchestratorWebhookService {
             this._asyncErrHandler.call(this._containerProducer.publishContainerEvent({
                 containerId: payload.containerId,
                 event: payload.action,
-                projectId: payload.projectId
+                projectId: payload.projectId,
+                deploymentId:payload.deploymentId
             }), "STATE-CHANGED")
             return GrpcResponse.OK({}, "State changed webhook processed")
         } catch (e: any) {
@@ -84,7 +87,8 @@ export class OrchestratorWebhookService {
             // In both the cases it needs to be terminated and by sending this error response only, it will work
             const decoded = await decodeJwt<STATE_CHANGED>(webhook.payload);
             await this._dbService.upsertContainer({
-                containerId: decoded.containerId
+                projectId: decoded.projectId,
+                deploymentId:decoded.deploymentId,
             }, {
                 status: "TERMINATED",
                 terminatedAt: Date.now()
@@ -92,7 +96,8 @@ export class OrchestratorWebhookService {
             this._asyncErrHandler.call(this._containerProducer.publishContainerEvent({
                 containerId: decoded.containerId,
                 event: "TERMINATED",
-                projectId: decoded.projectId
+                projectId: decoded.projectId,
+                deploymentId:decoded.deploymentId
             }), "STATE-CHANGE-TOKEN-EXPIRED")
         }
     }

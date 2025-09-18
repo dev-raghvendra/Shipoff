@@ -36,6 +36,8 @@ fi
 send_webhook "STATE_CHANGED" "$RUNNING_WEBHOOK"
 
 # Run filtered build
+cd "$REPO_DIR"
+git checkout "$COMMIT_HASH"
 run_filtered_build "$REPO_DIR" "$BUILD_COMMAND" "$OUT_DIR" "STATIC" "$ARTIFACTS_DIR"
 BUILD_COMPLETED="true"
 
