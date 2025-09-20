@@ -1,7 +1,7 @@
 import { SECRETS } from "@/config";
 import { Database, dbService } from "@/db/db-service";
 import { ContainerProducer } from "@/producer/container.producer";
-import { OrchestratorWebhookRequestBodyType, STATE_CHANGED, TRAFFIC_DETECTED } from "@/types/container";
+import { OrchestratorWebhookRequestBodyType, STATE_CHANGED, TRAFFIC_DETECTED } from "@/types/orchestrator";
 import { status } from "@grpc/grpc-js";
 import { createAsyncErrHandler, createGrpcErrorHandler, createJwtErrHandler, decodeJwt, GrpcAppError, GrpcResponse, JsonWebTokenError, TokenExpiredError, verifyJwt } from "@shipoff/services-commons";
 import {logger} from "@/libs/winston";
@@ -23,29 +23,29 @@ export class OrchestratorWebhookService {
         this._dbService = dbService
     }
 
-    async IWebhook({ payload, event }: OrchestratorWebhookRequestBodyType) {
+    async IWebhook({ payload, event, reqMeta }: OrchestratorWebhookRequestBodyType) {
         try {
             const eventPayload = await verifyJwt<TRAFFIC_DETECTED | STATE_CHANGED>(payload, SECRETS.ORCHESTRATOR_WEBHOOK_PAYLOAD_SECRET)
             console.log("Webhook recived from container: ", eventPayload);
             switch (event) {
                 case "TRAFFIC_DETECTED":
-                    return await this._trafficDetected(eventPayload as TRAFFIC_DETECTED)
+                    return await this._trafficDetected(eventPayload as TRAFFIC_DETECTED, reqMeta.requestId)
 
                 case "STATE_CHANGED":
-                    return await this._stateChanged(eventPayload as STATE_CHANGED)
+                    return await this._stateChanged(eventPayload as STATE_CHANGED, reqMeta.requestId)
                 default:
                     throw new GrpcAppError(status.INVALID_ARGUMENT, "Invalid event type")
             }
         } catch (e: any) {
             if (e instanceof JsonWebTokenError) {
-                await this._stateChangeTokenExpired(e, { payload, event })
+                await this._stateChangeTokenExpired(e, { payload, event, reqMeta })
                 return this._jwtErrHandler(e)
             }
-            return this._errHandler(e, "WEBHOOK")
+            return this._errHandler(e, "WEBHOOK", reqMeta.requestId)
         }
     }
 
-    private async _trafficDetected(payload: TRAFFIC_DETECTED) {
+    private async _trafficDetected(payload: TRAFFIC_DETECTED, requestId:string) {
         try {
             const res = payload.action == "INGRESSED"
                 ? await this._dbService.findAndUpdateK8Deployment({
@@ -58,13 +58,13 @@ export class OrchestratorWebhookService {
             if (res) return GrpcResponse.OK(null, "Traffic detected webhook processed")
             return new GrpcAppError(status.INVALID_ARGUMENT, "Invalid traffic event")
         } catch (e: any) {
-            return this._errHandler(e, "WEBHOOK")
+            return this._errHandler(e, "WEBHOOK", requestId);
         }
     }
 
-    private async _stateChanged(payload: STATE_CHANGED) {
+    private async _stateChanged(payload: STATE_CHANGED, requestId:string) {
         try {
-            const res = await this._dbService.upsertK8Deployment({
+            await this._dbService.upsertK8Deployment({
                 projectId: payload.projectId,
                 deploymentId:payload.deploymentId
             }, {
@@ -75,11 +75,12 @@ export class OrchestratorWebhookService {
                 containerId: payload.containerId,
                 event: payload.action,
                 projectId: payload.projectId,
-                deploymentId:payload.deploymentId
-            }), "STATE-CHANGED")
+                deploymentId:payload.deploymentId,
+                requestId
+            }), "STATE-CHANGED",requestId)
             return GrpcResponse.OK({}, "State changed webhook processed")
         } catch (e: any) {
-            return this._errHandler(e, "WEBHOOK")
+            return this._errHandler(e, "WEBHOOK", requestId)
         }
     }
 
@@ -99,8 +100,9 @@ export class OrchestratorWebhookService {
                 containerId: decoded.containerId,
                 event: "TERMINATED",
                 projectId: decoded.projectId,
-                deploymentId:decoded.deploymentId
-            }), "STATE-CHANGE-TOKEN-EXPIRED")
+                deploymentId:decoded.deploymentId,
+                requestId: webhook.reqMeta.requestId
+            }), "STATE-CHANGE-TOKEN-EXPIRED", webhook.reqMeta.requestId)
         }
     }
 }

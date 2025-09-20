@@ -1,3 +1,4 @@
+import { RequestMetaSchema } from "@shipoff/types";
 import z from "zod";
 
  
@@ -15,16 +16,19 @@ export const StartK8DeploymentRequestSchema = z.object({
     projectId: z.string().min(3).max(100),
     projectType:z.enum(["STATIC","DYNAMIC"]),
     deploymentId:z.string().min(3).max(100),
-    commitHash:z.string().min(7).max(40)
+    commitHash:z.string().min(7).max(40),
+    reqMeta:RequestMetaSchema
 }).strict();
 
 export const GetCloneURIRequestSchema = z.object({
-    jwt:z.string().min(10)
+    jwt:z.string().min(10),
+    reqMeta:RequestMetaSchema
 }).strict();
 
 export const OrchestratorWebhookRequestSchema = z.object({
     payload:z.string().min(10),
-    event:z.enum(["TRAFFIC_DETECTED","STATE_CHANGED"])
+    event:z.enum(["TRAFFIC_DETECTED","STATE_CHANGED"]),
+    reqMeta:RequestMetaSchema
 }).strict();
 
 export type TRAFFIC_DETECTED = {

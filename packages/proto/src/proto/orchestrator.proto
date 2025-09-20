@@ -5,6 +5,7 @@ import "google/protobuf/empty.proto";
 
 message IGetCloneURIRequest {
     string jwt = 1;
+    RequestMeta reqMeta = 2;
 }
 
 
@@ -21,10 +22,12 @@ message CloneURIResBody {
 message OrchestratorWebhookRequest {
     string payload = 1;
     string event = 2;
+    RequestMeta reqMeta = 3;
 }
 
 message IStartK8DeploymentRequest {
     string projectId = 1;
+    RequestMeta reqMeta = 2;
 }
 
 message IStartK8DeploymentResponse {

@@ -18,16 +18,16 @@ class TeamService {
       this._errorHandler = createGrpcErrorHandler({subServiceName:"AUTH_SERVICE",logger});
     }
 
-    async createTeam({teamName,description,authUserData:{userId}}:CreateTeamRequestBodyType){
+    async createTeam({teamName,description,authUserData:{userId},reqMeta}:CreateTeamRequestBodyType){
         try {
             const team = await this._dbService.createTeam({teamName,description,userId});
             return GrpcResponse.OK(team,"Team created")
         } catch (e:any) {
-            return this._errorHandler(e,"CREATE-TEAM");
+            return this._errorHandler(e,"CREATE-TEAM",reqMeta.requestId);
         }
     }
 
-    async getTeam({teamId,authUserData:{userId}}:GetTeamRequestBodyType){
+    async getTeam({teamId,authUserData:{userId},reqMeta}:GetTeamRequestBodyType){
         try {
             await this._permissions.canReadTeam(userId,teamId);
             const t = await this._dbService.findUniqueTeam({
@@ -44,32 +44,32 @@ class TeamService {
             });
             return GrpcResponse.OK(t,"Team found");
         } catch (e:any) {
-            return this._errorHandler(e,"GET-TEAM");
+            return this._errorHandler(e,"GET-TEAM",reqMeta.requestId);
         }
     }
 
-    async deleteTeam({teamId,authUserData:{userId}}:DeleteTeamRequestBodyType){
+    async deleteTeam({teamId,authUserData:{userId},reqMeta}:DeleteTeamRequestBodyType){
 
        try {
           await this._permissions.canDeleteTeam(userId,teamId);
           const del = await this._dbService.deleteTeamById({teamId});
           return GrpcResponse.OK(del,"Team deleted");
        } catch (e:any) {
-         return this._errorHandler(e,"DELETE-TEAM");
+         return this._errorHandler(e,"DELETE-TEAM",reqMeta.requestId);
        }
     }
 
-    async createTeamMemberInvitation({teamId,role,authUserData:{userId}}:TeamMemberInvitationRequestBodyType){
+    async createTeamMemberInvitation({teamId,role,authUserData:{userId},reqMeta}:TeamMemberInvitationRequestBodyType){
         try {
            await this._permissions.canInviteTeamMember(userId,teamId)
            const invitation = await this._dbService.createTeamInvitation({teamId,role})
            return GrpcResponse.OK(invitation,"Invitation created")
        } catch (e:any) {
-         return this._errorHandler(e,"CREATE-TEAM-MEMBER-INVITATION")
+         return this._errorHandler(e,"CREATE-TEAM-MEMBER-INVITATION",reqMeta.requestId)
        }
     }
 
-    async acceptInvitation({inviteId,authUserData:{userId}}:AcceptMemberInviteRequestBodyType){
+    async acceptInvitation({inviteId,authUserData:{userId},reqMeta}:AcceptMemberInviteRequestBodyType){
        try {
             const {expiresAt,teamId,role} = await this._dbService.findTeamInviteById(inviteId);
             if(expiresAt?.getMilliseconds() as number >= Date.now()){
@@ -84,31 +84,31 @@ class TeamService {
         return GrpcResponse.OK(member,"Team joined");
        }  
         catch (e:any) {
-          return this._errorHandler(e,"ACCEPT-TEAM-MEMBER-INVITATION");
+          return this._errorHandler(e,"ACCEPT-TEAM-MEMBER-INVITATION",reqMeta.requestId);
        }
     }
 
-    async getTeamMember({authUserData:{userId},targetUserId,teamId}:GetTeamMemberRequestBodyType){
+    async getTeamMember({authUserData:{userId},targetUserId,teamId,reqMeta}:GetTeamMemberRequestBodyType){
      try {
         await this._permissions.canReadTeamMember(userId,teamId,targetUserId);
         const member = await this._dbService.findUniqueTeamMember({userId_teamId:{userId:targetUserId,teamId}});
         return GrpcResponse.OK(member,"Team member found");
      } catch (e:any) {
-        return this._errorHandler(e,"GET-TEAM-MEMBER");
+        return this._errorHandler(e,"GET-TEAM-MEMBER",reqMeta.requestId);
      }
     }
 
-    async deleteTeamMember({authUserData:{userId},targetUserId,teamId}:DeleteTeamMemberRequestBodyType){
+    async deleteTeamMember({authUserData:{userId},targetUserId,teamId,reqMeta}:DeleteTeamMemberRequestBodyType){
         try {
             await this._permissions.canRemoveTeamMember(userId,teamId,targetUserId);
             const res = await this._dbService.deleteTeamMember({userId_teamId:{teamId,userId:targetUserId}})
             return GrpcResponse.OK(res,"Team member deleted");
         } catch (e:any) {
-            return this._errorHandler(e,"DELETE-TEAM-MEMBER");
+            return this._errorHandler(e,"DELETE-TEAM-MEMBER",reqMeta.requestId);
         }
     }
 
-    async GetAllUserTeams({authUserData:{userId},skip,limit:take}:BulkResourceRequestBodyType){
+    async GetAllUserTeams({authUserData:{userId},skip,limit:take,reqMeta}:BulkResourceRequestBodyType){
         try {
             const res = await this._dbService.findTeams({
                 where:{
@@ -123,7 +123,7 @@ class TeamService {
             })
             return GrpcResponse.OK(res,"User's teams found");
         } catch (e:any) {
-            return this._errorHandler(e,"GET-ALL-USER-TEAMS");
+            return this._errorHandler(e,"GET-ALL-USER-TEAMS",reqMeta.requestId);
         }
     }
 

@@ -108,33 +108,39 @@ message CreateProjectRequest {
     string outDir = 10;
     repeated EnviornmentVariablesKeyValue environmentVars = 11;
     string domain = 12;
+    RequestMeta reqMeta= 13;
 }
 
 message UpdateProjectRequest {
     User authUserData = 1;
     string projectId = 2;
     ProjectUpdates updates = 3;
+    RequestMeta reqMeta= 4;
 }
 
 message GetRepositoryRequest {
     User authUserData = 1;
     string projectId = 2;
+    RequestMeta reqMeta = 3;
 }
 
 message GetAllUserProjectsRequest {
     User authUserData = 1;
     int64 skip = 2;
     int32 limit = 3;
+    RequestMeta reqMeta = 4;
 }
 
 message DeleteProjectRequest {
     User authUserData = 1;
     string projectId = 2;
+    RequestMeta reqMeta = 3;
 }
 
 message GetProjectRequest {
     User authUserData = 1;
     string projectId = 2;
+    RequestMeta reqMeta = 3;
 }
 
 message GetAllDeploymentsRequest {
@@ -142,36 +148,42 @@ message GetAllDeploymentsRequest {
     string projectId = 2;
     int64 skip = 3;
     int32 limit = 4;
+    RequestMeta reqMeta = 5;
 }
 
 message RedeployRequest {
     User authUserData = 1;
     string deploymentId = 2;
     string projectId = 3;
+    RequestMeta reqMeta = 4;
 }
 
 message DeleteDeploymentRequest {
     User authUserData = 1;
     string deploymentId = 2;
     string projectId = 3;
+    RequestMeta reqMeta = 4;
 }
 
 message GetDeploymentRequest {
     User authUserData = 1;
     string projectId = 2;
     string deploymentId = 3;
+    RequestMeta reqMeta = 4;
 }
 
 message UpsertEnvVarsRequest {
     User authUserData = 1;
     string projectId = 2;
     repeated EnviornmentVariablesKeyValue envs = 3;
+    RequestMeta reqMeta = 4;
 }
 
 message DeleteEnvVarsRequest {
     User authUserData = 1;
     string projectId = 2;
     string name = 3;
+    RequestMeta reqMeta = 4;
 }
 
 message CreateRepositoryRequest {
@@ -179,6 +191,7 @@ message CreateRepositoryRequest {
     string githubRepoId = 2;
     string projectId = 3;
     string branch = 4;
+    RequestMeta reqMeta = 5;
 }
 
 message UpdateRepositoryRequest {
@@ -192,42 +205,50 @@ message UpdateRepositoryRequest {
           string githubRepoFullName = 3;
         }
     }
+    RequestMeta reqMeta = 4;
 }
 
 message DeleteRepositoryRequest {
     User authUserData = 1;
     string projectId = 2;
+    RequestMeta reqMeta = 3;
 }
 
 message GetEnvVarsRequest {
     User authUserData = 1;
     string projectId = 2;
+    RequestMeta reqMeta = 3;
 }
 
 message GetUserGithubReposRequest {
     User authUserData = 1;
     int64 skip = 2;
     int32 limit = 3;
+    RequestMeta reqMeta = 4;
 }
 
 message GetGithubRepoRequest {
     User authUserData = 1;
     string githubRepoId = 2;
+    RequestMeta reqMeta = 3;
 }
 
 message GithubWebhookRequest {
     string payload = 1;
     string signature = 2;
     string eventType = 3;
+    RequestMeta reqMeta = 4;
 }
 
 message CreateGithubInstallationRequest {
     User authUserData = 1;
     string installation_id = 2;
+    RequestMeta reqMeta = 3;
 }
 
 message IGetProjectRequest {
     string projectId = 1;
+    RequestMeta reqMeta = 2;
 }
 
 // Responses

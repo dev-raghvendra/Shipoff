@@ -29,37 +29,37 @@ export class K8Service {
         console.log(this._k8Config)
     }
 
-    async createFreeTierStaticDeployment({projectId,deploymentId,commitHash}:{projectId:string,deploymentId:string,commitHash:string}){
+    async createFreeTierStaticDeployment({projectId,deploymentId,commitHash,requestId}:{projectId:string,deploymentId:string,commitHash:string,requestId:string}){
         let manifest : FreeTierK8DeploymentManifest
         try {
             manifest = await this._getFreeTierDeploymentManifest(projectId,deploymentId,commitHash,"user-static-apps")
         } catch (e:any) {
-            return this._errHandler(e,"GET-FREE-TIER-STATIC-MANIFEST");
+            return this._errHandler(e,"GET-FREE-TIER-STATIC-MANIFEST",requestId);
         }
         try {
-            const deleteExisting = await this.deleteFreeTierDeployment(projectId,"user-static-apps");
+            const deleteExisting = await this.deleteFreeTierDeployment(projectId,"user-static-apps",requestId);
             if(!deleteExisting) throw new GrpcAppError(status.INTERNAL,"Failed to delete existing pod",deleteExisting)
             const res = await this._coreApi.createNamespacedPod(manifest);
             return res;
         } catch (e:any) {
-            return this._errHandler(e,"CREATE-FREE-TIER-STATIC-DEPLOYMENT");
+            return this._errHandler(e,"CREATE-FREE-TIER-STATIC-DEPLOYMENT",requestId);
         }
     }
 
-    async createFreeTierDynamicDeployment({projectId,deploymentId,commitHash}:{projectId:string,deploymentId:string,commitHash:string}){
+    async createFreeTierDynamicDeployment({projectId,deploymentId,commitHash,requestId}:{projectId:string,deploymentId:string,commitHash:string,requestId:string}){
         let manifest : FreeTierK8DeploymentManifest
         try {
             manifest = await this._getFreeTierDeploymentManifest(projectId,deploymentId,commitHash,"user-dynamic-apps")
         } catch (e:any) {
-            return this._errHandler(e,"GET-FREE-TIER-DYNAMIC-MANIFEST");
+            return this._errHandler(e,"GET-FREE-TIER-DYNAMIC-MANIFEST",requestId);
         }
         try {
-            const deleteExisting = await this.deleteFreeTierDeployment(projectId,"user-static-apps");
+            const deleteExisting = await this.deleteFreeTierDeployment(projectId,"user-static-apps",requestId);
             if(!deleteExisting) throw new GrpcAppError(status.INTERNAL,"Failed to delete existing pod",deleteExisting)
             const res = await this._coreApi.createNamespacedPod(manifest);
             return res;
         } catch (e:any) {
-            return this._errHandler(e,"CREATE-FREE-TIER-DYNAMIC-DEPLOYMENT");
+            return this._errHandler(e,"CREATE-FREE-TIER-DYNAMIC-DEPLOYMENT",requestId);
         }
     }
 
@@ -81,23 +81,23 @@ export class K8Service {
        }
     }
 
-    async deleteFreeTierDeployment(projectId:string,namespace:namespace){
+    async deleteFreeTierDeployment(projectId:string,namespace:namespace,requestId:string){
         try {      
             const res = await this._coreApi.deleteNamespacedPod({name:projectId,namespace})
             await this._waitForFreeTierDeletion(projectId,namespace);
             return res;
         } catch (e:any) {
-            return this._errHandler(e,"DELETE-FREE-TIER-CONTAINER");
+            return this._errHandler(e,"DELETE-FREE-TIER-CONTAINER",requestId);
         }
      }
 
-     async deletePaidTierDeployment(projectId:string){
+     async deletePaidTierDeployment(projectId:string,requestId:string){
         try {
             const res = await this._appsApi.deleteNamespacedDeployment({name:projectId,namespace:"default"})
             await this._waitForPaidTierDeletion(projectId);
             return res;
         } catch (e:any) {
-            return this._errHandler(e,"DELETE-PROD-CONTAINER");
+            return this._errHandler(e,"DELETE-PROD-CONTAINER",requestId);
         }
      }
 

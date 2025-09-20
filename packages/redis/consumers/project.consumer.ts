@@ -7,7 +7,7 @@ import { createObject } from "../../services-commons";
 
 export class ProjectConsumer {
   private _redisClient: Redis;
-  private _serviceName: keyof typeof PROJECT_TOPIC_CONSUMER_GROUPS;
+  readonly _serviceName: keyof typeof PROJECT_TOPIC_CONSUMER_GROUPS;
   private _consumerName: string;
   private _logger : ReturnType<typeof intilizeLogger>
 

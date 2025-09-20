@@ -23,17 +23,25 @@ export const UserSchema = z.object({
   provider:Providers
 }).strict();
 
+
+export const RequestMetaSchema = z.object({
+    requestId:z.string().min(10).max(100),
+}).strict();
+
 export const BulkResourceRequestSchema = z.object({
    authUserData : UserSchema,
    skip:optNumWithDefaultValue(0),
-   limit:optNumWithDefaultValue(5)
+   limit:optNumWithDefaultValue(5),
+  reqMeta:RequestMetaSchema
 })
 
 export type BulkResourceRequestBodyType = z.infer<typeof BulkResourceRequestSchema>
 
 export const BodyLessRequestSchema = z.object({
-  authUserData:UserSchema
+  authUserData:UserSchema,
+  reqMeta:RequestMetaSchema
 }).strict();
+
 export type UserType = z.infer<typeof UserSchema>;
 export type PermissionsType = z.infer<typeof Permissions>;
 export type ScopesType = z.infer<typeof Scopes>;

@@ -28,16 +28,16 @@ deploymentConsumer.startConsumer().then(() => {
     projectConsumer.startConsumer().then(() => {
     logger.info("PROJECT_CONSUMER_STARTED");
     }).catch((err) => {
-      logger.error(`ERROR_STARTING_PROJECT_CONSUMER_IN_ORCHESTRATOR_SERVICE: ${JSON.stringify(err, null, 2)}`);
+      logger.error(`ERROR_STARTING_PROJECT_CONSUMER: ${JSON.stringify(err, null, 2)}`);
     });
 }).catch((err) => {
-    logger.error(`ERROR_STARTING_DEPLOYMENT_CONSUMER_IN_ORCHESTRATOR_SERVICE: ${JSON.stringify(err, null, 2)}`);
+    logger.error(`ERROR_STARTING_DEPLOYMENT_CONSUMER: ${JSON.stringify(err, null, 2)}`);
 });
 
 mongoose.connect(SECRETS.DATABASE_URI).then(()=>{
-    logger.info("MONGO-DB_CONNECTED_IN_ORCHESTRATOR_SERVICE");
+    logger.info("MONGO-DB_CONNECTED");
 }).catch((error) => {
-    logger.error(`UNEXPECTED_ERR_OCCURED_WHILE_CONNECTING_MONGO-DB_IN_ORCHESTRATOR_SERVICE: ${error}`);
+    logger.error(`UNEXPECTED_ERR_OCCURED_WHILE_CONNECTING_MONGO-DB: ${error}`);
 });
 
 

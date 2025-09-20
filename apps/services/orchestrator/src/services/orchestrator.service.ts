@@ -1,6 +1,5 @@
-import { Database } from "@/db/db-service";
 import { ProjectExternalService } from "@/externals/project.external.service";
-import { GetCloneURIRequestBodyType, StartK8DeploymentRequestBodyType } from "@/types/container";
+import { GetCloneURIRequestBodyType, StartK8DeploymentRequestBodyType } from "@/types/orchestrator";
 import {
     createGrpcErrorHandler,
     createJwtErrHandler,
@@ -29,7 +28,7 @@ export class OrchestratorService {
         });
     }
 
-    async IStartK8Deployment({projectId,projectType,deploymentId,commitHash}: StartK8DeploymentRequestBodyType) {
+    async IStartK8Deployment({projectId,projectType,deploymentId,commitHash,reqMeta}: StartK8DeploymentRequestBodyType) {
         try {
             const deployment = await this._k8ServiceClient.tryCreatingFreeTierDeployment({
                 projectId,
@@ -39,11 +38,11 @@ export class OrchestratorService {
              })
             return GrpcResponse.OK(deployment,"K8 Deployment started");
         } catch (e: any) {
-            return this._errHandler(e, "I-GET-CONTAINER");
+            return this._errHandler(e, "I-GET-CONTAINER",reqMeta.requestId);
         }
     }
 
-    async IGetCloneURI({jwt}:GetCloneURIRequestBodyType){
+    async IGetCloneURI({jwt,reqMeta}:GetCloneURIRequestBodyType){
         try {
             const {githubRepoId,githubRepoFullName} = await verifyJwt<{githubRepoId:string,githubRepoFullName:string}>(jwt)
             const accessToken = await this._projectService.getRepositoryAccessToken(githubRepoId);
@@ -51,7 +50,7 @@ export class OrchestratorService {
             return GrpcResponse.OK({REPO_CLONE_URI},"Clone URI fetched");
         } catch (e:any) {
             if(e instanceof JsonWebTokenError) return this._jwtErrHandler(e)
-            return this._errHandler(e, "I-GET-CLONE-URI")
+            return this._errHandler(e, "I-GET-CLONE-URI",reqMeta.requestId);
         }
     }
 }

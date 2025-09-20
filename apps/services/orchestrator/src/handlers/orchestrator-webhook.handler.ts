@@ -1,5 +1,5 @@
 import { OrchestratorWebhookService } from "@/services/orchestrator-webhook.service";
-import { OrchestratorWebhookRequestBodyType } from "@/types/container";
+import { OrchestratorWebhookRequestBodyType } from "@/types/orchestrator";
 import { sendUnaryData, ServerUnaryCall, status } from "@grpc/grpc-js";
 import { OrchestratorWebhookRequest, google } from "@shipoff/proto";
 

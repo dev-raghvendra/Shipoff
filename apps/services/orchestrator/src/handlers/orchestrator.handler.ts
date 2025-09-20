@@ -1,5 +1,5 @@
 import { OrchestratorService } from "@/services/orchestrator.service";
-import { GetCloneURIRequestBodyType, StartK8DeploymentRequestBodyType } from "@/types/container";
+import { GetCloneURIRequestBodyType, StartK8DeploymentRequestBodyType } from "@/types/orchestrator";
 import { sendUnaryData, ServerUnaryCall, status } from "@grpc/grpc-js";
 import { CloneURIResponse, IGetCloneURIRequest, IStartK8DeploymentRequest, IStartK8DeploymentResponse } from "@shipoff/proto";
 

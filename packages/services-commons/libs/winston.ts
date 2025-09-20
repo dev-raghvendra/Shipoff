@@ -9,7 +9,7 @@ export const intilizeLogger = (serviceName:string)=>createLogger({
         format:()=>new Date().toString()
     }),
     format.colorize(),
-    format.printf(info=>`\n[${info.timestamp}]\n${serviceName}\n${info.level}: ${info.message}`)
+    format.printf(info=>`\n[${info.timestamp}]\n[${serviceName}]\n${info.level}: ${info.message}`)
     )})
    ]
 })

@@ -19,7 +19,7 @@ export class RepositoriesService {
     }
 
 
-    async getRepository({authUserData, projectId}:GetRepositoryRequestBodyType) {
+    async getRepository({authUserData, projectId,reqMeta}:GetRepositoryRequestBodyType) {
         try {
             await this._authService.getPermissions({
                 authUserData,
@@ -35,11 +35,11 @@ export class RepositoriesService {
             })
             return GrpcResponse.OK(repository,"Repository found");
         } catch (e:any) {
-            return this._errHandler(e,"GET-REPOSITORY");
+            return this._errHandler(e,"GET-REPOSITORY",reqMeta.requestId);
         }
     }
 
-    async deleteUniqueRepository({authUserData, projectId }:DeleteRepositoryRequestBodyType) {
+    async deleteUniqueRepository({authUserData, projectId, reqMeta}:DeleteRepositoryRequestBodyType) {
         try {
             await this._authService.getPermissions({
                 authUserData,
@@ -55,11 +55,11 @@ export class RepositoriesService {
             })
             return GrpcResponse.OK(repository,"Repository unlinked");
         } catch (e:any) {
-            return this._errHandler(e,"DELETE-REPOSITORY")
+            return this._errHandler(e,"DELETE-REPOSITORY",reqMeta.requestId);
         }
     }
 
-    async createRepository({authUserData,...body}:CreateRepositoryRequestBodyType){
+    async createRepository({authUserData,reqMeta,...body}:CreateRepositoryRequestBodyType){
        try {
           await this._authService.getPermissions({
             authUserData,
@@ -84,7 +84,7 @@ export class RepositoriesService {
           })
           return GrpcResponse.OK(createdRepo,"Repository created");
        } catch (e:any) {
-            return this._errHandler(e,"CREATE-REPOSITORY");
+            return this._errHandler(e,"CREATE-REPOSITORY",reqMeta.requestId);
        }
     }
 }   

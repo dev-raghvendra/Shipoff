@@ -1,6 +1,6 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import passHashMiddleware from "./middleware";
-import { OAuthRequestBodyType, SigninRequestBodyType } from "@/types/user";
+import { OAuthRequestBodyType, OAuthRequestDBBodyType, SigninRequestBodyType, SigninRequestDBBodyType } from "@/types/user";
 import { CreateTeamRequestDBBodyType, DeleteTeamRequestDBBodyType, TeamMemberDBBodyType, TeamMemberInvitationRequestDBBodyType } from "@/types/team";
 import { ProjectMemberDBBodyType, ProjectMemberInvitationRequestDBBodyType } from "@/types/project";
 import { generateId, GrpcAppError } from "@shipoff/services-commons";
@@ -104,7 +104,7 @@ export class Database {
     }
 
     // CREATE METHODS
-    async createOAuthUser(body:OAuthRequestBodyType) {
+    async createOAuthUser(body:OAuthRequestDBBodyType) {
         try {
             const res = await this._client.user.create({
                 data: {
@@ -132,7 +132,7 @@ export class Database {
         }
     }
 
-    async createEmailUser(body:SigninRequestBodyType){
+    async createEmailUser(body:SigninRequestDBBodyType){
         try {
             const res = await this._client.user.create({
                 data: {

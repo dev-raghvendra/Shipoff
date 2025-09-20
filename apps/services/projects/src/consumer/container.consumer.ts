@@ -33,7 +33,7 @@ export class ContainerConsumer {
            })
            await ackMessage();
         } catch (e:any) {
-            return this._errHandler(e,`UNEXPECTED_ERROR_OCCURED_WHILE_PROCESSING_EVENT_FOR_DEPLOYMENT_ID_${event.deploymentId}_IN_CONTAINER_TOPIC_IN_CONTAINER_CONSUMER_AT_${this._consumer._serviceName}`);
+            return this._errHandler(e,`UNEXPECTED_ERROR_OCCURED_WHILE_PROCESSING_EVENT_FOR_DEPLOYMENT_ID_${event.deploymentId}_IN_CONTAINER_TOPIC_IN_CONTAINER_CONSUMER_AT_${this._consumer._serviceName}`,event.requestId);
         }
     }
 

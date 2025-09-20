@@ -53,15 +53,15 @@ server.bindAsync(`${SECRETS.HOST}:${SECRETS.PORT}`,ServerCredentials.createInsec
 projectConsumer.startProjectConsumer().then(() => {
     logger.info("PROJECT_CONSUMER_STARTED");
 }).catch((err) => {
-    logger.error(`ERROR_STARTING_PROJECT_CONSUMER_IN_AUTH_SERVICE: ${JSON.stringify(err, null, 2)}`);
+    logger.error(`ERROR_STARTING_PROJECT_CONSUMER: ${JSON.stringify(err, null, 2)}`);
 });
 
 process.on("uncaughtException", (err) => {
-    logger.error(`UNCAUGHT_EXCEPTION_AT_AUTH_SERVICE: ${err.message}`);
+    logger.error(`UNCAUGHT_EXCEPTION: ${err.message}`);
 });
 
 process.on("unhandledRejection", (reason) => {
-    logger.error(`UNHANDLED_REJECTION_AT_AUTH_SERVICE: ${reason}`);
+    logger.error(`UNHANDLED_REJECTION: ${reason}`);
 });
 
 process.on("SIGINT", () => {

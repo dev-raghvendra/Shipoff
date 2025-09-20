@@ -1,13 +1,14 @@
 import { z } from 'zod';
 import { PermissionType } from '@prisma/index';
-import { Scopes, UserSchema} from "@shipoff/types"
+import { RequestMetaSchema, Scopes, UserSchema} from "@shipoff/types"
 
 
 
 export const AcceptMemberInviteRequestSchema = z.object({
   inviteId: z.string(),
-  authUserData:UserSchema
-});
+  authUserData:UserSchema,
+  reqMeta:RequestMetaSchema
+}).strict();
 export type AcceptMemberInviteRequestBodyType = z.infer<typeof AcceptMemberInviteRequestSchema>
 
 
@@ -16,7 +17,8 @@ export const HasPermissionsRequestSchema = z.object({
    scope : Scopes,
    permissions : z.array(z.enum(PermissionType)),
    authUserData:UserSchema,
-   targetUserId:z.string().optional()
+   targetUserId:z.string().optional(),
+   reqMeta:RequestMetaSchema
 }).strict()
 
 

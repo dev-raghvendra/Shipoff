@@ -20,7 +20,7 @@ export class DeploymentsService {
         this._authService = authExternalService;
         this._deploymentProducer = new DeploymentEventProducerService();
     }
-    async getDeployment({authUserData, deploymentId,projectId}: GetDeploymentRequestBodyType) {
+    async getDeployment({authUserData, deploymentId,projectId,reqMeta}: GetDeploymentRequestBodyType) {
         try {
             await this._authService.getPermissions({
                 authUserData,
@@ -32,11 +32,11 @@ export class DeploymentsService {
             const deployment = await this._dbService.findUniqueDeploymentById(deploymentId);
             return GrpcResponse.OK(deployment, "Deployment found");
         } catch (e:any) {
-            return this._errHandler(e, "GET-DEPLOYMENT");
+            return this._errHandler(e, "GET-DEPLOYMENT",reqMeta.requestId);
         }
     }
 
-    async getAllDeployments({authUserData, projectId, skip, limit}:GetAllDeploymentsRequestBodyType){
+    async getAllDeployments({authUserData, projectId, skip, limit,reqMeta}:GetAllDeploymentsRequestBodyType){
         try {
             await this._authService.getPermissions({
                 authUserData,
@@ -66,11 +66,11 @@ export class DeploymentsService {
             });
             return GrpcResponse.OK(deployments, "Deployments found");
         } catch (e:any) {
-            return this._errHandler(e, "GET-ALL-DEPLOYMENTS");
+            return this._errHandler(e, "GET-ALL-DEPLOYMENTS",reqMeta.requestId);
         }
     }
-    
-    async deleteDeployment({authUserData, projectId, deploymentId}:DeleteDeploymentRequestBodyType) {
+
+    async deleteDeployment({authUserData, projectId, deploymentId, reqMeta}:DeleteDeploymentRequestBodyType) {
         try {
             await this._authService.getPermissions({
                 authUserData,
@@ -86,15 +86,16 @@ export class DeploymentsService {
                 deploymentId,
                 domain: deployment.project.domain,
                 projectType:deployment.project.framework.applicationType,
-                commitHash:deployment.commitHash
-            }),"DELETE-DEPLOYMENT");
+                commitHash:deployment.commitHash,
+                requestId:reqMeta.requestId
+            }),"DELETE-DEPLOYMENT",reqMeta.requestId);
             return GrpcResponse.OK({}, "Deployment deleted");
         } catch (e:any) {
-            return this._errHandler(e, "DELETE-DEPLOYMENT");
+            return this._errHandler(e, "DELETE-DEPLOYMENT",reqMeta.requestId);
         }
     }
 
-    async redeploy({authUserData, projectId, deploymentId}:RedeployRequestBodyType) {
+    async redeploy({authUserData, projectId, deploymentId, reqMeta}:RedeployRequestBodyType) {
         try {
             await this._authService.getPermissions({
                 authUserData,
@@ -110,11 +111,12 @@ export class DeploymentsService {
                 deploymentId,
                 domain:deployment.project.domain,
                 projectType:deployment.project.framework.applicationType,
-                commitHash:deployment.commitHash
-            }),"REDEPLOY-DEPLOYMENT");
+                commitHash:deployment.commitHash,
+                requestId:reqMeta.requestId
+            }),"REDEPLOY-DEPLOYMENT",reqMeta.requestId);
             return GrpcResponse.OK(deployment, "Deployment redeployed");
         } catch (e:any) {
-            return this._errHandler(e, "REDEPLOY-DEPLOYMENT");
+            return this._errHandler(e, "REDEPLOY-DEPLOYMENT",reqMeta.requestId);
         }
     }
 

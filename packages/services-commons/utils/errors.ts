@@ -23,19 +23,19 @@ export function createGrpcErrorHandler({
   subServiceName: string;
   logger: { error: (msg: string) => void }
 }) {
-  return function handleError(error: GrpcAppError,origin: string) {
+  return function handleError(error: GrpcAppError,origin: string,requestId:string) {
     if(!Object.values(status).includes(error.code) || error.code === status.INTERNAL){
-      return GrpcResponse.INTERNAL("Unexpected error occurred",origin,subServiceName,error,logger);
+      return GrpcResponse.INTERNAL("Unexpected error occurred",origin,subServiceName,error,logger,requestId);
     }
     return GrpcResponse.ERROR(error.code,error.message,error.res);
   }
 }
 
 export function createAsyncErrHandler({subServiceName,logger}:{subServiceName:string,logger:{error:(msg:string)=>void}}){
-   return function(this:Promise<any>,origin:string){
+   return function(this:Promise<any>,origin:string,requestId:string){
       this.catch((err) => {
           const e = typeof err === "object" ? JSON.stringify(err,null,2) : err;
-          logger.error(`UNEXPECTED_ERROR_OCCURED_IN_${subServiceName}_AT_${origin}: ${e}`);
+          logger.error(`[rid:${requestId}]:UNEXPECTED_ERROR_OCCURED_IN_${subServiceName}_AT_${origin}: ${e}`);
       });
    }
 }
@@ -50,9 +50,9 @@ export function createJwtErrHandler({invalidErrMsg="Invalid access token",expire
 }
 
 export function createSyncErrHandler({subServiceName,logger}:{subServiceName:string,logger:{error:(msg:string)=>void}}){
-   return function(err: Error,origin: string){
+   return function(err: Error,origin: string,requestId:string){
       const e = typeof err === "object" ? JSON.stringify(err,null,2) : err;
-      logger.error(`UNEXPECTED_ERROR_OCCURED_IN_${subServiceName}_AT_${origin}: ${e}`);
+      logger.error(`[rid:${requestId}]:UNEXPECTED_ERROR_OCCURED_IN_${subServiceName}_AT_${origin}: ${e}`);
    }
 }
 

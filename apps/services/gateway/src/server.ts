@@ -6,11 +6,11 @@ import { CONFIG } from "./config/config";
 createServer(app).listen(CONFIG.PORT,()=>logger.info(`GATEWAY_SERVICE_STARTED_ON_PORT: ${CONFIG.PORT}`));
 
 process.on("uncaughtException", (err) => {
-    logger.error(`UNCAUGHT_EXCEPTION_AT_GATEWAY: ${err.message}`);
+    logger.error(`UNCAUGHT_EXCEPTION: ${err.message}`);
 });
 
 process.on("unhandledRejection", (reason) => {
-    logger.error(`UNHANDLED_REJECTION_AT_GATEWAY: ${reason}`);
+    logger.error(`UNHANDLED_REJECTION: ${reason}`);
 });
 
 process.on("SIGINT", () => {

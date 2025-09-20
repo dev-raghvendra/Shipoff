@@ -54,7 +54,7 @@ server.addService(UnimplementedProjectsServiceService.definition, {
 containerConsumer.startConsumer().then(() => {
     logger.info("CONTAINER_CONSUMER_STARTED");
 }).catch((err) => {
-    logger.error(`ERROR_STARTING_CONTAINER_CONSUMER_IN_PROJECTS_SERVICE: ${JSON.stringify(err, null, 2)}`);
+    logger.error(`ERROR_STARTING_CONTAINER_CONSUMER: ${JSON.stringify(err, null, 2)}`);
 });
 
 server.bindAsync(`${SECRETS.HOST}:${SECRETS.PORT}`,ServerCredentials.createInsecure(),(err)=>{

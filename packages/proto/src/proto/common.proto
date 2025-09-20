@@ -12,14 +12,19 @@ message User {
   string provider = 8;
 }
 
+message RequestMeta {
+   string requestId = 1;
+}
 message BodyLessRequest {
   User authUserData = 1;
+  RequestMeta reqMeta = 2;
 }
 
 message BulkResourceRequest {
    User authUserData = 1;
    int64 skip = 2;
    int32 limit = 3;
+   RequestMeta reqMeta = 4;
 }
 
 

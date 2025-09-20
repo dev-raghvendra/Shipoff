@@ -36,7 +36,7 @@ export class ProjectsService {
         this._projectProducer = new ProjectProducer();
     }
 
-    async createProject({authUserData:{userId},...body}: CreateProjectRequestBodyType) {
+    async createProject({authUserData:{userId},reqMeta,...body}: CreateProjectRequestBodyType) {
         
         try {
            const fw = await this._dbService.findUniqueFrameworkById(body.frameworkId);
@@ -56,35 +56,36 @@ export class ProjectsService {
                event:"CREATED",
                projectId: project.projectId,
                userId,
-               projectType:fw.applicationType
-           }),"CREATE-PROJECT");
+               projectType:fw.applicationType,
+               requestId:reqMeta.requestId
+           }),"CREATE-PROJECT",reqMeta.requestId);
 
            return GrpcResponse.OK(project, "Project created");
         } catch (e:any) {
-            return this._errHandler(e, "CREATE-PROJECT");
+            return this._errHandler(e, "CREATE-PROJECT",reqMeta.requestId);
         }
     }
 
-    async getProject({authUserData,projectId}:GetProjectRequestBodyType){
+    async getProject({authUserData,projectId,reqMeta}:GetProjectRequestBodyType){
         try {
             await this._authService.getPermissions({authUserData,permissions:["READ"],scope:"PROJECT",resourceId:projectId,errMsg:"You do not have permission to read this project"});
             const project = await this._dbService.findUniqueProject({where:{projectId},include:this._selectProjectFeilds});
             return GrpcResponse.OK(project, "Project found");
         } catch (e:any) {
-            return this._errHandler(e,"GET-PROJECT");
+            return this._errHandler(e,"GET-PROJECT",reqMeta.requestId);
         }
     }
 
-    async IGetProject({projectId}:IGetProjectRequestBodyType){
+    async IGetProject({projectId,reqMeta}:IGetProjectRequestBodyType){
         try {
             const project = await this._dbService.findUniqueProject({where:{projectId},include:this._selectProjectFeilds});
             return GrpcResponse.OK(project, "Project found");
         } catch (e:any) {
-            return this._errHandler(e,"I-GET-PROJECT");
+            return this._errHandler(e,"I-GET-PROJECT",reqMeta.requestId);
         }
     }
 
-    async getAllUserProjects({authUserData}:BodyLessRequestBodyType){
+    async getAllUserProjects({authUserData,reqMeta}:BodyLessRequestBodyType){
         try {
             const projectIds = await this._authService.getUserProjectIds(authUserData);
             const projects = await this._dbService.findManyProjects({where:{
@@ -97,11 +98,11 @@ export class ProjectsService {
             }})
             return GrpcResponse.OK(projects, "Projects found");
         } catch (e:any) {
-            return this._errHandler(e,"GET-ALL-USER-PROJECTS");
+            return this._errHandler(e,"GET-ALL-USER-PROJECTS",reqMeta.requestId);
         }
     }
 
-    async updateProject({authUserData,...body}:UpdateProjectRequestBodyType){
+    async updateProject({authUserData,reqMeta,...body}:UpdateProjectRequestBodyType){
         try {
             await this._authService.getPermissions({
                 authUserData,
@@ -116,11 +117,11 @@ export class ProjectsService {
             const project = await this._dbService.updateProjectById({projectId:body.projectId,...body.updates});
             return GrpcResponse.OK(project, "Project updated");
         } catch (e:any) {
-            return this._errHandler(e, "UPDATE-PROJECT");
+            return this._errHandler(e, "UPDATE-PROJECT", reqMeta.requestId);
         }
     }
 
-    async deleteProject({authUserData,projectId}:GetProjectRequestBodyType) {
+    async deleteProject({authUserData,projectId,reqMeta}:GetProjectRequestBodyType) {
         try {
             await this._authService.getPermissions({
                 authUserData,
@@ -134,15 +135,16 @@ export class ProjectsService {
                 event:"DELETED",
                 projectId,
                 userId:authUserData.userId,
-                projectType:project.framework.applicationType
-            }),"DELETE-PROJECT");
+                projectType:project.framework.applicationType,
+                requestId:reqMeta.requestId
+            }),"DELETE-PROJECT",reqMeta.requestId);
             return GrpcResponse.OK(project, "Project deleted");
         } catch (e:any) {
-            return this._errHandler(e, "DELETE-PROJECT");
+            return this._errHandler(e, "DELETE-PROJECT", reqMeta.requestId);
         }
     }
 
-    async upsertEnvironmentVariables({authUserData,...body}:UpsertEnvVarsRequestBodyType) {
+    async upsertEnvironmentVariables({authUserData,reqMeta,...body}:UpsertEnvVarsRequestBodyType) {
         try {
             await this._authService.getPermissions({
                 authUserData,
@@ -154,11 +156,11 @@ export class ProjectsService {
             const project = await this._dbService.createEnvironmentVariable(body);
             return GrpcResponse.OK(project, "Environment variables updated");
         } catch (e:any) {
-            return this._errHandler(e, "UPSERT-ENVIRONMENT-VARIABLES");
+            return this._errHandler(e, "UPSERT-ENVIRONMENT-VARIABLES", reqMeta.requestId);
         }
     }
 
-    async deleteEnvironmentVariable({authUserData,...body}:DeleteEnvVarsRequestBodyType) {
+    async deleteEnvironmentVariable({authUserData,reqMeta,...body}:DeleteEnvVarsRequestBodyType) {
         try {
             await this._authService.getPermissions({
                 authUserData,
@@ -170,11 +172,11 @@ export class ProjectsService {
             const project = await this._dbService.deleteEnvironmentVariable(body);
             return GrpcResponse.OK(project, "Environment variable deleted");
         } catch (e:any) {
-            return this._errHandler(e, "DELETE-ENVIRONMENT-VARIABLE");
+            return this._errHandler(e, "DELETE-ENVIRONMENT-VARIABLE", reqMeta.requestId);
         }
     }
 
-    async getEnvironmentVariables({authUserData,...body}:GetEnvVarsRequestBodyType) {
+    async getEnvironmentVariables({authUserData,reqMeta,...body}:GetEnvVarsRequestBodyType) {
         try {
             await this._authService.getPermissions({
                 authUserData,
@@ -186,11 +188,11 @@ export class ProjectsService {
             const envVars = await this._dbService.findManyEnvironmentVariablesByProjectId(body);
             return GrpcResponse.OK(envVars, "Environment variables found");
         } catch (e:any) {
-            return this._errHandler(e, "GET-ENVIRONMENT-VARIABLES");
+            return this._errHandler(e, "GET-ENVIRONMENT-VARIABLES", reqMeta.requestId);
         }
     }
 
-    async getFrameworks({skip,limit}:BulkResourceRequestBodyType){
+    async getFrameworks({skip,limit,reqMeta}:BulkResourceRequestBodyType){
         try {
             const frameworks = await this._dbService.findManyFrameworks({
                 skip,
@@ -201,7 +203,7 @@ export class ProjectsService {
             });
             return GrpcResponse.OK(frameworks, "Frameworks found");
         } catch (e:any) {
-            return this._errHandler(e, "GET-FRAMEWORKS");
+            return this._errHandler(e, "GET-FRAMEWORKS", reqMeta.requestId);
         }
     }
 }

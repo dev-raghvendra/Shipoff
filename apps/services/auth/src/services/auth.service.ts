@@ -30,16 +30,16 @@ class AuthService {
         return GrpcResponse.OK({ accessToken, refreshToken }, "Session created");
     }
 
-    async signIn(body: SigninRequestBodyType) {
+    async signIn({reqMeta,...body}: SigninRequestBodyType) {
         try {
             const u = await this._dbService.createEmailUser(body);
             return await this.createSession(u);
         } catch (e : any) {
-            return this._errorHandler(e,"SIGNIN");
+            return this._errorHandler(e,"SIGNIN",reqMeta.requestId);
         }
     }
 
-    async login(body: EmailPassLoginRequestBodyType) {
+    async login({reqMeta,...body}: EmailPassLoginRequestBodyType) {
         try {
             const u = await this._dbService.findUniqueUser({
                 where:{email:body.email}
@@ -49,11 +49,11 @@ class AuthService {
             const {password, ...user} = u;
             return this.createSession(user);
         } catch (e:any) {
-            return this._errorHandler(e,"LOGIN");
+            return this._errorHandler(e,"LOGIN",reqMeta.requestId);
         }
     }
 
-    async OAuth(body:OAuthRequestBodyType){
+    async OAuth({reqMeta,...body}:OAuthRequestBodyType){
         try {
             const u = await this._dbService.createOAuthUser(body);
             return await this.createSession(u);
@@ -62,13 +62,13 @@ class AuthService {
                 const {password, ...user} = await this._dbService.findUniqueUser({where:{email:body.email}});
                 return await this.createSession(user);
              }
-            
-            return this._errorHandler(e,"OAUTH");
+
+            return this._errorHandler(e,"OAUTH",reqMeta.requestId);
         }
     }
-    
-    
-    async GetUser(body:GetUserRequestBodyType){
+
+
+    async GetUser({reqMeta,...body}:GetUserRequestBodyType){
         try {
             const u = await this._dbService.findUniqueUserById(body.targetUserId,{
                 userId:true,
@@ -80,11 +80,11 @@ class AuthService {
             });
             return GrpcResponse.OK(u,"User found");
         } catch (e:any) {
-           return this._errorHandler(e,"GET-USER");
+           return this._errorHandler(e,"GET-USER",reqMeta.requestId);
         }
     }
 
-    async GetMe(userId:string){
+    async GetMe({reqMeta,authUserData:{userId}}:BodyLessRequestBodyType){
         try {
             const u = await this._dbService.findUniqueUserById(userId,{
                 userId:true,
@@ -100,19 +100,19 @@ class AuthService {
             })
             return GrpcResponse.OK(u,"User found");
         } catch (e:any) {
-            return this._errorHandler(e,"GET-ME");
+            return this._errorHandler(e,"GET-ME",reqMeta.requestId);
         }
     }
 
-    async refreshToken(body:BodyLessRequestBodyType){
+    async refreshToken({reqMeta,authUserData}:BodyLessRequestBodyType){
       try {
-        return this.createSession(body.authUserData);
+        return this.createSession(authUserData);
       } catch (e:any) {
-        return this._errorHandler(e,"REFRESH_TOKEN");
+        return this._errorHandler(e,"REFRESH_TOKEN",reqMeta.requestId);
       }
     }
 
-    async hasPermissions({authUserData:{userId},resourceId,permissions,scope,targetUserId}:HasPermissionsRequestBodyType){
+    async hasPermissions({authUserData:{userId},resourceId,permissions,scope,targetUserId,reqMeta}:HasPermissionsRequestBodyType){
      try {
         const has = await this._permissions.canAccess({
             userId,
@@ -123,7 +123,7 @@ class AuthService {
         })
         return GrpcResponse.OK(has,"Permission derived");
      } catch (e:any) {
-        return this._errorHandler(e,"HAS-PERMISSIONS");
+        return this._errorHandler(e,"HAS-PERMISSIONS",reqMeta.requestId);
      }
     }
 }

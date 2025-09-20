@@ -3,6 +3,7 @@ export type ContainerEvent <T extends keyof typeof $ContainerEvent> = {
     event: T;
     containerId:string;
     deploymentId:string;
+    requestId:string;
 }
 
 export type DeploymentEvent <T extends keyof typeof $DeploymentEvent> =  {
@@ -12,11 +13,13 @@ export type DeploymentEvent <T extends keyof typeof $DeploymentEvent> =  {
     domain:string;
     projectType:"STATIC" | "DYNAMIC";
     commitHash:string
+    requestId:string;
 }
 
 export type AuthEvent<T extends keyof typeof $AuthEvent> = {
     userId:string;
     action:T;
+    requestId:string;
 }
 
 export type ProjectEvent<T extends keyof typeof $ProjectEvent> = {
@@ -24,6 +27,7 @@ export type ProjectEvent<T extends keyof typeof $ProjectEvent> = {
     userId:string
     event:T;
     projectType:"STATIC" | "DYNAMIC";
+    requestId:string;
 }
 
 export enum $AuthEvent {

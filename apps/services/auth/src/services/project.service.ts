@@ -17,17 +17,17 @@ class ProjectService {
       this._dbService = dbService;
       this._errorHandler = createGrpcErrorHandler({subServiceName:"AUTH_SERVICE",logger});
     }
-    async createProjectMemberInvitation({authUserData:{userId},projectId,userId:targetUserId,role}:ProjectMemberInvitationRequestBodyType){
+    async createProjectMemberInvitation({authUserData:{userId},projectId,userId:targetUserId,role,reqMeta}:ProjectMemberInvitationRequestBodyType){
         try {
             await this._permissions.canInviteProjectMember(userId,projectId);
             const invitation = await this._dbService.createProjectInvitation({projectId,userId:targetUserId,role})
            return GrpcResponse.OK(invitation,"Invitation created")
         } catch (e:any) {
-         return this._errorHandler(e,"CREATE-PROJECT-MEMBER-INVITATION")
+         return this._errorHandler(e,"CREATE-PROJECT-MEMBER-INVITATION",reqMeta.requestId);
        }
     }
 
-    async acceptInvitation({inviteId,authUserData:{userId}}:AcceptMemberInviteRequestBodyType){
+    async acceptInvitation({inviteId,authUserData:{userId},reqMeta}:AcceptMemberInviteRequestBodyType){
        try {
             const {expiresAt,role,projectId} = await this._dbService.findProjectInviteById(inviteId);
             if(expiresAt?.getMilliseconds() as number >= Date.now()){
@@ -42,21 +42,21 @@ class ProjectService {
         return GrpcResponse.OK(member,"Project joined");
        }  
         catch (e:any) {
-          return this._errorHandler(e,"ACCEPT-PROJECT-MEMBER-INVITATION");
+          return this._errorHandler(e,"ACCEPT-PROJECT-MEMBER-INVITATION",reqMeta.requestId);
        }
     }
 
-    async getProjectMember({targetUserId,projectId,authUserData:{userId}}:GetProjectMemberRequestBodyType){
+    async getProjectMember({targetUserId,projectId,authUserData:{userId},reqMeta}:GetProjectMemberRequestBodyType){
       try {
           await this._permissions.canReadProjectMember(userId,projectId,targetUserId);
           const member = await this._dbService.findUniqueProjectMember({userId_projectId:{userId:targetUserId,projectId}});
           return GrpcResponse.OK(member,"Member found");
       } catch (e:any) {
-          return this._errorHandler(e,"GET-PROJECT-MEMBER-INVITATION");
+          return this._errorHandler(e,"GET-PROJECT-MEMBER-INVITATION",reqMeta.requestId);
        }
     }
 
-    async deleteProjectMember({targetUserId,projectId,authUserData:{userId}}:DeleteProjectMemberRequestBodyType){
+    async deleteProjectMember({targetUserId,projectId,authUserData:{userId},reqMeta}:DeleteProjectMemberRequestBodyType){
       try {
           await this._permissions.canRemoveProjectMember(userId,projectId,targetUserId);
           const member = await this._dbService.deleteProjectMember({userId_projectId:{
@@ -65,21 +65,21 @@ class ProjectService {
           }})
           return GrpcResponse.OK(member,"Member removed");
       } catch (e:any) {
-          return this._errorHandler(e,"DELETE-PROJECT-MEMBER-INVITATION");
+          return this._errorHandler(e,"DELETE-PROJECT-MEMBER-INVITATION",reqMeta.requestId);
        }
     }
 
-    async linkTeam({projectId,teamId, authUserData:{userId}}:CreateTeamLinkRequestBodyType){
+    async linkTeam({projectId,teamId, authUserData:{userId},reqMeta}:CreateTeamLinkRequestBodyType){
       try {
         await this._permissions.canCreateTeamLink(userId,projectId);
         const link = await this._dbService.createTeamLink({data:{projectId,teamId}})
         return GrpcResponse.OK(link,"Linked team");
       } catch (e:any) {
-        return this._errorHandler(e,"LINK-TEAM");
+        return this._errorHandler(e,"LINK-TEAM",reqMeta.requestId);
       }
     }
 
-    async GetAllUserProjectIds({authUserData:{userId}}:BodyLessRequestBodyType){
+    async GetAllUserProjectIds({authUserData:{userId},reqMeta}:BodyLessRequestBodyType){
         try {
             const res = await this._dbService.startTransaction(async(tx)=>{
                 const teamProjects = await tx.team.findMany({
@@ -120,7 +120,7 @@ class ProjectService {
             if(res.length) return GrpcResponse.OK(res,"ProjectIds found");
             throw new GrpcAppError(status.NOT_FOUND,"No projects found for user",null);
         } catch (e:any) {
-            return this._errorHandler(e,"GET-ALL-USER-PROJECT-IDS");
+            return this._errorHandler(e,"GET-ALL-USER-PROJECT-IDS",reqMeta.requestId);
         }
     }
 }

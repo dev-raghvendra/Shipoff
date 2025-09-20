@@ -59,11 +59,11 @@ export class DeploymentConsumer implements IDeploymentConsumer {
                  res = await this.DELETED(evt.event);
                  break;
                 default:
-                 logger.error(`UNKNOWN_EVENT_TYPE_${evt?.event.event}_FOR_PROJECT_ID_${evt?.event.projectId}_IN_DEPLOYMENT_TOPIC_IN_DEPLOYMENT_CONSUMER_AT_${this._consumer._serviceName}`);
+                 logger.error(`[rid:${evt?.event.requestId}]:UNKNOWN_EVENT_TYPE_${evt?.event.event}_FOR_PROJECT_ID_${evt?.event.projectId}_IN_DEPLOYMENT_TOPIC_IN_DEPLOYMENT_CONSUMER_AT_${this._consumer._serviceName}`);
                  break;
              }
              if(res) return await evt?.ackMessage();
-             logger.error(`UNEXPECTED_ERROR_OCCURED_WHILE_PROCESSING_EVENT_TYPE_${evt?.event.event}_FOR_PROJECT_ID_${evt?.event.projectId}_IN_DEPLOYMENT_CONSUMER_AT_${this._consumer._serviceName}`);
+             logger.error(`[rid:${evt?.event.requestId}]:UNEXPECTED_ERROR_OCCURED_WHILE_PROCESSING_EVENT_TYPE_${evt?.event.event}_FOR_PROJECT_ID_${evt?.event.projectId}_IN_DEPLOYMENT_CONSUMER_AT_${this._consumer._serviceName}`);
           }
           else backoffTime = Math.min(backoffTime * 2, maxBackoffTime);
           await new Promise(res=>setTimeout(res,backoffTime));
@@ -81,14 +81,16 @@ export class DeploymentConsumer implements IDeploymentConsumer {
            res = await this._k8ServiceClient.createFreeTierStaticDeployment({
                projectId:event.projectId,
                deploymentId:event.deploymentId,
-               commitHash:event.commitHash
+               commitHash:event.commitHash,
+               requestId:event.requestId
             })
         }
         else {
            res = await this._k8ServiceClient.createFreeTierDynamicDeployment({
                 projectId:event.projectId,
                 deploymentId:event.deploymentId,
-                commitHash:event.commitHash
+                commitHash:event.commitHash,
+                requestId:event.requestId
             })
         }
         return res === undefined

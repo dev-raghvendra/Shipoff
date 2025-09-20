@@ -1,7 +1,6 @@
 import {AcceptInvitationRequest, AuthServiceClient, BodyLessRequest, BulkResourceRequest, CreateProjectMemberInvitationRequest, CreateTeamMemberInvitationRequest, CreateTeamRequest, DeleteProjectMemberRequest, DeleteTeamMemberRequest, DeleteTeamRequest, GetProjectMemberRequest, GetTeamMemberRequest, GetTeamRequest, GetUserRequest, LoginRequest, OAuthRequest, SigninRequest, User} from "@shipoff/proto";
 import {GetAuthClient} from "@shipoff/grpc-clients";
 import {promisifyGrpcCall} from "@shipoff/services-commons"
-import {logger} from "@shipoff/services-commons/libs/winston";
 
 export class AuthService {
     private _authService:AuthServiceClient;

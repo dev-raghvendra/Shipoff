@@ -1,4 +1,4 @@
-import {optionalArray, optionalObject, optionalString, optNumWithDefaultValue, UserSchema} from "@shipoff/types"
+import {optionalArray, optionalObject, optionalString, optNumWithDefaultValue, RequestMetaSchema, UserSchema} from "@shipoff/types"
 import z from "zod";
 
 export const EnvVarsSchema = z.object({
@@ -18,18 +18,21 @@ export const CreateProjectRequestSchema = z.object({
      githubRepoURI:z.url(),
      githubRepoFullName:z.string().min(1),
      outDir:z.string().min(2),
-     environmentVars:optionalArray(EnvVarsSchema)
+     environmentVars:optionalArray(EnvVarsSchema),
+     reqMeta:RequestMetaSchema
 }).strict();
 
 export const GetProjectRequestSchema = z.object({
     authUserData: UserSchema,
     projectId: z.string(),
+    reqMeta:RequestMetaSchema
 }).strict();
 
 export const GetAllUserProjectsRequestSchema = z.object({
     authUserData: UserSchema,
     skip: optNumWithDefaultValue(0),
-    limit: optNumWithDefaultValue(5)
+    limit: optNumWithDefaultValue(5),
+    reqMeta:RequestMetaSchema
 }).strict();
 
 
@@ -50,12 +53,14 @@ export const updatesSchema = z.object({
 export const UpdateProjectRequestSchema = z.object({
     authUserData: UserSchema,
     projectId: z.string(),
-    updates: updatesSchema
+    updates: updatesSchema,
+    reqMeta:RequestMetaSchema
 }).strict();
 
 export const DeleteProjectRequestSchema = z.object({
     authUserData: UserSchema,
     projectId: z.string(),
+    reqMeta:RequestMetaSchema
 }).strict();
 
 export const UpsertEnvVarsRequestSchema = z.object({
@@ -65,43 +70,47 @@ export const UpsertEnvVarsRequestSchema = z.object({
         name: z.string(),
         value: z.string(),
     })),
+    reqMeta:RequestMetaSchema
 }).strict();
 
 export const DeleteEnvVarsRequestSchema = z.object({
     authUserData: UserSchema,
     projectId: z.string(),
     name: z.string(),
+    reqMeta:RequestMetaSchema
 }).strict();
 
 export const GetEnvVarsRequestSchema = z.object({
     authUserData: UserSchema,
     projectId: z.string(),
+    reqMeta:RequestMetaSchema
 }).strict();
 
 export const IGetProjectRequestSchema = z.object({
-    projectId: z.string()
+    projectId: z.string(),
+    reqMeta:RequestMetaSchema
 }).strict();
 
 
 export type IGetProjectRequestBodyType = z.infer<typeof IGetProjectRequestSchema>;
 export type GetAllUserProjectRequestBodyType = z.infer<typeof GetAllUserProjectsRequestSchema>;
-export type GetAllUserProjectRequestDBBodyType = Omit<GetAllUserProjectRequestBodyType, "authUserData">;
+export type GetAllUserProjectRequestDBBodyType = Omit<GetAllUserProjectRequestBodyType, "authUserData" | "reqMeta">;
 export type DeleteProjectRequestBodyType = z.infer<typeof DeleteProjectRequestSchema>;
-export type DeleteProjectRequestDBBodyType = Omit<DeleteProjectRequestBodyType, "authUserData">;
+export type DeleteProjectRequestDBBodyType = Omit<DeleteProjectRequestBodyType, "authUserData" | "reqMeta">;
 export type UpdateProjectRequestBodyType = z.infer<typeof UpdateProjectRequestSchema>;
 export type UpdateProjectRequestDBBodyType = z.infer<typeof updatesSchema> & {
     projectId: string;
 }
 export type GetProjectRequestBodyType = z.infer<typeof GetProjectRequestSchema>;
-export type GetProjectRequestDBBodyType = Omit<GetProjectRequestBodyType, "authUserData">;
+export type GetProjectRequestDBBodyType = Omit<GetProjectRequestBodyType, "authUserData" | "reqMeta">;
 export type CreateProjectRequestBodyType = z.infer<typeof CreateProjectRequestSchema>;
 export type CreateProjectRequestDBBodyType = Omit<CreateProjectRequestBodyType & {
     githubInstallationId:string,
-}, "authUserData">
+}, "authUserData" | "reqMeta">
 
 export type UpsertEnvVarsRequestBodyType = z.infer<typeof UpsertEnvVarsRequestSchema>;
-export type UpsertEnvVarsRequestDBBodyType = Omit<UpsertEnvVarsRequestBodyType, "authUserData">;
+export type UpsertEnvVarsRequestDBBodyType = Omit<UpsertEnvVarsRequestBodyType, "authUserData" | "reqMeta">;
 export type DeleteEnvVarsRequestBodyType = z.infer<typeof DeleteEnvVarsRequestSchema>;
-export type DeleteEnvVarsRequestDBBodyType = Omit<DeleteEnvVarsRequestBodyType, "authUserData">;
+export type DeleteEnvVarsRequestDBBodyType = Omit<DeleteEnvVarsRequestBodyType, "authUserData" | "reqMeta">;
 export type GetEnvVarsRequestBodyType = z.infer<typeof GetEnvVarsRequestSchema>;
-export type GetEnvVarsRequestDBBodyType = Omit<GetEnvVarsRequestBodyType, "authUserData">;
+export type GetEnvVarsRequestDBBodyType = Omit<GetEnvVarsRequestBodyType, "authUserData" | "reqMeta">;

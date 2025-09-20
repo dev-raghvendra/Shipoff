@@ -3,7 +3,7 @@ import { Database, dbService } from "@/db/db-service";
 import { DeploymentEventProducerService } from "@/producer/deployment.producer";
 import { verifySignature } from "@/libs/crypto";
 import { CreateDeploymentRequestDBBodyType } from "@/types/deployments";
-import { GithubWebhookRequestType, DeploymentWebhookPayload } from "@/types/webhooks";
+import { DeploymentWebhookPayload, GithubWebhookRequestBodyType } from "@/types/webhooks";
 import { $DeploymentEvent } from "@shipoff/redis";
 import { logger } from "@/libs/winston";
 
@@ -18,7 +18,7 @@ export class GithubWebhookService {
         this._deploymentProducer = new DeploymentEventProducerService();
     }
 
-    private async codePushed(payload:string,signature:string) {
+    private async codePushed(payload:string, signature:string, requestId:string) {
        try {
           await verifySignature(payload, signature);
           const parsedPayload = JSON.parse(payload) as DeploymentWebhookPayload;
@@ -55,16 +55,17 @@ export class GithubWebhookService {
                 domain:repo.project.domain,
                 deploymentId:deployment.deploymentId,
                 commitHash:deployment.commitHash,
-                projectType:repo.project.framework.applicationType
+                projectType:repo.project.framework.applicationType,
+                requestId
             });
 
           return GrpcResponse.OK(deployment, "Deployment created");
        } catch (e:any) {
-           return this._errHandler(e, "CREATE-DEPLOYMENT");
+           return this._errHandler(e, "CREATE-DEPLOYMENT",requestId);
        }
     }
 
-    private async repositoryDeleted(payload:string, signature:string) {
+    private async repositoryDeleted(payload:string, signature:string, requestId:string) {
         try {
             await verifySignature(payload, signature);
             const body = JSON.parse(payload) as {repository: {id: number, full_name: string}};
@@ -75,11 +76,11 @@ export class GithubWebhookService {
             });
             return GrpcResponse.OK(repo, "Repository deleted successfully");
         } catch (e:any) {
-            return this._errHandler(e, "DELETE-REPOSITORY");
+            return this._errHandler(e, "DELETE-REPOSITORY",requestId);
         }
     }
 
-    private async installationDeleted(payload:string, signature:string){
+    private async installationDeleted(payload:string, signature:string, requestId:string){
         try {
             await verifySignature(payload, signature);
             const body = JSON.parse(payload) as {installation: {id: number}};
@@ -90,11 +91,11 @@ export class GithubWebhookService {
             });
             return GrpcResponse.OK(installation, "Github installation deleted successfully");
         } catch (e:any) {
-            return this._errHandler(e, "DELETE-GITHUB-INSTALLATION");
+            return this._errHandler(e, "DELETE-GITHUB-INSTALLATION",requestId);
         }
     }
 
-    private async repositoryRemovedFromInstallation(payload:string, signature:string) {
+    private async repositoryRemovedFromInstallation(payload:string, signature:string, requestId:string) {
         try {
             await verifySignature(payload, signature);
             const body = JSON.parse(payload) as {repositories: {id: number}[]};
@@ -107,36 +108,36 @@ export class GithubWebhookService {
             });
             return GrpcResponse.OK(res, "Repositories removed from installation");
         } catch (e:any) {
-            return this._errHandler(e, "REMOVE-REPOSITORIES-FROM-INSTALLATION");
+            return this._errHandler(e, "REMOVE-REPOSITORIES-FROM-INSTALLATION",requestId);
         }
     }
 
-    async webhooks({payload,signature,eventType}:GithubWebhookRequestType){
+    async webhooks({payload,signature,eventType,reqMeta}:GithubWebhookRequestBodyType){
         try {
             const {action} = JSON.parse(payload);
             switch(eventType) {
                 case "push":
-                    return this.codePushed(payload, signature);
+                    return this.codePushed(payload, signature,reqMeta.requestId);
                 case "repository":
                     if(action === "deleted") {
-                        return this.repositoryDeleted(payload, signature);
+                        return this.repositoryDeleted(payload, signature,reqMeta.requestId);
                     }
                     return GrpcResponse.OK(null, "No action taken for repository event");
                 case "installation":
                     if(action === "deleted") {
-                        return this.installationDeleted(payload, signature);
+                        return this.installationDeleted(payload, signature,reqMeta.requestId);
                     } 
                     return GrpcResponse.OK(null, "No action taken for installation event");
                 case "installation_repositories":
                     if(action === "removed") {
-                        return this.repositoryRemovedFromInstallation(payload, signature);
+                        return this.repositoryRemovedFromInstallation(payload, signature,reqMeta.requestId);
                     }
                     return GrpcResponse.OK(null, "No action taken for installation repositories event");
                 default:
                     return GrpcResponse.OK(null, "No action taken for unknown event type");
             }
         } catch (e:any) {
-            return this._errHandler(e, "GITHUB-WEBHOOK");
+            return this._errHandler(e, "GITHUB-WEBHOOK", reqMeta.requestId);
         }
     }
 

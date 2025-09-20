@@ -69,7 +69,7 @@ class AuthHandlers {
 
     async handleGetMe(call:ServerUnaryCall<BodyLessRequest & {body:BodyLessRequestBodyType},GetCurrentUserResponse>,callback:sendUnaryData<GetCurrentUserResponse>){
        try {
-          const {code,res,message} = await this._authService.GetMe(call.request.authUserData.userId)
+          const {code,res,message} = await this._authService.GetMe(call.request.body);
           if(code!==status.OK) return callback({code,message});
           const response = GetCurrentUserResponse.fromObject({code,message,res})
           callback(null,response)
