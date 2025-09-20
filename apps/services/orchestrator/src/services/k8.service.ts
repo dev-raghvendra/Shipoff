@@ -16,6 +16,7 @@ export class K8Service {
     private _coreApi : k8.CoreV1Api
     private _containerConfUtil : ContainerConfigUtil
     private _errHandler : ReturnType<typeof createSyncErrHandler>
+    private INITALIZED = false;
     constructor(){
         this._k8Config = new k8.KubeConfig();
         CONFIG.ENV === "PRODUCTION"
@@ -26,13 +27,12 @@ export class K8Service {
         this._coreApi = this._k8Config.makeApiClient(k8.CoreV1Api);
         this._containerConfUtil = new ContainerConfigUtil();
         this._errHandler = createSyncErrHandler({subServiceName:"K8_SERVICE",logger});
-        console.log(this._k8Config)
     }
 
     async createFreeTierStaticDeployment({projectId,deploymentId,commitHash,requestId}:{projectId:string,deploymentId:string,commitHash:string,requestId:string}){
         let manifest : FreeTierK8DeploymentManifest
         try {
-            manifest = await this._getFreeTierDeploymentManifest(projectId,deploymentId,commitHash,"user-static-apps")
+            manifest = await this._getFreeTierDeploymentManifest(projectId,deploymentId,commitHash,requestId,"user-static-apps")
         } catch (e:any) {
             return this._errHandler(e,"GET-FREE-TIER-STATIC-MANIFEST",requestId);
         }
@@ -49,7 +49,7 @@ export class K8Service {
     async createFreeTierDynamicDeployment({projectId,deploymentId,commitHash,requestId}:{projectId:string,deploymentId:string,commitHash:string,requestId:string}){
         let manifest : FreeTierK8DeploymentManifest
         try {
-            manifest = await this._getFreeTierDeploymentManifest(projectId,deploymentId,commitHash,"user-dynamic-apps")
+            manifest = await this._getFreeTierDeploymentManifest(projectId,deploymentId,commitHash,requestId,"user-dynamic-apps")
         } catch (e:any) {
             return this._errHandler(e,"GET-FREE-TIER-DYNAMIC-MANIFEST",requestId);
         }
@@ -63,10 +63,10 @@ export class K8Service {
         }
     }
 
-    async tryCreatingFreeTierDeployment({projectId,deploymentId,commitHash,projectType}:{projectId:string,deploymentId:string,commitHash:string,projectType:"STATIC"|"DYNAMIC"}){
+    async tryCreatingFreeTierDeployment({projectId,deploymentId,commitHash,projectType,requestId}:{projectId:string,deploymentId:string,commitHash:string,projectType:"STATIC"|"DYNAMIC",requestId:string}){
         let manifest : FreeTierK8DeploymentManifest
         try {
-            manifest = await this._getFreeTierDeploymentManifest(projectId,deploymentId,commitHash,projectType==="STATIC"?"user-static-apps":"user-dynamic-apps")
+            manifest = await this._getFreeTierDeploymentManifest(projectId,deploymentId,commitHash,requestId,projectType==="STATIC"?"user-static-apps":"user-dynamic-apps")
         } catch (e:any) {
             throw e
         }
@@ -87,6 +87,7 @@ export class K8Service {
             await this._waitForFreeTierDeletion(projectId,namespace);
             return res;
         } catch (e:any) {
+            if(e.code === 404) return true;
             return this._errHandler(e,"DELETE-FREE-TIER-CONTAINER",requestId);
         }
      }
@@ -97,6 +98,7 @@ export class K8Service {
             await this._waitForPaidTierDeletion(projectId);
             return res;
         } catch (e:any) {
+            if(e.code === 404) return true;
             return this._errHandler(e,"DELETE-PROD-CONTAINER",requestId);
         }
      }
@@ -130,8 +132,8 @@ export class K8Service {
      }
 
 
-     private async _getPaidTierDeploymentManifest(projectId:string,deploymentId:string,commitHash:string,namespace="user-dynamic-apps"):Promise<PaidTierK8DeploymentManifest>{
-           const {envs:env,image,containerId} = await this._containerConfUtil.getProdContainerConfig(projectId,deploymentId,commitHash);
+     private async _getPaidTierDeploymentManifest(projectId:string,deploymentId:string,commitHash:string,requestId:string,namespace="user-dynamic-apps"):Promise<PaidTierK8DeploymentManifest>{
+           const {envs:env,image,containerId} = await this._containerConfUtil.getProdContainerConfig(projectId,deploymentId,commitHash,requestId);
             env.push({
             name:"CONTAINER_ID",
             value:containerId
@@ -212,8 +214,10 @@ export class K8Service {
            }
      }
 
-     private async _getFreeTierDeploymentManifest(projectId:string,deploymentId:string,commitHash:string,namespace="user-dynamic-apps"):Promise<FreeTierK8DeploymentManifest>{
-           const {envs:env,image,containerId} = await this._containerConfUtil.getProdContainerConfig(projectId,deploymentId,commitHash);
+     private async _getFreeTierDeploymentManifest(projectId:string,deploymentId:string,commitHash:string,requestId:string,namespace="user-dynamic-apps"):Promise<FreeTierK8DeploymentManifest>{
+           const {envs:env,image,containerId} = namespace==="user-dynamic-apps"
+           ? await this._containerConfUtil.getBuildContainerConfig(projectId,deploymentId,commitHash,requestId)
+           : await this._containerConfUtil.getBuildContainerConfig(projectId,deploymentId,commitHash,requestId);
             env.push({
             name:"CONTAINER_ID",
             value:containerId
@@ -244,6 +248,39 @@ export class K8Service {
                 },
              }
            }
+     }
+
+     async initializeK8(){
+        try {
+            const res = await Promise.all([
+                this._coreApi.createNamespace({
+                body:{
+                    apiVersion:"v1",
+                    kind:"Namespace",
+                    metadata:{
+                        name:"user-static-apps"
+                    }
+                }
+            }),
+            this._coreApi.createNamespace({
+                body:{
+                    apiVersion:"v1",
+                    kind:"Namespace",
+                    metadata:{
+                        name:"user-dynamic-apps"
+                    }
+                }
+            })
+            ])
+            this.INITALIZED = true;
+            return res;
+        } catch (e:any) {
+            if(e.code === 409){
+                this.INITALIZED = true;
+                return true
+            };
+            return false
+        }
      }
 }
 

@@ -319,6 +319,7 @@ message DeleteEnvVarsResponse {
 
 message IGetGithubRepoAccessTokenRequest {
     string githubRepoId = 1;
+    RequestMeta reqMeta = 2;
 }
 
 message IGetGithubRepoAccessTokenResponse {

@@ -1,7 +1,7 @@
 import { SECRETS } from "@/config";
 import { CONFIG } from "@/config";
 import { ProjectExternalService } from "@/externals/project.external.service";
-import { STATE_CHANGED, TRAFFIC_DETECTED } from "@/types/container";
+import { STATE_CHANGED, TRAFFIC_DETECTED } from "@/types/orchestrator";
 import { Project } from "@shipoff/proto";
 import { createJwt } from "@shipoff/services-commons";
 
@@ -12,8 +12,8 @@ export class ContainerConfigUtil {
         this._projectService = new ProjectExternalService();
     };
 
-    async getBuildContainerConfig(projectId: string,deploymentId:string,commitHash:string) {
-            const project = await this._projectService.getProjectById(projectId);
+    async getBuildContainerConfig(projectId: string,deploymentId:string,commitHash:string,requestId:string) {
+            const project = await this._projectService.getProjectById(projectId,requestId);
             const commonConfig = await this._getCommonConfig(project,"build",deploymentId,commitHash)
             commonConfig.envs.push({
                 name: "BUILD_COMMAND",
@@ -36,8 +36,8 @@ export class ContainerConfigUtil {
             })
             return commonConfig
     }
-    async getProdContainerConfig(projectId: string,deploymentId:string,commitHash:string) {
-        const project = await this._projectService.getProjectById(projectId);
+    async getProdContainerConfig(projectId: string,deploymentId:string,commitHash:string,requestId:string) {
+        const project = await this._projectService.getProjectById(projectId,requestId);
         const commonConfig = await this._getCommonConfig(project,"prod",deploymentId,commitHash)
         const ingressedWebhook = await createJwt<TRAFFIC_DETECTED>({
             projectId: project.projectId,
@@ -57,7 +57,7 @@ export class ContainerConfigUtil {
 
     private async _getCommonConfig(project:Project,type:"build"|"prod",deploymentId:string,commitHash:string){
         const image = `${CONFIG.BASE_IMAGE_PREFIX}:${project.framework.runtime}-${project.framework.applicationType}`.toLowerCase()
-        const containerId = `${type}-container-${project.projectId}-${Date.now()}`
+        const containerId = `${type[0]}-cont-${project.projectId}-${Date.now()}`
         const webhooks = await Promise.all([
             createJwt<STATE_CHANGED>({
                 projectId:project.projectId,

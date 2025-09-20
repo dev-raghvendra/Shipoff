@@ -25,6 +25,7 @@ export class ContainerConsumer {
 
 
     async processEvents(event:ContainerEvent<keyof typeof $ContainerEvent>,ackMessage:()=>Promise<void>){
+        
         const eventStatus = this._eventToStatusMap[event.event];
         try {
            if(!eventStatus) throw new GrpcAppError(status.INTERNAL,`UNKNOWN_EVENT_TYPE_${event.event}_FOR_DEPLOYMENT_ID_${event.deploymentId}_IN_CONTAINER_TOPIC_IN_CONTAINER_CONSUMER_AT_${this._consumer._serviceName}`);

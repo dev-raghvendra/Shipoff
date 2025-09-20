@@ -29,7 +29,6 @@ export class GithubWebhookService {
             select:{
                 repositoryId:true,
                 projectId:true,
-                deploymentId:true,
                 project:{
                     select:{
                         domain:true,
@@ -48,6 +47,7 @@ export class GithubWebhookService {
               author:parsedPayload.head_commit?.author.name || "unknown",
               repositoryId:repo.repositoryId
           }
+          
             const deployment = await this._dbService.createDeployment(deploymentData);
             await this._deploymentProducer.publishDeploymentRequested({
                 event:$DeploymentEvent.CREATED,
@@ -61,7 +61,7 @@ export class GithubWebhookService {
 
           return GrpcResponse.OK(deployment, "Deployment created");
        } catch (e:any) {
-           return this._errHandler(e, "CREATE-DEPLOYMENT",requestId);
+           return this._errHandler(e, "CODE-PUSHED",requestId);
        }
     }
 

@@ -9,9 +9,9 @@ export class ProjectExternalService {
         this._projectService = GetProjectClient();
     }
 
-    async getProjectById(projectId:string){
+    async getProjectById(projectId:string,requestId:string){
         try {
-            const req = IGetProjectRequest.fromObject({ projectId });
+            const req = IGetProjectRequest.fromObject({ projectId,reqMeta:{requestId} });
             const res = await promisifyGrpcCall(this._projectService.IGetProject, req );
             return res.res;
         } catch (e:any) {
@@ -19,9 +19,9 @@ export class ProjectExternalService {
         }
     }
 
-    async getRepositoryAccessToken(githubRepoId:string){
+    async getRepositoryAccessToken(githubRepoId:string,requestId:string){
         try {
-            const req = IGetGithubRepoAccessTokenRequest.fromObject({githubRepoId})
+            const req = IGetGithubRepoAccessTokenRequest.fromObject({githubRepoId,reqMeta:{requestId}});
             const res = await promisifyGrpcCall(this._projectService.IGetGithubRepoAccessToken, req );
             return res.res;
         } catch (e:any) {

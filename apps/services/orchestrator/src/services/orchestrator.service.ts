@@ -34,7 +34,8 @@ export class OrchestratorService {
                 projectId,
                 deploymentId,
                 commitHash,
-                projectType
+                projectType,
+                requestId:reqMeta.requestId
              })
             return GrpcResponse.OK(deployment,"K8 Deployment started");
         } catch (e: any) {
@@ -45,7 +46,7 @@ export class OrchestratorService {
     async IGetCloneURI({jwt,reqMeta}:GetCloneURIRequestBodyType){
         try {
             const {githubRepoId,githubRepoFullName} = await verifyJwt<{githubRepoId:string,githubRepoFullName:string}>(jwt)
-            const accessToken = await this._projectService.getRepositoryAccessToken(githubRepoId);
+            const accessToken = await this._projectService.getRepositoryAccessToken(githubRepoId,reqMeta.requestId);
             const REPO_CLONE_URI = `https://x-access-token:${accessToken}@github.com/${githubRepoFullName}` 
             return GrpcResponse.OK({REPO_CLONE_URI},"Clone URI fetched");
         } catch (e:any) {

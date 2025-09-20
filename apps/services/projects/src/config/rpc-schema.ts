@@ -5,7 +5,7 @@ import { CreateRepositoryRequestSchema, DeleteRepositoryRequestSchema, GetGithub
 
 import { BodyLessRequestSchema, BulkResourceRequestSchema } from "@shipoff/types";
 import { UnimplementedProjectsServiceService } from "@shipoff/proto";
-import { CreateGithubInstallationRequestSchema, GithubWebhookSchema } from "@/types/webhooks";
+import { CreateGithubInstallationRequestSchema, GithubWebhookRequestSchema } from "@/types/webhooks";
  
 
 export type RPCs = keyof typeof UnimplementedProjectsServiceService.definition;
@@ -29,7 +29,7 @@ export const RPC_SCHEMA: RPC_SCHEMA_T<RPCs> = {
     GetFrameworks: createRPCEntry(BulkResourceRequestSchema),
     GetGithubRepo: createRPCEntry(GetGithubRepositoryDetailsRequestSchema),
     GetUserGithubRepos: createRPCEntry(GetUserGithubRepositoriesRequestSchema),
-    GithubWebhook: createRPCEntry(GithubWebhookSchema),
+    GithubWebhook: createRPCEntry(GithubWebhookRequestSchema),
     CreateGithubInstallation: createRPCEntry(CreateGithubInstallationRequestSchema),
     IGetGithubRepoAccessToken:createRPCEntry(GetGithubRepositoryAccessTokenRequestSchema),
     GetGithubInstallation: createRPCEntry(BodyLessRequestSchema),

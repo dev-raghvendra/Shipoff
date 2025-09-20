@@ -32,6 +32,8 @@ export class ProjectConsumer implements IProjectConsumer {
 
     async startConsumer(){
         await this._consumer.initializeConsumerGroup();
+        const res = await this._k8ServiceClient.initializeK8()
+        if(!res) throw new Error("Failed to initialize K8 Service, cannot start deployment consumer");
         await this._consumer.readUnackedMessages(async(event)=>{
             if(event.event === "DELETED"){
               await this.DELETED(event as ProjectEvent<"DELETED">);
