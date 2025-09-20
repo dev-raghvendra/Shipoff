@@ -1,7 +1,6 @@
 import { dbService } from "@/db/db-service";
 import { $ProjectEvent, ProjectConsumer as Consumer } from "@shipoff/redis";
-import { logger } from "@shipoff/services-commons/libs/winston";
-
+import {logger} from "@/libs/winston";
 
 
 type IProjectConsumer =  {

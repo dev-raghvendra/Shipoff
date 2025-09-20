@@ -1,53 +1,53 @@
-import { ContainerDocument, ContainerModel } from "@/models/container.model";
+import { K8DeploymentDocument, K8DeploymentModel } from "@/models/k8.deployment.model";
 import { status } from "@grpc/grpc-js";
 import { GrpcAppError } from "@shipoff/services-commons";
 import { FilterQuery } from "mongoose";
 
 export class Database{
-    async createContainer(body:ContainerDocument){
-        const container = await ContainerModel.create(body)
-        return container.toObject();
+    async createK8Deployment(body:K8DeploymentDocument){
+        const deployment = await K8DeploymentModel.create(body)
+        return deployment.toObject();
     }
 
-    async findContainer(filter:FilterQuery<ContainerDocument>){
+    async findK8Deployment(filter:FilterQuery<K8DeploymentDocument>){
         try {
-            const container = await ContainerModel.findOne(filter).sort({createdAt:-1});
-            if(container) return container.toObject();
-            throw new GrpcAppError(status.NOT_FOUND, "Container not found");
+            const deployment = await K8DeploymentModel.findOne(filter).sort({createdAt:-1});
+            if(deployment) return deployment.toObject();
+            throw new GrpcAppError(status.NOT_FOUND, "Deployment not found");
         } catch (e:any) {
             throw new GrpcAppError(status.INTERNAL, e.message, e);
         }
     }
 
-    async upsertContainer(filter:FilterQuery<ContainerDocument>, update:Partial<ContainerDocument>){
+    async upsertK8Deployment(filter:FilterQuery<K8DeploymentDocument>, update:Partial<K8DeploymentDocument>){
         try {
-            const container = await ContainerModel.findOneAndUpdate(filter,update,{
+            const deployment = await K8DeploymentModel.findOneAndUpdate(filter,update,{
                 new:true,
                 upsert:true,
                 setDefaultsOnInsert:true
             })
-            if(container) return container.toObject();
+            if(deployment) return deployment.toObject();
             throw new GrpcAppError(status.NOT_FOUND, "Container not found");
         } catch (e:any) {
             throw new GrpcAppError(status.INTERNAL, e.message, e);
         }
     }
 
-    async findAndUpdateContainer(filter:FilterQuery<ContainerDocument>, update:Partial<ContainerDocument>){
+    async findAndUpdateK8Deployment(filter:FilterQuery<K8DeploymentDocument>, update:Partial<K8DeploymentDocument>){
         try {
-            const container = await ContainerModel.findOneAndUpdate(filter,update,{
+            const deployment = await K8DeploymentModel.findOneAndUpdate(filter,update,{
                 new:true
             })
-            if(container) return container.toObject();
-            throw new GrpcAppError(status.NOT_FOUND, "Container not found");
+            if(deployment) return deployment.toObject();
+            throw new GrpcAppError(status.NOT_FOUND, "Deployment not found");
         } catch (e:any) {
             throw new GrpcAppError(status.INTERNAL, e.message, e);
         }
     }
 
-    async deleteManyContainer(filter:FilterQuery<ContainerDocument>){
+    async deleteManyK8Deployment(filter:FilterQuery<K8DeploymentDocument>){
         try {
-            await ContainerModel.deleteMany(filter)
+            await K8DeploymentModel.deleteMany(filter)
             return true;
         } catch (e:any) {
             throw new GrpcAppError(status.INTERNAL, e.message, e);

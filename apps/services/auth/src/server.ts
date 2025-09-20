@@ -5,12 +5,12 @@ import {createValidator} from "@shipoff/services-commons"
 import { RPC_SCHEMA } from "@/config/rpc-schema";
 import TeamHandlers from "@/handlers/team.handler";
 import ProjectHandlers from "@/handlers/project.handlers";
-import {logger} from "@shipoff/services-commons";
 import SECRETS from "@/config/secrets";
 import { ProjectConsumer } from "./consumer/project.consumer";
+import { logger } from "./libs/winston";
 
 
-const validateRPCBody = createValidator(RPC_SCHEMA);
+const validateRPCBody = createValidator(RPC_SCHEMA,logger);
 const server = new Server();
 const authhandlers = new AuthHandlers();
 const teamHandlers = new TeamHandlers();

@@ -1,8 +1,8 @@
 import { Database, dbService } from "@/db/db-service";
-import { K8Service } from "@/services/k8.service";
+import { K8Service, K8ServiceClient } from "@/services/k8.service";
 import { $DeploymentEvent, DeploymentConsumer as Consumer, DeploymentEvent } from "@shipoff/redis";
 import { DEPLOYMENT_TOPIC_CONSUMER_GROUPS } from "@shipoff/redis/config/config";
-import { logger } from "@shipoff/services-commons";
+import { logger } from "@/libs/winston";
 
 
 type IDeploymentConsumer =  {
@@ -11,7 +11,7 @@ type IDeploymentConsumer =  {
 
 export class DeploymentConsumer implements IDeploymentConsumer {
     private _consumer: Consumer;
-    private _k8Service: K8Service;
+    private _k8ServiceClient: K8Service;
     private _dbService : Database
     private _readCount = 0;
     private _eventQueue: {
@@ -21,7 +21,7 @@ export class DeploymentConsumer implements IDeploymentConsumer {
     constructor(serviceName: keyof typeof DEPLOYMENT_TOPIC_CONSUMER_GROUPS) {
         this._consumer = new Consumer(serviceName);
         this._eventQueue = [];
-        this._k8Service = new K8Service();
+        this._k8ServiceClient = K8ServiceClient;
         this._dbService = dbService;
     }
 
@@ -38,15 +38,17 @@ export class DeploymentConsumer implements IDeploymentConsumer {
     async startConsumer(){
         await this._consumer.initializeConsumerGroup();
         await this._consumer.readUnackedMessages(this.addEventsInLocalQueue.bind(this))
-        this._consumer.readNewMessages(this.addEventsInLocalQueue.bind(this)).then(()=>{
-           logger.info(`STOPPED_READING_NEW_MESSAGES_FROM_DEPLOYMENT_TOPIC_IN_DEPLOYMENT_CONSUMER_AT_${this._consumer._serviceName}`)
-        })
-        await this.processEvents();
+        this._consumer.readNewMessages(this.addEventsInLocalQueue.bind(this))
+        this.processEvents();
+        return true;
     }
     
     async processEvents(){
+        let backoffTime = 1000;
+        const maxBackoffTime = 60000;
         while(true){
           if(this._eventQueue.length && this._readCount){
+             backoffTime = 1000;
              const evt = this._eventQueue.shift();
              let res;
              switch(evt?.event.event){
@@ -63,6 +65,8 @@ export class DeploymentConsumer implements IDeploymentConsumer {
              if(res) return await evt?.ackMessage();
              logger.error(`UNEXPECTED_ERROR_OCCURED_WHILE_PROCESSING_EVENT_TYPE_${evt?.event.event}_FOR_PROJECT_ID_${evt?.event.projectId}_IN_DEPLOYMENT_CONSUMER_AT_${this._consumer._serviceName}`);
           }
+          else backoffTime = Math.min(backoffTime * 2, maxBackoffTime);
+          await new Promise(res=>setTimeout(res,backoffTime));
         }
     }
 
@@ -74,14 +78,14 @@ export class DeploymentConsumer implements IDeploymentConsumer {
     CREATED = async(event:DeploymentEvent<keyof typeof $DeploymentEvent>)=>{
         let res ;
         if(event.projectType==="STATIC"){
-           res = await this._k8Service.createFreeTierStaticDeployment({
+           res = await this._k8ServiceClient.createFreeTierStaticDeployment({
                projectId:event.projectId,
                deploymentId:event.deploymentId,
                commitHash:event.commitHash
             })
         }
         else {
-           res = await this._k8Service.createFreeTierDynamicDeployment({
+           res = await this._k8ServiceClient.createFreeTierDynamicDeployment({
                 projectId:event.projectId,
                 deploymentId:event.deploymentId,
                 commitHash:event.commitHash
@@ -93,10 +97,10 @@ export class DeploymentConsumer implements IDeploymentConsumer {
     DELETED = async(event:DeploymentEvent<keyof typeof $DeploymentEvent>)=>{
         let res ;
         if(event.projectType==="STATIC"){
-            if(res) await this._dbService.deleteManyContainer({deploymentId:event.deploymentId})
+            if(res) await this._dbService.deleteManyK8Deployment({deploymentId:event.deploymentId})
         }
         else {
-            if(res) await this._dbService.deleteManyContainer({deploymentId:event.deploymentId})
+            if(res) await this._dbService.deleteManyK8Deployment({deploymentId:event.deploymentId})
         }
         return res === undefined;
     }

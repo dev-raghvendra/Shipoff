@@ -3,6 +3,7 @@ import { Database, dbService } from "@/db/db-service";
 import authExternalService, { AuthExternalService } from "@/externals/auth.external.service";
 import githubExternalService, { GithubExternalService } from "@/externals/github.external.service";
 import { CreateRepositoryRequestBodyType, DeleteRepositoryRequestBodyType, GetRepositoryRequestBodyType } from "@/types/repositories";
+import { logger } from "@/libs/winston";
 
 export class RepositoriesService {
     private _dbService : Database;
@@ -11,7 +12,7 @@ export class RepositoriesService {
     private _githubService : GithubExternalService;
 
     constructor(){
-        this._errHandler = createGrpcErrorHandler({serviceName:"REPOSITORY_SERVICE"});
+        this._errHandler = createGrpcErrorHandler({subServiceName:"REPOSITORY_SERVICE",logger});
         this._dbService = dbService;
         this._authService = authExternalService;
         this._githubService = githubExternalService

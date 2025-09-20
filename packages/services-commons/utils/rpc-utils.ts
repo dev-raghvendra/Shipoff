@@ -1,7 +1,6 @@
 import { status } from "@grpc/grpc-js";
 import { ZodObject, ZodType } from 'zod';
 import { convertDatesToISO } from "./db-utils";
-import {logger} from "../libs/winston";
 
 export type RPC_SCHEMA_T<RPC_T extends string> = {
     [K in RPC_T]: {
@@ -32,9 +31,9 @@ export class GrpcResponse {
     return { code, res, message };
   }
 
-  static INTERNAL(message = "Internal server error", serviceName: string, origin: string, error:any, res: any = null) {
+  static INTERNAL(message = "Internal server error", subServiceName: string, origin: string, error:any, logger: {error: (msg: string) => void}, res: any = null) {
     const e = typeof error === "object" ? JSON.stringify(error,null,2) : error;
-    logger.error(`UNEXPECTED_ERROR_OCCURED_IN_${serviceName}_AT_${origin}: ${e}`);
+    logger.error(`UNEXPECTED_ERROR_OCCURED_IN_${subServiceName}_AT_${origin}: ${e}`);
     return this.ERROR(status.INTERNAL, message, res);
   }
 }

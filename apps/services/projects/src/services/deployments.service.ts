@@ -3,6 +3,7 @@ import { Database, dbService } from "@/db/db-service";
 import authExternalService, { AuthExternalService } from "@/externals/auth.external.service";
 import { DeleteDeploymentRequestBodyType, GetAllDeploymentsRequestBodyType, GetDeploymentRequestBodyType, RedeployRequestBodyType } from "@/types/deployments";
 import { DeploymentEventProducerService } from "@/producer/deployment.producer";
+import { logger } from "@/libs/winston";
 
 
 export class DeploymentsService {
@@ -13,8 +14,8 @@ export class DeploymentsService {
     private _deploymentProducer : DeploymentEventProducerService;
 
     constructor() {
-        this._errHandler = createGrpcErrorHandler({serviceName:"DEPLOYMENT_SERVICE"});
-        this._asyncErrHandler = createAsyncErrHandler({serviceName:"DEPLOYMENT_SERVICE"});
+        this._errHandler = createGrpcErrorHandler({subServiceName:"DEPLOYMENT_SERVICE",logger});
+        this._asyncErrHandler = createAsyncErrHandler({subServiceName:"DEPLOYMENT_SERVICE",logger});
         this._dbService = dbService;
         this._authService = authExternalService;
         this._deploymentProducer = new DeploymentEventProducerService();
@@ -83,7 +84,9 @@ export class DeploymentsService {
                 event: "DELETED",
                 projectId,
                 deploymentId,
-                domain: deployment.project.domain
+                domain: deployment.project.domain,
+                projectType:deployment.project.framework.applicationType,
+                commitHash:deployment.commitHash
             }),"DELETE-DEPLOYMENT");
             return GrpcResponse.OK({}, "Deployment deleted");
         } catch (e:any) {
@@ -105,8 +108,10 @@ export class DeploymentsService {
                 event:"CREATED",
                 projectId,
                 deploymentId,
-                domain:deployment.project.domain
-            }),"REDEPLOY-DEPLOYMENT");  
+                domain:deployment.project.domain,
+                projectType:deployment.project.framework.applicationType,
+                commitHash:deployment.commitHash
+            }),"REDEPLOY-DEPLOYMENT");
             return GrpcResponse.OK(deployment, "Deployment redeployed");
         } catch (e:any) {
             return this._errHandler(e, "REDEPLOY-DEPLOYMENT");

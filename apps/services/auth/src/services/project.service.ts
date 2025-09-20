@@ -5,6 +5,7 @@ import { AcceptMemberInviteRequestBodyType } from "@/types/utility";
 import { Permission } from "@/utils/rbac-utils";
 import { createGrpcErrorHandler, GrpcAppError, GrpcResponse } from "@shipoff/services-commons";
 import { status } from "@grpc/grpc-js";
+import {logger} from "@/libs/winston";
 
 
 class ProjectService {
@@ -14,7 +15,7 @@ class ProjectService {
     constructor(){
       this._permissions = new Permission()
       this._dbService = dbService;
-      this._errorHandler = createGrpcErrorHandler({serviceName:"AUTH_SERVICE"});
+      this._errorHandler = createGrpcErrorHandler({subServiceName:"AUTH_SERVICE",logger});
     }
     async createProjectMemberInvitation({authUserData:{userId},projectId,userId:targetUserId,role}:ProjectMemberInvitationRequestBodyType){
         try {

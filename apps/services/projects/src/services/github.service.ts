@@ -4,6 +4,8 @@ import githubExternalService, { GithubExternalService } from "@/externals/github
 import { GetUserGithubRepositoriesRequestBodyType, GetGithubRepositoryDetailsRequestBodyType } from "@/types/repositories";
 import { BodyLessRequestBodyType } from "@shipoff/types";
 import { CreateGithubInstallationRequestBodyType } from "@/types/webhooks";
+import { logger } from "@/libs/winston";
+
 
 export class GithubService {
     private _dbService: Database;
@@ -13,7 +15,7 @@ export class GithubService {
     constructor() {
         this._dbService = dbService;
         this._githubService = githubExternalService;
-        this._errHandler = createGrpcErrorHandler({ serviceName: "GITHUB_SERVICE" });
+        this._errHandler = createGrpcErrorHandler({ subServiceName: "GITHUB_SERVICE",logger });
     }
 
         async getUserGithubRepositories({authUserData, skip, limit}:GetUserGithubRepositoriesRequestBodyType){

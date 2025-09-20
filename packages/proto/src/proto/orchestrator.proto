@@ -2,22 +2,6 @@ syntax = "proto3";
 import "common.proto";
 import "google/protobuf/empty.proto";
 
-message Container {
-    string containerId = 1;
-    string name = 2;
-    string domain = 3;
-    string status = 4;
-    string projectId = 5;
-    int32 nodePort = 6;
-    string createdAt = 7;
-    string updatedAt = 8;
-}
-
-message ContainerResponse {
-    int32 code = 1;
-    string message = 2;
-    Container res = 3;
-}
 
 message IGetCloneURIRequest {
     string jwt = 1;
@@ -39,14 +23,18 @@ message OrchestratorWebhookRequest {
     string event = 2;
 }
 
-message IGetContainerRequest {
+message IStartK8DeploymentRequest {
     string projectId = 1;
 }
 
+message IStartK8DeploymentResponse {
+    int32 code = 1;
+    string message = 2;
+}
 
 
 service OrchestratorService {
-    rpc IGetContainer (IGetContainerRequest) returns (ContainerResponse);
+    rpc IStartK8Deployment (IStartK8DeploymentRequest) returns (IStartK8DeploymentResponse);
     rpc IGetCloneURI (IGetCloneURIRequest) returns (CloneURIResponse);
     rpc IOrchestratorWebhook (OrchestratorWebhookRequest) returns (google.protobuf.Empty);
 }

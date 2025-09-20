@@ -5,6 +5,7 @@ import { verifySignature } from "@/libs/crypto";
 import { CreateDeploymentRequestDBBodyType } from "@/types/deployments";
 import { GithubWebhookRequestType, DeploymentWebhookPayload } from "@/types/webhooks";
 import { $DeploymentEvent } from "@shipoff/redis";
+import { logger } from "@/libs/winston";
 
 export class GithubWebhookService {
     private _dbService: Database;
@@ -13,7 +14,7 @@ export class GithubWebhookService {
 
     constructor() {
         this._dbService = dbService;
-        this._errHandler = createGrpcErrorHandler({ serviceName: "GITHUB_WEBHOOK_SERVICE" }); 
+        this._errHandler = createGrpcErrorHandler({ subServiceName: "GITHUB_WEBHOOK_SERVICE", logger });
         this._deploymentProducer = new DeploymentEventProducerService();
     }
 

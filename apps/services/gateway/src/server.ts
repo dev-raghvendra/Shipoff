@@ -1,6 +1,6 @@
 import app from "./app";
 import {createServer} from "http";
-import {logger} from "@shipoff/services-commons/libs/winston";
+import {logger} from "@/libs/winston";
 import { CONFIG } from "./config/config";
 
 createServer(app).listen(CONFIG.PORT,()=>logger.info(`GATEWAY_SERVICE_STARTED_ON_PORT: ${CONFIG.PORT}`));

@@ -1,5 +1,5 @@
 import { GetOrchestratorClient } from "@shipoff/grpc-clients";
-import { IGetCloneURIRequest, IGetContainerRequest, OrchestratorServiceClient } from "@shipoff/proto";
+import { IGetCloneURIRequest, IStartK8DeploymentRequest, OrchestratorServiceClient } from "@shipoff/proto";
 import { promisifyGrpcCall } from "@shipoff/services-commons";
 
 export class OrchestratorService {
@@ -8,10 +8,10 @@ export class OrchestratorService {
     this._orchestratorService = GetOrchestratorClient();
   }
 
-  async getContainer(body:any){
+  async getK8Deployment(body:any){
     try {
-        const req = IGetContainerRequest.fromObject(body)
-        const response = await promisifyGrpcCall(this._orchestratorService.IGetContainer.bind(this._orchestratorService), req);
+        const req = IStartK8DeploymentRequest.fromObject(body)
+        const response = await promisifyGrpcCall(this._orchestratorService.IStartK8Deployment.bind(this._orchestratorService), req);
         return response;
       } catch (e:any) {
         return e;

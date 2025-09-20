@@ -4,6 +4,7 @@ import { DeploymentStatus } from "@prisma/index";
 import { $ContainerEvent, ContainerEvent , ContainerConsumer as Consumer} from "@shipoff/redis";
 import { CONTAINER_TOPIC_CONSUMER_GROUPS } from "@shipoff/redis/config/config";
 import { createSyncErrHandler, GrpcAppError } from "@shipoff/services-commons";
+import {logger} from "@/libs/winston"
 
 
 
@@ -19,7 +20,7 @@ export class ContainerConsumer {
     private _errHandler:ReturnType<typeof createSyncErrHandler>
     constructor(serviceName:keyof typeof CONTAINER_TOPIC_CONSUMER_GROUPS){
         this._consumer = new Consumer(serviceName);
-        this._errHandler = createSyncErrHandler({serviceName:"CONTAINER_CONSUMER"});
+        this._errHandler = createSyncErrHandler({subServiceName:"CONTAINER_CONSUMER",logger});
     }
 
 
@@ -39,6 +40,6 @@ export class ContainerConsumer {
     async startConsumer(){
         await this._consumer.initializeConsumerGroup();
         await this._consumer.readUnackedMessages(this.processEvents.bind(this))
-        await this._consumer.readNewMessages(this.processEvents.bind(this))
+        this._consumer.readNewMessages(this.processEvents.bind(this))
     }
 }

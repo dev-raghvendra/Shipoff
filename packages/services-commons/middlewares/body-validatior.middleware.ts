@@ -1,6 +1,5 @@
 import { ZodTypeAny, parseAsync } from "zod";
 import { ServerUnaryCall, sendUnaryData, status } from "@grpc/grpc-js";
-import {logger} from "../libs/winston";
 
 // Protobuf-compatible message type check
 interface ProtobufMessage {
@@ -39,7 +38,7 @@ export type ValidatedCall<
 /**
  * Universal RPC validator for any schema map
  */
-export function createValidator<Map extends SchemaMap>(schemaMap: Map) {
+export function createValidator<Map extends SchemaMap>(schemaMap: Map, logger: {error: (msg: string) => void}) {
   return function validateBody<
     K extends keyof Map,
     TReq extends MaybeProtobufMessage,
@@ -65,7 +64,7 @@ export function createValidator<Map extends SchemaMap>(schemaMap: Map) {
         (callWithBody.request as any).body = parsed;
         handler(callWithBody, callback);
       } catch(e){
-        logger.info(`ERROR_OCCURED_IN_BODY_VALIDATION ${JSON.stringify(e,null,6)}`)
+        logger.error(`ERROR_OCCURED_IN_BODY_VALIDATION ${JSON.stringify(e,null,6)}`)
         callback({
           code: status.INVALID_ARGUMENT,
           message: schemaMap[method].errMsg || "Invalid argument",

@@ -1,6 +1,7 @@
-import winston, {createLogger, format, transports} from "winston"
+import  {createLogger, format, transports} from "winston"
 
-const devLogger = createLogger({
+
+export const intilizeLogger = (serviceName:string)=>createLogger({
    transports:[
     new transports.Console({
          level:"debug",
@@ -8,13 +9,7 @@ const devLogger = createLogger({
         format:()=>new Date().toString()
     }),
     format.colorize(),
-    format.printf(info=>`\n[${info.timestamp}] \n${info.level}: ${info.message}`)
+    format.printf(info=>`\n[${info.timestamp}]\n${serviceName}\n${info.level}: ${info.message}`)
     )})
    ]
 })
-
-
-const productionLogger = {}
-
-export const logger = (process.env.ENV==="production" ? productionLogger : devLogger) as winston.Logger
- 

@@ -56,7 +56,7 @@ export class ContainerConfigUtil {
     }
 
     private async _getCommonConfig(project:Project,type:"build"|"prod",deploymentId:string,commitHash:string){
-        const image = `${project.framework.runtime}-${project.framework.applicationType}`.toLowerCase()
+        const image = `${CONFIG.BASE_IMAGE_PREFIX}:${project.framework.runtime}-${project.framework.applicationType}`.toLowerCase()
         const containerId = `${type}-container-${project.projectId}-${Date.now()}`
         const webhooks = await Promise.all([
             createJwt<STATE_CHANGED>({

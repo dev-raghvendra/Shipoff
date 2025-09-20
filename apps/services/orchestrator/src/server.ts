@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { SECRETS } from "@/config";
-import { createValidator, logger } from "@shipoff/services-commons";
+import { createValidator } from "@shipoff/services-commons";
 import { UnimplementedOrchestratorServiceService } from "@shipoff/proto";
 import { Server, ServerCredentials } from "@grpc/grpc-js";
 import { RPC_SCHEMA } from "./config/rpc-schema";
@@ -8,16 +8,17 @@ import { OrchestratorWebhookHandler } from "./handlers/orchestrator-webhook.hand
 import { OrchestratorHandler } from "./handlers/orchestrator.handler";
 import {DeploymentConsumer} from "@/consumer/deployment.consumer"
 import { ProjectConsumer } from "@/consumer/project.consumer";
+import { logger } from "@/libs/winston";
 
 const server = new Server()
-const validateRPCBody = createValidator(RPC_SCHEMA);
+const validateRPCBody = createValidator(RPC_SCHEMA,logger);
 const orchestratorHandlers = new OrchestratorHandler();
 const orchestratorWebhookHandler = new OrchestratorWebhookHandler()
 const deploymentConsumer = new DeploymentConsumer("ORCHESTRATOR_SERVICE");
 const projectConsumer = new ProjectConsumer("ORCHESTRATOR_SERVICE",deploymentConsumer);
 
 server.addService(UnimplementedOrchestratorServiceService.definition, {
-    IGetContainer: validateRPCBody("IGetContainer", orchestratorHandlers.handleIGetContainer.bind(orchestratorHandlers)),
+    IStartK8Deployment: validateRPCBody("IStartK8Deployment", orchestratorHandlers.handleIStartK8Deployment.bind(orchestratorHandlers)),
     IGetCloneURI: validateRPCBody("IGetCloneURI", orchestratorHandlers.handleIGetCloneURI.bind(orchestratorHandlers)),
     IOrchestratorWebhook: validateRPCBody("IOrchestratorWebhook", orchestratorWebhookHandler.handleIOrchestratorWebhook.bind(orchestratorWebhookHandler)),
 })

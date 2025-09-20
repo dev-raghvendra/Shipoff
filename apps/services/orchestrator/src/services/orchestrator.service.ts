@@ -1,6 +1,6 @@
 import { Database } from "@/db/db-service";
 import { ProjectExternalService } from "@/externals/project.external.service";
-import { GetCloneURIRequestBodyType, GetContainerRequestBodyType } from "@/types/container";
+import { GetCloneURIRequestBodyType, StartK8DeploymentRequestBodyType } from "@/types/container";
 import {
     createGrpcErrorHandler,
     createJwtErrHandler,
@@ -8,16 +8,19 @@ import {
     JsonWebTokenError,
     verifyJwt,
 } from "@shipoff/services-commons";
+import { K8Service, K8ServiceClient } from "./k8.service";
+import {logger} from "@/libs/winston";
 
 export class OrchestratorService {
-    private _dbService: Database;
+    private _k8ServiceClient: K8Service;
     private _errHandler: ReturnType<typeof createGrpcErrorHandler>;
     private _projectService: ProjectExternalService;
     private _jwtErrHandler: ReturnType<typeof createJwtErrHandler>;
     constructor() {
-        this._dbService = new Database();
+        this._k8ServiceClient = K8ServiceClient;
         this._errHandler = createGrpcErrorHandler({
-            serviceName: "CONTAINER_SERVICE",
+            subServiceName: "CONTAINER_SERVICE",
+            logger
         });
         this._projectService = new ProjectExternalService();
         this._jwtErrHandler = createJwtErrHandler({
@@ -26,12 +29,15 @@ export class OrchestratorService {
         });
     }
 
-    async IGetContainerByDomain({projectId}: GetContainerRequestBodyType) {
+    async IStartK8Deployment({projectId,projectType,deploymentId,commitHash}: StartK8DeploymentRequestBodyType) {
         try {
-            const container = await this._dbService.findContainer({
+            const deployment = await this._k8ServiceClient.tryCreatingFreeTierDeployment({
                 projectId,
-            });
-            return GrpcResponse.OK(container, "Container found");
+                deploymentId,
+                commitHash,
+                projectType
+             })
+            return GrpcResponse.OK(deployment,"K8 Deployment started");
         } catch (e: any) {
             return this._errHandler(e, "I-GET-CONTAINER");
         }

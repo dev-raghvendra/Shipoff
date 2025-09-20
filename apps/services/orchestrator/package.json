@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon --exec ts-node -r tsconfig-paths/register ./src/server.ts",
-    "build:images":"docker build -t nodejs-static:latest -f ./src/images/Dockerfile.node.static ./src/images/ && docker build -t nodejs-dynamic:latest -f ./src/images/Dockerfile.node.dynamic ./src/images/ && docker build -t python-dynamic:latest -f ./src/images/Dockerfile.python.dynamic ./src/images && docker build -t php-dynamic:latest -f ./src/images/Dockerfile.php.dynamic ./src/images"
+    "build:images":"export BASE_IMAGE_SUFFIX=shipoff/base-image && docker build -t $BASE_IMAGE_SUFFIX:nodejs-static -f ./src/images/Dockerfile.node.static ./src/images/ && docker build -t $BASE_IMAGE_SUFFIX:nodejs-dynamic -f ./src/images/Dockerfile.node.dynamic ./src/images/ && docker build -t $BASE_IMAGE_SUFFIX:python-dynamic -f ./src/images/Dockerfile.python.dynamic ./src/images && docker build -t $BASE_IMAGE_SUFFIX:php-dynamic -f ./src/images/Dockerfile.php.dynamic ./src/images"
   },
   "devDependencies": {
     "@shipoff/typescript-config": "workspace:*",

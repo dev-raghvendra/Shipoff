@@ -7,6 +7,7 @@ import authExternalService, { AuthExternalService } from "@/externals/auth.exter
 import { CreateProjectRequestBodyType, DeleteEnvVarsRequestBodyType, GetEnvVarsRequestBodyType, GetProjectRequestBodyType, IGetProjectRequestBodyType, UpdateProjectRequestBodyType, UpsertEnvVarsRequestBodyType } from "@/types/projects";
 import { ProjectProducer } from "@/producer/project.producer";
 import { status } from "@grpc/grpc-js";
+import { logger } from "@/libs/winston";
 
 
 export class ProjectsService {
@@ -18,8 +19,8 @@ export class ProjectsService {
     private _projectProducer: ProjectProducer;
 
     constructor() {
-        this._errHandler = createGrpcErrorHandler({serviceName:"PROJECT_SERVICE"});
-        this._asyncErrHandler = createAsyncErrHandler({serviceName:"PROJECT_SERVICE"});
+        this._errHandler = createGrpcErrorHandler({subServiceName:"PROJECT_SERVICE",logger});
+        this._asyncErrHandler = createAsyncErrHandler({subServiceName:"PROJECT_SERVICE",logger});
         this._selectProjectFeilds = {
                 repository:true,
                 framework:true,

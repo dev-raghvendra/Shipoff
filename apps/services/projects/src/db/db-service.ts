@@ -174,7 +174,12 @@ export class Database {
                     project:{
                         select:{
                             projectId:true,
-                            domain:true
+                            domain:true,
+                            framework:{
+                                select:{
+                                  applicationType:true
+                                }
+                            }
                         }
                     },
                     repository:{
@@ -237,7 +242,12 @@ export class Database {
                     project:{
                         select:{
                             projectId:true,
-                            domain:true
+                            domain:true,
+                            framework:{
+                                select:{
+                                  applicationType:true
+                                }
+                            }
                         }
                     },
                     repository:{

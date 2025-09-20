@@ -1,7 +1,7 @@
 import { Redis } from "ioredis";
 import { PROJECT_TOPIC_CONSUMER_GROUPS, TOPICS } from "../config/config";
 import { GetRedisClient } from "../redis-client/client";
-import {logger} from "../../services-commons/libs/winston";
+import {intilizeLogger} from "../../services-commons/libs/winston";
 import { $ProjectEvent, ProjectEvent } from "../types";
 import { createObject } from "../../services-commons";
 
@@ -9,23 +9,27 @@ export class ProjectConsumer {
   private _redisClient: Redis;
   private _serviceName: keyof typeof PROJECT_TOPIC_CONSUMER_GROUPS;
   private _consumerName: string;
+  private _logger : ReturnType<typeof intilizeLogger>
 
   constructor(serviceName: keyof typeof PROJECT_TOPIC_CONSUMER_GROUPS) {
     this._redisClient = GetRedisClient();
     this._serviceName = serviceName;
     this._consumerName = `${serviceName}-consumer`;
+    this._logger = intilizeLogger(this._serviceName);
   }
 
   async readNewMessages(cb: (message: ProjectEvent<keyof typeof $ProjectEvent>) => Promise<void>) {
     const groupName = PROJECT_TOPIC_CONSUMER_GROUPS[this._serviceName];
     const streamName = TOPICS.PROJECT_TOPIC;
+    let backoffTime = 1000;
+    const maxBackoffTime = 60000;
 
     while (true) {
       try {
         const messages = await this._redisClient.xreadgroup(
           "GROUP", groupName, this._consumerName,
           "COUNT", 1,
-          "BLOCK", 0,
+          "BLOCK", 5000,
           "STREAMS", streamName, ">"
         );
 
@@ -37,8 +41,10 @@ export class ProjectConsumer {
             await this.ackMessage(id);
           }
         }
+        else backoffTime = Math.min(backoffTime * 2, maxBackoffTime);
+        await new Promise(res=>setTimeout(res,backoffTime));
       } catch (e: any) {
-        logger.error(
+        this._logger.error(
           `UNEXPECTED_ERROR_OCCURED_WHILE_READING_NEW_MESSAGES_ON_${TOPICS.PROJECT_TOPIC}_IN_${this._serviceName} ${JSON.stringify(e, null, 2)}`
         );
       }
@@ -67,7 +73,7 @@ export class ProjectConsumer {
       }
       return true;
     } catch (e: any) {
-      logger.error(
+      this._logger.error(
         `UNEXPECTED_ERROR_OCCURED_WHILE_READING_UNACKED_MESSAGES_ON_${TOPICS.PROJECT_TOPIC}_IN_${this._serviceName}: ${JSON.stringify(e, null, 2)}`
       );
     }

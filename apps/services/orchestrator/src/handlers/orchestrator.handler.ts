@@ -1,7 +1,7 @@
 import { OrchestratorService } from "@/services/orchestrator.service";
-import { GetCloneURIRequestBodyType, GetContainerRequestBodyType } from "@/types/container";
+import { GetCloneURIRequestBodyType, StartK8DeploymentRequestBodyType } from "@/types/container";
 import { sendUnaryData, ServerUnaryCall, status } from "@grpc/grpc-js";
-import { CloneURIResponse, ContainerResponse, IGetCloneURIRequest, IGetContainerRequest } from "@shipoff/proto";
+import { CloneURIResponse, IGetCloneURIRequest, IStartK8DeploymentRequest, IStartK8DeploymentResponse } from "@shipoff/proto";
 
 export class OrchestratorHandler {
     private orchestratorService : OrchestratorService
@@ -9,11 +9,11 @@ export class OrchestratorHandler {
         this.orchestratorService = new OrchestratorService();
     }
 
-    async handleIGetContainer(call:ServerUnaryCall<IGetContainerRequest & {body:GetContainerRequestBodyType},ContainerResponse>,callback:sendUnaryData<ContainerResponse>){
+    async handleIStartK8Deployment(call:ServerUnaryCall<IStartK8DeploymentRequest & {body:StartK8DeploymentRequestBodyType},IStartK8DeploymentResponse>,callback:sendUnaryData<IStartK8DeploymentResponse>){
         try {
-            const {code,res,message} = await this.orchestratorService.IGetContainerByDomain(call.request.body);
+            const {code,res,message} = await this.orchestratorService.IStartK8Deployment(call.request.body);
             if(code!==status.OK) return callback({code:code,message:message});
-            const response = ContainerResponse.fromObject({code,res,message});
+            const response = IStartK8DeploymentResponse.fromObject({code,message});
             return callback(null,response);
         } catch (e:any) {
             return callback({code:status.INTERNAL,message:"Internal server error"});

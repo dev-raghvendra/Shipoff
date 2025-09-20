@@ -1,4 +1,5 @@
-import { CONFIG } from "@/config";
+import { CONFIG, SECRETS } from "@/config";
+import { logger } from "@/libs/winston";
 import { ContainerConfigUtil } from "@/utils/container-config.utils";
 import { status } from "@grpc/grpc-js";
 import k8 from "@kubernetes/client-node"
@@ -11,7 +12,7 @@ type namespace = "user-static-apps" | "user-dynamic-apps"
 
 export class K8Service {
     private _appsApi : k8.AppsV1Api;
-    private _k8Config : k8.KubeConfig
+    private _k8Config : k8.KubeConfig 
     private _coreApi : k8.CoreV1Api
     private _containerConfUtil : ContainerConfigUtil
     private _errHandler : ReturnType<typeof createSyncErrHandler>
@@ -24,7 +25,8 @@ export class K8Service {
         this._appsApi = this._k8Config.makeApiClient(k8.AppsV1Api);
         this._coreApi = this._k8Config.makeApiClient(k8.CoreV1Api);
         this._containerConfUtil = new ContainerConfigUtil();
-        this._errHandler = createSyncErrHandler({serviceName:"K8_SERVICE"});
+        this._errHandler = createSyncErrHandler({subServiceName:"K8_SERVICE",logger});
+        console.log(this._k8Config)
     }
 
     async createFreeTierStaticDeployment({projectId,deploymentId,commitHash}:{projectId:string,deploymentId:string,commitHash:string}){
@@ -61,7 +63,25 @@ export class K8Service {
         }
     }
 
-     async deleteFreeTierDeployment(projectId:string,namespace:namespace){
+    async tryCreatingFreeTierDeployment({projectId,deploymentId,commitHash,projectType}:{projectId:string,deploymentId:string,commitHash:string,projectType:"STATIC"|"DYNAMIC"}){
+        let manifest : FreeTierK8DeploymentManifest
+        try {
+            manifest = await this._getFreeTierDeploymentManifest(projectId,deploymentId,commitHash,projectType==="STATIC"?"user-static-apps":"user-dynamic-apps")
+        } catch (e:any) {
+            throw e
+        }
+        try {
+          const res = await this._coreApi.createNamespacedPod(manifest);
+          return {exists:true,created:false};
+        } catch (e:any) {
+          if(e.code === 409){
+             return {created:false,exists:true}
+          }
+         throw e
+       }
+    }
+
+    async deleteFreeTierDeployment(projectId:string,namespace:namespace){
         try {      
             const res = await this._coreApi.deleteNamespacedPod({name:projectId,namespace})
             await this._waitForFreeTierDeletion(projectId,namespace);
@@ -216,10 +236,15 @@ export class K8Service {
                         name:containerId,
                         image,
                         env
-                    }]
-                }
+                    }],
+                    imagePullSecrets:[{
+                        name:SECRETS.BASE_IMAGE_REGISTRY_SECRET
+                    }],
+                    restartPolicy:"Never"
+                },
              }
            }
      }
 }
 
+export const K8ServiceClient = new K8Service();

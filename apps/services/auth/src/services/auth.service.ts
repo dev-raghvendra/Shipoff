@@ -7,6 +7,7 @@ import { PermissionBase } from "@/utils/rbac-utils";
 import { Database, dbService } from "@/db/db-service";
 import { createGrpcErrorHandler, GrpcAppError, GrpcResponse } from "@shipoff/services-commons";
 import { status } from "@grpc/grpc-js";
+import {logger} from "@/libs/winston";
 
 
 class AuthService {
@@ -18,7 +19,7 @@ class AuthService {
     constructor(){
         this._permissions = new PermissionBase()
         this._dbService = dbService;
-        this._errorHandler = createGrpcErrorHandler({serviceName:"AUTH_SERVICE"});
+        this._errorHandler = createGrpcErrorHandler({subServiceName:"AUTH_SERVICE",logger});
     }
 
     private async createSession(u: any) {

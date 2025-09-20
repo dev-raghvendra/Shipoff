@@ -8,10 +8,10 @@ import { createValidator } from "@shipoff/services-commons";
 import { UnimplementedProjectsServiceService } from "@shipoff/proto";
 import { RPC_SCHEMA } from "@/config/rpc-schema";
 import { SECRETS } from "@/config/secrets";
-import {logger} from "@shipoff/services-commons/libs/winston";
+import {logger} from "@/libs/winston";
 import { ContainerConsumer } from "@/consumer/container.consumer";
 
-const validateRPCBody = createValidator(RPC_SCHEMA);    
+const validateRPCBody = createValidator(RPC_SCHEMA,logger);    
 const server = new Server();
 const projectsHandlers = new ProjectsHandlers();
 const deploymentsHandlers = new DeploymentsHandlers();

@@ -5,6 +5,7 @@ import { CreateTeamRequestBodyType, DeleteTeamMemberRequestBodyType, DeleteTeamR
 import { AcceptMemberInviteRequestBodyType } from "@/types/utility";
 import { Permission } from "@/utils/rbac-utils";
 import { BulkResourceRequestBodyType } from "@shipoff/types";
+import {logger} from "@/libs/winston";
 
 class TeamService {
    
@@ -14,7 +15,7 @@ class TeamService {
     constructor(){
       this._permissions = new Permission()
       this._dbService = dbService;
-      this._errorHandler = createGrpcErrorHandler({serviceName:"AUTH_SERVICE"});
+      this._errorHandler = createGrpcErrorHandler({subServiceName:"AUTH_SERVICE",logger});
     }
 
     async createTeam({teamName,description,authUserData:{userId}}:CreateTeamRequestBodyType){

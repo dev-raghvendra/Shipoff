@@ -11,8 +11,11 @@ export type Container = {
     projectId:string
 }
 
-export const GetContainerRequestSchema = z.object({
-    projectId: z.string().min(3).max(100)
+export const StartK8DeploymentRequestSchema = z.object({
+    projectId: z.string().min(3).max(100),
+    projectType:z.enum(["STATIC","DYNAMIC"]),
+    deploymentId:z.string().min(3).max(100),
+    commitHash:z.string().min(7).max(40)
 }).strict();
 
 export const GetCloneURIRequestSchema = z.object({
@@ -39,5 +42,5 @@ export type STATE_CHANGED = {
 }
 
 export type OrchestratorWebhookRequestBodyType = z.infer<typeof OrchestratorWebhookRequestSchema>;
-export type GetContainerRequestBodyType = z.infer<typeof GetContainerRequestSchema>;
+export type StartK8DeploymentRequestBodyType = z.infer<typeof StartK8DeploymentRequestSchema>;
 export type GetCloneURIRequestBodyType = z.infer<typeof GetCloneURIRequestSchema>;
