@@ -6,4 +6,5 @@ export const CONFIG = {
     GRPC_AUTH_SERVICE_URL: String(process.env.GRPC_AUTH_SERVICE_URL || "localhost:50050"),
     GRPC_PROJECT_SERVICE_URL: String(process.env.GRPC_PROJECT_SERVICE_URL || "localhost:50051"),
     GRPC_ORCHESTRATOR_SERVICE_URL: String(process.env.GRPC_ORCHESTRATOR_SERVICE_URL || "localhost:50052"),
+    GRPC_LOG_SERVICE_URL: String(process.env.GRPC_LOG_SERVICE_URL || "localhost:50053"),
 } as const

@@ -62,8 +62,8 @@ export class DeploymentConsumer implements IDeploymentConsumer {
                continue;
              }
              const res = await this[evt.event.event](evt.event)
-             if(res) return await evt.ackMessage();
-             else logger.error(`[rid:${evt.event.requestId}]:UNEXPECTED_ERROR_OCCURED_WHILE_PROCESSING_EVENT_TYPE_"${evt.event.event}"_FOR_PROJECT_ID_"${evt.event.projectId}"_IN_DEPLOYMENT_CONSUMER_AT_"${this._consumer._serviceName}"`);
+             if(res) {await evt.ackMessage();continue}
+             logger.error(`[rid:${evt.event.requestId}]:UNEXPECTED_ERROR_OCCURED_WHILE_PROCESSING_EVENT_TYPE_"${evt.event.event}"_FOR_PROJECT_ID_"${evt.event.projectId}"_IN_DEPLOYMENT_CONSUMER_AT_"${this._consumer._serviceName}"`);
              this._producer.publishContainerEvent({
                 event:"FAILED",
                 projectId:evt.event.projectId,

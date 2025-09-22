@@ -39,6 +39,7 @@ export class ContainerConfigUtil {
     async getProdContainerConfig(projectId: string,deploymentId:string,commitHash:string,requestId:string) {
         const project = await this._projectService.getProjectById(projectId,requestId);
         const commonConfig = await this._getCommonConfig(project,"prod",deploymentId,commitHash)
+        const runtimeId = `run-${project.projectId}-${Date.now()}`
         const ingressedWebhook = await createJwt<TRAFFIC_DETECTED>({
             projectId: project.projectId,
             action:"INGRESSED",
@@ -51,6 +52,9 @@ export class ContainerConfigUtil {
         },{
             name:"INGRESSED_WEBHOOK",
             value:ingressedWebhook
+        },{
+            name:"RUNTIME_ID",
+            value:runtimeId
         })
         return commonConfig
     }
@@ -58,6 +62,7 @@ export class ContainerConfigUtil {
     private async _getCommonConfig(project:Project,type:"build"|"prod",deploymentId:string,commitHash:string){
         const image = `${CONFIG.BASE_IMAGE_PREFIX}:${project.framework.runtime}-${project.framework.applicationType}`.toLowerCase()
         const containerId = `${type[0]}-cont-${project.projectId}-${Date.now()}`
+        const buildId = `build-${project.projectId}-${Date.now()}`
         const webhooks = await Promise.all([
             createJwt<STATE_CHANGED>({
                 projectId:project.projectId,
@@ -133,6 +138,12 @@ export class ContainerConfigUtil {
             },{
                 name:"COMMIT_HASH",
                 value:commitHash
+            },{
+                name:"MEMORY_LIMIT",
+                value:`${4*1024*1024}`
+            },{
+                name:"BUILD_ID",
+                value:buildId
             }],image,containerId}
     }
 

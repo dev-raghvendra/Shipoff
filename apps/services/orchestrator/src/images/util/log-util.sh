@@ -2,18 +2,20 @@
 
 log(){
     local phase=$1
-    local message=$2
-    local timestamp=$(date '+%Y-%m-%d %H:%M:%S:%MS')
+    local type=$2
+    local message=$3
+    local envId=$4
+    local timestamp=$(date -u '+%Y-%m-%dT%H:%M:%S.%3NZ')
     
     case $phase in
        SYSTEM)
-        echo "[$timestamp] SYSTEM: $message"
+        echo "[$envId] [$timestamp] [SYSTEM] [$type]: $message"
         ;;
        BUILD)
-        echo "[$timestamp] BUILD: $message"
+        echo "[$envId] [$timestamp] [BUILD] [$type]: $message"
         ;;
        RUNTIME)
-        echo "[$timestamp] RUNTIME: $message"
+        echo "[$envId] [$timestamp] [RUNTIME] [$type]: $message"
         ;;
     esac
 }
@@ -21,8 +23,9 @@ log(){
 error_exit(){
     local phase=$1
     local message=$2
-    log $phase "ERROR: ❌ $message"
-    log $phase "Operation failed."
+    local envId=$3
+    log $phase "ERROR" $message  $envId
+    log $phase "ERROR" "Operation failed." $envId
     send_webhook "STATE_CHANGED" "$FAILED_WEBHOOK"
     exit 1
 }

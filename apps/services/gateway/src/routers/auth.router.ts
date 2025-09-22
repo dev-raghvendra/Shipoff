@@ -1,12 +1,13 @@
 import { acceptProjectInvitationController, acceptTeamInvitationController, createProjectMemberInvitationController, createTeamController, createTeamMemberInviteController, deleteProjectMemberController, deleteTeamController, deleteTeamMemberController, getMeController, getProjectMemberController, getTeamController, getTeamMemberController, getTeamsController, getUserController, loginController, OauthController, refreshTokenController, signinController } from "@/contollers/auth.controller";
+import { authenticateApiKey } from "@/middlewares/apikeyauth.middleware";
 import { authorizationMiddleware } from "@/middlewares/authorization.middleware";
 import { Router } from "express";
 
 const authRouter = Router();
 
-authRouter.post("/login",loginController);
-authRouter.post("/signin",signinController);
-authRouter.post("/oauth", OauthController);
+authRouter.post("/login",authenticateApiKey,loginController);
+authRouter.post("/signin",authenticateApiKey,signinController);
+authRouter.post("/oauth", authenticateApiKey, OauthController);
 authRouter.get("/me", authorizationMiddleware, getMeController);
 authRouter.get("/users/:targetUserId",authorizationMiddleware,getUserController)
 authRouter.get("/refresh", authorizationMiddleware, refreshTokenController);

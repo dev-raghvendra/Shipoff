@@ -15,11 +15,8 @@ export async function githubWebHookController(req: RequestWithMeta, res: Respons
         reqMeta: req.meta
     }
     const {code,message} = await webhookService.githubWebHook(body);
-    if(code){
-        grpcToHttpResponse.call(res, code, message);
-        return
-    }
-    res.sendStatus(204);
+    if(code) grpcToHttpResponse.call(res, code, message)
+    else res.sendStatus(204);
 }
 
 export async function orchestratorWebhookController(req:RequestWithMeta,res:Response){
@@ -30,10 +27,7 @@ export async function orchestratorWebhookController(req:RequestWithMeta,res:Resp
         event,
         reqMeta:req.meta
     }
-    const {code,message} = await webhookService.orchestratorWebhook(body);
-    if(code){
-        grpcToHttpResponse.call(res, code, message);
-        return
-    }
-    res.sendStatus(204);
+    const {code,message,data} = await webhookService.orchestratorWebhook(body);
+    if(code) grpcToHttpResponse.call(res, code, message,data);
+    else res.sendStatus(204);
 }

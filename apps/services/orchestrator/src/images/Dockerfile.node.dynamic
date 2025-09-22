@@ -5,7 +5,10 @@ RUN apk add --no-cache \
     bash \
     curl \
     jq \
-    unzip
+    unzip \
+    tini \
+    su-exec
+
 
 WORKDIR /app
 
@@ -15,12 +18,15 @@ COPY ./util/build-util.sh /build-util.sh
 COPY ./util/webhook-util.sh /webhook-util.sh
 COPY ./util/health-check-util.sh /health-check-util.sh
 COPY ./util/prod-util.sh /prod-util.sh
+COPY ./util/shutdown-util.sh /shutdown-util.sh
 
 RUN chmod +x /entrypoint.sh
 RUN chmod +r /log-util.sh
 RUN chmod +r /health-check-util.sh
 RUN chmod +r /build-util.sh
 RUN chmod +r /webhook-util.sh
+RUN chmod +r /prod-util.sh
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/sbin/tini", "--", "/entrypoint.sh"]
+
 

@@ -207,9 +207,18 @@ importers:
 
   apps/services/logs:
     dependencies:
-      '@prisma/client':
-        specifier: 6.12.0
-        version: 6.12.0(prisma@6.12.0(typescript@5.8.3))(typescript@5.8.3)
+      '@grpc/grpc-js':
+        specifier: ^1.13.4
+        version: 1.13.4
+      '@shipoff/proto':
+        specifier: workspace:*
+        version: link:../../../packages/proto
+      '@shipoff/services-commons':
+        specifier: workspace:*
+        version: link:../../../packages/services-commons
+      zod:
+        specifier: ^4.0.5
+        version: 4.0.5
     devDependencies:
       '@shipoff/typescript-config':
         specifier: workspace:*
@@ -217,9 +226,6 @@ importers:
       nodemon:
         specifier: ^3.1.10
         version: 3.1.10
-      prisma:
-        specifier: ^6.12.0
-        version: 6.12.0(typescript@5.8.3)
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@22.16.5)(typescript@5.8.3)

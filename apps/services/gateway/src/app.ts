@@ -7,6 +7,7 @@ import webhookRouter from './routers/webhook.router';
 import githubRouter from './routers/github.router';
 import orchestratorRouter from './routers/orchestrator.router';
 import { ridMiddleware } from './middlewares/rid.middleware';
+import logRouter from './routers/log.router';
 
 const app = express();
 
@@ -21,10 +22,12 @@ app.disable('x-powered-by');
 app.use(ridMiddleware)
 app.use("/apis/v1/webhooks",express.raw({type:"application/json"}),webhookRouter);
 app.use(express.json());
+app.use("apis/v1/logs",logRouter)
 app.use("/apis/v1/auth",authRouter);
 app.use("/apis/v1/projects",projectRouter);
 app.use("/apis/v1/github",githubRouter);
 app.use("/apis/v1/orchestrator",orchestratorRouter)
+
 
 
 app.use((_, res:Response) => {

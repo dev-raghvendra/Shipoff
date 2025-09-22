@@ -38,6 +38,7 @@ export class K8Service {
         }
         try {
             const deleteExisting = await this.deleteFreeTierDeployment(projectId,"user-static-apps",requestId);
+            console.log("Deleted existing pod:",deleteExisting);
             if(!deleteExisting) throw new GrpcAppError(status.INTERNAL,"Failed to delete existing pod",deleteExisting)
             const res = await this._coreApi.createNamespacedPod(manifest);
             return res;
@@ -233,7 +234,7 @@ export class K8Service {
                     namespace,
                     labels:{
                         app:projectId
-                    }
+                    },
                 },
                 spec:{
                     containers:[{
@@ -244,7 +245,16 @@ export class K8Service {
                     imagePullSecrets:[{
                         name:SECRETS.BASE_IMAGE_REGISTRY_SECRET
                     }],
-                    restartPolicy:"Never"
+                    restartPolicy:"Never",
+                    resources:{
+                        requests:{
+                            memory:"256Mi",
+                        },
+                        limits:{
+                            memory:"512Mi",
+                        }
+                    },
+                     terminationGracePeriodSeconds:30
                 },
              }
            }
