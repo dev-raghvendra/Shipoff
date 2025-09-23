@@ -55,7 +55,8 @@ export class K8Service {
             return this._errHandler(e,"GET-FREE-TIER-DYNAMIC-MANIFEST",requestId);
         }
         try {
-            const deleteExisting = await this.deleteFreeTierDeployment(projectId,"user-static-apps",requestId);
+            const deleteExisting = await this.deleteFreeTierDeployment(projectId,"user-dynamic-apps",requestId);
+            console.log("Deleted existing pod:",deleteExisting);
             if(!deleteExisting) throw new GrpcAppError(status.INTERNAL,"Failed to delete existing pod",deleteExisting)
             const res = await this._coreApi.createNamespacedPod(manifest);
             return res;
@@ -217,7 +218,7 @@ export class K8Service {
 
      private async _getFreeTierDeploymentManifest(projectId:string,deploymentId:string,commitHash:string,requestId:string,namespace="user-dynamic-apps"):Promise<FreeTierK8DeploymentManifest>{
            const {envs:env,image,containerId} = namespace==="user-dynamic-apps"
-           ? await this._containerConfUtil.getBuildContainerConfig(projectId,deploymentId,commitHash,requestId)
+           ? await this._containerConfUtil.getProdContainerConfig(projectId,deploymentId,commitHash,requestId)
            : await this._containerConfUtil.getBuildContainerConfig(projectId,deploymentId,commitHash,requestId);
             env.push({
             name:"CONTAINER_ID",
@@ -234,27 +235,38 @@ export class K8Service {
                     namespace,
                     labels:{
                         app:projectId
-                    },
+                    }
                 },
                 spec:{
                     containers:[{
                         name:containerId,
                         image,
-                        env
-                    }],
-                    imagePullSecrets:[{
-                        name:SECRETS.BASE_IMAGE_REGISTRY_SECRET
-                    }],
-                    restartPolicy:"Never",
-                    resources:{
+                        env,
+                        ...(CONFIG.ENV === "PRODUCTION" ? {} : {volumeMounts:[{
+                            name:"app-logs",
+                            mountPath:"/logs/user-static-apps"
+                        }]}),
+                        resources:{
                         requests:{
                             memory:"256Mi",
                         },
                         limits:{
                             memory:"512Mi",
                         }
-                    },
-                     terminationGracePeriodSeconds:30
+                    }
+                    }],
+                    ...(CONFIG.ENV === "PRODUCTION" ? {} : {volumes:[{
+                        name:"app-logs",
+                        hostPath:{
+                            path:"/var/log/user-static-apps",
+                            type:"DirectoryOrCreate"
+                        }
+                    }]}),
+                    imagePullSecrets:[{
+                        name:SECRETS.BASE_IMAGE_REGISTRY_SECRET
+                    }],
+                    restartPolicy:"Never",
+                    terminationGracePeriodSeconds:30
                 },
              }
            }

@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --exec ts-node -r tsconfig-paths/register ./src/server.ts",
-    "build:images":"export BASE_IMAGE_SUFFIX=shipoff/base-image && docker build -t $BASE_IMAGE_SUFFIX:nodejs-static -f ./src/images/Dockerfile.node.static ./src/images/ && docker build -t $BASE_IMAGE_SUFFIX:nodejs-dynamic -f ./src/images/Dockerfile.node.dynamic ./src/images/ && docker build -t $BASE_IMAGE_SUFFIX:python-dynamic -f ./src/images/Dockerfile.python.dynamic ./src/images && docker build -t $BASE_IMAGE_SUFFIX:php-dynamic -f ./src/images/Dockerfile.php.dynamic ./src/images"
+    "dev": "nodemon --exec ts-node -r tsconfig-paths/register ./src/server.ts"
   },
   "devDependencies": {
     "@shipoff/typescript-config": "workspace:*",

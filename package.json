@@ -6,7 +6,10 @@
     "dev": "turbo run dev",
     "generate" :"turbo run generate",
     "dev:db":"sudo docker compose -f ./dev/docker.compose.dev.yml up -d",
+    "dev:k3":"dev/k3d/startup.sh",
     "seed:db":"turbo run seed:db",
+    "build:images":"export BASE_IMAGE_SUFFIX=shipoff/base-image && docker build -t $BASE_IMAGE_SUFFIX:nodejs-static -f ./infra/paas-base-runtimes/Dockerfile.node.static ./infra/paas-base-runtimes/ && docker build -t $BASE_IMAGE_SUFFIX:nodejs-dynamic -f ./infra/paas-base-runtimes/Dockerfile.node.dynamic ./infra/paas-base-runtimes/ && docker build -t $BASE_IMAGE_SUFFIX:python-dynamic -f ./infra/paas-base-runtimes/Dockerfile.python.dynamic ./infra/paas-base-runtimes/ && docker build -t $BASE_IMAGE_SUFFIX:php-dynamic -f ./infra/paas-base-runtimes/Dockerfile.php.dynamic ./infra/paas-base-runtimes/",
+    "push:images":"export BASE_IMAGE_SUFFIX=shipoff/base-image && docker push $BASE_IMAGE_SUFFIX:nodejs-static && docker push $BASE_IMAGE_SUFFIX:nodejs-dynamic && docker push $BASE_IMAGE_SUFFIX:python-dynamic && docker push $BASE_IMAGE_SUFFIX:php-dynamic",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types"

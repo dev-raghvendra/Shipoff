@@ -139,11 +139,14 @@ export class ContainerConfigUtil {
                 name:"COMMIT_HASH",
                 value:commitHash
             },{
-                name:"MEMORY_LIMIT",
-                value:`${4*1024*1024}`
+                name:"SOFT_MEMORY_LIMIT",
+                value:`${500*1024*1024}`
             },{
                 name:"BUILD_ID",
                 value:buildId
+            },{
+                name:"ENVIRONMENT_TYPE",
+                value:CONFIG.ENV
             }],image,containerId}
     }
 

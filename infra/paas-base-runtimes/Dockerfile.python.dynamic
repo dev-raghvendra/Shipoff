@@ -1,4 +1,4 @@
-FROM node:20-alpine
+FROM python:3.13-alpine
 
 RUN apk add --no-cache \
     git \
@@ -6,19 +6,19 @@ RUN apk add --no-cache \
     curl \
     jq \
     unzip \
-    tini \
-    su-exec
-
+    gcc \
+    musl-dev 
 
 WORKDIR /app
 
-COPY ./node/dynamic/entrypoint.sh /entrypoint.sh
+COPY ./python/dynamic/entrypoint.sh /entrypoint.sh
 COPY ./util/log-util.sh /log-util.sh
 COPY ./util/build-util.sh /build-util.sh
 COPY ./util/webhook-util.sh /webhook-util.sh
 COPY ./util/health-check-util.sh /health-check-util.sh
 COPY ./util/prod-util.sh /prod-util.sh
 COPY ./util/shutdown-util.sh /shutdown-util.sh
+COPY ./util/res-monitoring-util.sh /res-monitoring-util.sh
 
 RUN chmod +x /entrypoint.sh
 RUN chmod +r /log-util.sh
@@ -26,7 +26,7 @@ RUN chmod +r /health-check-util.sh
 RUN chmod +r /build-util.sh
 RUN chmod +r /webhook-util.sh
 RUN chmod +r /prod-util.sh
+RUN chmod +r /shutdown-util.sh
+RUN chmod +r /res-monitoring-util.sh
 
-ENTRYPOINT ["/sbin/tini", "--", "/entrypoint.sh"]
-
-
+ENTRYPOINT ["/entrypoint.sh"]

@@ -27,42 +27,33 @@ run_filtered_build(){
     
     
     # Execute and capture exit code properly
-    log "BUILD" "INFO" "Starting build with command: $build_command" "$BUILD_ID"
+    log "BUILD" "INFO" "Starting build with command: $build_command" 
     local build_exit_code=0
-    # eval "$env_cmd sh -c '$build_command'" \
-    #     2> >(while IFS= read -r line; do log "BUILD" "ERROR: $line"; done) \
-    #     | while IFS= read -r line; do log "BUILD" "$line"; done
-    # build_exit_code=${PIPESTATUS[0]}
+    eval "$env_cmd sh -c '$build_command'" \
+        2> >(while IFS= read -r line; do log "BUILD" "ERROR" "$line" >&2; done) \
+        | while IFS= read -r line; do log "BUILD" "INFO" "$line"; done
+    build_exit_code=${PIPESTATUS[0]}
 
-    su-exec containeruser bash -c "
-eval \"$env_cmd bash -c '$build_command'\" \
-    2> >(while IFS= read -r line; do log 'BUILD' 'ERROR' \"\$line\" \"\$BUILD_ID\"; done) \
-    | while IFS= read -r line; do log 'BUILD' 'INFO' \"\$line\" \"\$BUILD_ID\"; done
-build_exit_code=\${PIPESTATUS[0]}
-exit \$build_exit_code
-"
-
-
-    
+   
     # Check if build failed and exit with same code
     if [ $build_exit_code -ne 0 ]; then
-        error_exit "BUILD" "Build failed with exit code $build_exit_code" "$BUILD_ID"
+        error_exit "BUILD" "Build failed with exit code $build_exit_code" 
     fi
 
     if [ "$app_type" = "STATIC" ] && [ ! -d "$out_dir" ]; then
-        error_exit "BUILD" "Output directory $out_dir does not exist" "$BUILD_ID"
+        error_exit "BUILD" "Output directory $out_dir does not exist" 
     fi
 
     if  [ "$app_type" = "STATIC" ] && [ -d "$artifacts_dir" ]; then
-           cp -r "$out_dir/." "$artifacts_dir/" || error_exit "BUILD" "Failed to copy artifacts from $out_dir to $artifacts_dir" "$BUILD_ID"
+           cp -r "$out_dir/." "$artifacts_dir/" || error_exit "BUILD" "Failed to copy artifacts from $out_dir to $artifacts_dir" 
 
      # Check if build was successful
           if [ ! "$(ls -A $artifacts_dir 2>/dev/null)" ]; then
-             error_exit "BUILD" "Build failed - no artifacts generated in $artifacts_dir" "$BUILD_ID"
+             error_exit "BUILD" "Build failed - no artifacts generated in $artifacts_dir" 
           fi
     fi
 
-    log "BUILD" "SUCCESS" "Build completed successfully with filtered environment" "$BUILD_ID"
+    log "BUILD" "SUCCESS" "Build completed successfully with filtered environment" 
 }
 
 validate_orchestrator_response(){
@@ -78,7 +69,7 @@ validate_orchestrator_response(){
                 error_msg="$api_error"
             fi
         fi
-        error_exit "SYSTEM" "$error_msg" "$BUILD_ID"
+        error_exit "SYSTEM" "$error_msg" 
     fi
     
     # For successful HTTP status, check if response indicates error
@@ -86,10 +77,10 @@ validate_orchestrator_response(){
         # Check if res is null (indicates error even with 200)
         if jq -e '.res == null' "$res_file" >/dev/null 2>&1; then
             local body_error=$(jq -r '.message // .error // "Failed to get creds from orchestrator"' "$res_file")
-            error_exit "SYSTEM" "$body_error" "$BUILD_ID"
+            error_exit "SYSTEM" "$body_error" 
         fi
     else
-        error_exit "SYSTEM" "$error_msg" "$BUILD_ID"
+        error_exit "SYSTEM" "$error_msg" 
     fi
 }
 
@@ -102,7 +93,7 @@ get_clone_uri(){
     
     # Check curl command itself (network errors)
     if [[ $? -ne 0 ]]; then
-        error_exit "SYSTEM" "Failed to connect to orchestrator" "$BUILD_ID"
+        error_exit "SYSTEM" "Failed to connect to orchestrator" 
     fi
 
     # Validate response
@@ -112,10 +103,11 @@ get_clone_uri(){
     value=$(jq -r '.res.REPO_CLONE_URI' /tmp/creds.json)
     export REPO_CLONE_URI="$value"
 
-    log "SYSTEM" "INFO" "Clone URI loaded successfully" "$BUILD_ID"
+    log "SYSTEM" "INFO" "Clone URI loaded successfully" 
 }
 
 enforce_build_time_limit(){
+    local main_pid=$1
     local INTERVAL=10
     local END=$((SECONDS+300))
     
@@ -125,5 +117,6 @@ enforce_build_time_limit(){
        fi
        sleep $INTERVAL
     done
-    error_exit "BUILD" "5 minute build time limit exceeded" "$BUILD_ID"
+    echo "BUILD_TIMEOUT" >> /tmp/shutdown_reason
+    kill -TERM $main_pid
 }

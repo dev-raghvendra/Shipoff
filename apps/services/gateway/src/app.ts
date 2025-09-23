@@ -22,7 +22,7 @@ app.disable('x-powered-by');
 app.use(ridMiddleware)
 app.use("/apis/v1/webhooks",express.raw({type:"application/json"}),webhookRouter);
 app.use(express.json());
-app.use("apis/v1/logs",logRouter)
+app.use("/apis/v1/log",logRouter)
 app.use("/apis/v1/auth",authRouter);
 app.use("/apis/v1/projects",projectRouter);
 app.use("/apis/v1/github",githubRouter);

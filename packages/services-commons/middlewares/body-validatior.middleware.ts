@@ -56,6 +56,7 @@ export function createValidator<Map extends SchemaMap>(schemaMap: Map, logger: {
     ) => {
       try {
         const raw = extractRequestData(call.request);
+        console.log("Raw request data:", raw);
         const schema = schemaMap[method].schema;
         (raw)
         const parsed = await parseAsync(schema, raw);

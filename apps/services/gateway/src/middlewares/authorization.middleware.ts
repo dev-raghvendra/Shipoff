@@ -6,9 +6,7 @@ export async function authorizationMiddleware(req: Request, res: Response, next:
     try {
         const authHeader = req.headers.authorization;
         const token = authHeader && authHeader.split('Bearer ')[1]
-        if (!token) {
-            throw false;
-        }
+        if (!token) throw new JsonWebTokenError("Token missing");
         const decoded = await verifyJwt(token);
         req.body = { ...req.body, authUserData: (decoded as any).authUserData };
         next();

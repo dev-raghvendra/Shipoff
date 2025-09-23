@@ -51,7 +51,7 @@ export class DeploymentConsumer implements IDeploymentConsumer {
     
     async processEvents(){
         let backoffTime = 1000;
-        const maxBackoffTime = 60000;
+        const maxBackoffTime = 10000;
         while(true){
           if(this._eventQueue.length && this._readCount){
              backoffTime = 1000;

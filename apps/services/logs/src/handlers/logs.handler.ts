@@ -12,7 +12,7 @@ export class LogsHandler {
     async handleIPutLog(call:ServerUnaryCall<IPutLogRequest & {body:IPutLogRequestBodyType},sendUnaryData<google.protobuf.Empty>>,callback:sendUnaryData<google.protobuf.Empty>){
         try {
             const {code} = await this._logsService.IPutLog(call.request.body);
-            if(code!==status.INTERNAL) return callback({code,message:"Failed to store log"})
+            if(code!==status.OK) return callback({code,message:"Failed to store log"})
             const response = google.protobuf.Empty.fromObject({})
             return callback(null,response)
         } catch (e:any) {

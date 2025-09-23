@@ -6,11 +6,8 @@ RUN apk add --no-cache \
     bash \
     curl \
     jq  \
-    unzip \
-    tini \
-    su-exec
+    unzip 
 
-RUN aws --version
 
 WORKDIR /app
 
@@ -26,6 +23,7 @@ RUN chmod +r /log-util.sh
 RUN chmod +r /build-util.sh
 RUN chmod +r /webhook-util.sh
 RUN chmod +r /shutdown-util.sh
+RUN chmod +r /res-monitoring-util.sh
 
-ENTRYPOINT ["/sbin/tini", "--", "/entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
 

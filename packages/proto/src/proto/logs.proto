@@ -1,12 +1,16 @@
 syntax = "proto3";
 import "google/protobuf/empty.proto";
 
-message IPutLogRequest {
+message LogBody {
     string timestamp = 1;
     string level = 2;
     string type = 3;
     string message = 4;
-    string environmentId = 5;
+    string envId = 5;
+}
+
+message IPutLogRequest {
+    repeated LogBody logs = 1;
 }
 
 service LogService {
