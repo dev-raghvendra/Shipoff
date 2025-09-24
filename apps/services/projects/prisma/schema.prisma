@@ -78,7 +78,7 @@ model Repository {
 model Deployment {
   deploymentId    String           @id @default(uuid())
   commitHash      String           @unique
-  status          DeploymentStatus? @default(QUEUED)
+  status          DeploymentStatus @default(QUEUED)
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   commitMessage   String

@@ -11,14 +11,17 @@
   "license": "ISC",
   "devDependencies": {
     "@shipoff/typescript-config": "workspace:*",
+    "@shipoff/types": "workspace:*",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "zod": "^4.0.5",
+    "@aws-sdk/client-s3": "^3.895.0",
     "@grpc/grpc-js": "^1.13.4",
     "@shipoff/proto": "workspace:*",
-    "@shipoff/services-commons": "workspace:*"
+    "@shipoff/grpc-clients": "workspace:*",
+    "@shipoff/services-commons": "workspace:*",
+    "zod": "^4.0.5"
   }
 }

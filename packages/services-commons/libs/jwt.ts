@@ -66,7 +66,7 @@ export function decodeJwt<T extends object>(token:string):Promise<T>{
 
     type UnitAnyCase = Unit | Uppercase<Unit> | Lowercase<Unit>;
 
-    type StringValue =
+    export type StringValue =
         | `${number}`
         | `${number}${UnitAnyCase}`
         | `${number} ${UnitAnyCase}`;

@@ -2,8 +2,19 @@ import app from "./app";
 import {createServer} from "http";
 import {logger} from "@/libs/winston";
 import { CONFIG } from "./config/config";
+import { WebSocketServer } from "ws";
+import { wsAuthorizationMiddleware } from "./middlewares/wsauthorization.middleware";
+import { logsWsController } from "./contollers/logs.ws.controller";
 
-createServer(app).listen(CONFIG.PORT,()=>logger.info(`GATEWAY_SERVICE_STARTED_ON_PORT: ${CONFIG.PORT}`));
+const server = createServer(app);
+const wss = new WebSocketServer({
+    server,
+    path:"/logs",
+    verifyClient:wsAuthorizationMiddleware
+})
+wss.on("connection",logsWsController)
+
+server.listen(CONFIG.PORT,()=>logger.info(`GATEWAY_SERVICE_STARTED_ON_PORT: ${CONFIG.PORT}`));
 
 process.on("uncaughtException", (err) => {
     logger.error(`UNCAUGHT_EXCEPTION: ${err.message}`);

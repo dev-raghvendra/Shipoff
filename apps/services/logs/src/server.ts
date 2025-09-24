@@ -1,4 +1,4 @@
-import { createValidator } from "@shipoff/services-commons";
+import { createUnaryValidator } from "@shipoff/services-commons";
 import { Server, ServerCredentials } from "@grpc/grpc-js";
 import { RPC_SCHEMA } from "@/config/rpc-schema";
 import { LogsHandler } from "@/handlers/logs.handler";
@@ -7,7 +7,7 @@ import { UnimplementedLogServiceService } from "@shipoff/proto";
 import { SECRETS } from "./config";
 
 
-const validateRPCBody = createValidator(RPC_SCHEMA, logger);
+const validateRPCBody = createUnaryValidator(RPC_SCHEMA, logger);
 const server = new Server();
 const logsHandler = new LogsHandler();
 

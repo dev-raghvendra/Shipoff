@@ -76,7 +76,10 @@ export class OrchestratorWebhookService {
                 event: payload.action,
                 projectId: payload.projectId,
                 deploymentId:payload.deploymentId,
-                requestId
+                requestId,
+                projectType: payload.projectType,
+                builId: payload.builId,
+                runtimeId: payload.runtimeId
             }), "STATE-CHANGED",requestId)
             return GrpcResponse.OK({}, "State changed webhook processed")
         } catch (e: any) {
@@ -101,7 +104,10 @@ export class OrchestratorWebhookService {
                 event: "TERMINATED",
                 projectId: decoded.projectId,
                 deploymentId:decoded.deploymentId,
-                requestId: webhook.reqMeta.requestId
+                requestId: webhook.reqMeta.requestId,
+                projectType: decoded.projectType,
+                builId: decoded.builId,
+                runtimeId: decoded.runtimeId
             }), "STATE-CHANGE-TOKEN-EXPIRED", webhook.reqMeta.requestId)
         }
     }

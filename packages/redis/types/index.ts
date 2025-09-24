@@ -4,6 +4,9 @@ export type ContainerEvent <T extends keyof typeof $ContainerEvent> = {
     containerId:string;
     deploymentId:string;
     requestId:string;
+    builId:string;
+    runtimeId:string;
+    projectType:"STATIC" | "DYNAMIC";
 }
 
 export type DeploymentEvent <T extends keyof typeof $DeploymentEvent> =  {

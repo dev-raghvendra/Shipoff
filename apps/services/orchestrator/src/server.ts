@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { SECRETS } from "@/config";
-import { createValidator } from "@shipoff/services-commons";
+import { createUnaryValidator } from "@shipoff/services-commons";
 import { UnimplementedOrchestratorServiceService } from "@shipoff/proto";
 import { Server, ServerCredentials } from "@grpc/grpc-js";
 import { RPC_SCHEMA } from "./config/rpc-schema";
@@ -11,7 +11,7 @@ import { ProjectConsumer } from "@/consumer/project.consumer";
 import { logger } from "@/libs/winston";
 
 const server = new Server()
-const validateRPCBody = createValidator(RPC_SCHEMA,logger);
+const validateRPCBody = createUnaryValidator(RPC_SCHEMA,logger);
 const orchestratorHandlers = new OrchestratorHandler();
 const orchestratorWebhookHandler = new OrchestratorWebhookHandler()
 const deploymentConsumer = new DeploymentConsumer("ORCHESTRATOR_SERVICE");

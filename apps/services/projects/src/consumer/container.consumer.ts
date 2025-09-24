@@ -29,8 +29,48 @@ export class ContainerConsumer {
         const eventStatus = this._eventToStatusMap[event.event];
         try {
            if(!eventStatus) throw new GrpcAppError(status.INTERNAL,`UNKNOWN_EVENT_TYPE_${event.event}_FOR_DEPLOYMENT_ID_${event.deploymentId}_IN_CONTAINER_TOPIC_IN_CONTAINER_CONSUMER_AT_${this._consumer._serviceName}`);
-           await dbService.updateDeploymentById(event.deploymentId,{
-            status:eventStatus
+           //When a deployment enters PRODUCTION, we must explicitly mark the previous PRODUCTION deployment as INACTIVE. 
+           //Reason: static project containers exit immediately after sending PRODUCTION event, so they never emit a TERMINATED event. 
+           //Without this step, multiple deployments could incorrectly remain in PRODUCTION state.
+
+           await dbService.startTransaction(async (tx)=>{
+              if(eventStatus === "PRODUCTION"){
+                await tx.deployment.updateMany({
+                    where:{
+                        projectId:event.projectId,
+                        status:DeploymentStatus.PRODUCTION
+                    },
+                    data:{status:DeploymentStatus.INACTIVE}
+                 })
+              }
+              if(eventStatus === "PROVISIONING"){
+                await tx.buildEnviornment.deleteMany({
+                    where:{deploymentId:event.deploymentId}
+                })
+                await tx.buildEnviornment.create({
+                    data:{
+                       buildId:event.builId,
+                       deploymentId:event.deploymentId
+                    }
+                })
+              }
+              else if(eventStatus === "PRODUCTION" && event.projectType === "DYNAMIC"){
+                await tx.runtimeEnviornment.deleteMany({
+                    where:{deploymentId:event.deploymentId}
+                })
+                await tx.runtimeEnviornment.create({
+                    data:{
+                       runtimeId:event.runtimeId,
+                       deploymentId:event.deploymentId
+                    }
+                })
+              }
+              await tx.deployment.update({
+                where:{
+                    deploymentId:event.deploymentId
+                },
+                data:{status:eventStatus}
+              })
            })
            await ackMessage();
         } catch (e:any) {

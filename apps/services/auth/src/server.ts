@@ -1,7 +1,7 @@
 import { Server, ServerCredentials } from "@grpc/grpc-js";
 import { UnimplementedAuthServiceService } from "@shipoff/proto";
 import AuthHandlers from "@/handlers/auth.handler";
-import {createValidator} from "@shipoff/services-commons"
+import {createUnaryValidator} from "@shipoff/services-commons"
 import { RPC_SCHEMA } from "@/config/rpc-schema";
 import TeamHandlers from "@/handlers/team.handler";
 import ProjectHandlers from "@/handlers/project.handlers";
@@ -10,7 +10,7 @@ import { ProjectConsumer } from "./consumer/project.consumer";
 import { logger } from "./libs/winston";
 
 
-const validateRPCBody = createValidator(RPC_SCHEMA,logger);
+const validateRPCBody = createUnaryValidator(RPC_SCHEMA,logger);
 const server = new Server();
 const authhandlers = new AuthHandlers();
 const teamHandlers = new TeamHandlers();

@@ -47,8 +47,20 @@ export class GithubWebhookService {
               author:parsedPayload.head_commit?.author.name || "unknown",
               repositoryId:repo.repositoryId
           }
-          
-            const deployment = await this._dbService.createDeployment(deploymentData);
+            const deployment = await this._dbService.startTransaction(async(tx)=>{
+               await tx.deployment.updateMany({
+                    where:{
+                        projectId:repo.projectId,
+                        status:"QUEUED"
+                    },
+                    data:{
+                        status:"INACTIVE"
+                    }
+                })
+                return tx.deployment.create({
+                    data:deploymentData
+                })
+            });
             await this._deploymentProducer.publishDeploymentRequested({
                 event:$DeploymentEvent.CREATED,
                 projectId:repo.projectId,
@@ -76,7 +88,7 @@ export class GithubWebhookService {
             });
             return GrpcResponse.OK(repo, "Repository deleted successfully");
         } catch (e:any) {
-            return this._errHandler(e, "DELETE-REPOSITORY",requestId);
+            return this._errHandler(e, "REPOSITORY-DELETED",requestId);
         }
     }
 
@@ -91,7 +103,7 @@ export class GithubWebhookService {
             });
             return GrpcResponse.OK(installation, "Github installation deleted successfully");
         } catch (e:any) {
-            return this._errHandler(e, "DELETE-GITHUB-INSTALLATION",requestId);
+            return this._errHandler(e, "GITHUB-INSTALLATION-DELETED",requestId);
         }
     }
 
@@ -108,7 +120,7 @@ export class GithubWebhookService {
             });
             return GrpcResponse.OK(res, "Repositories removed from installation");
         } catch (e:any) {
-            return this._errHandler(e, "REMOVE-REPOSITORIES-FROM-INSTALLATION",requestId);
+            return this._errHandler(e, "REPOSITORY-REMOVED-FROM-INSTALLATION",requestId);
         }
     }
 

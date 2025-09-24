@@ -1,5 +1,5 @@
 import { ZodTypeAny, parseAsync } from "zod";
-import { ServerUnaryCall, sendUnaryData, status } from "@grpc/grpc-js";
+import { ServerWritableStream,  status } from "@grpc/grpc-js";
 
 // Protobuf-compatible message type check
 interface ProtobufMessage {
@@ -33,12 +33,12 @@ export type ValidatedCall<
   K extends keyof Map,
   TReq,
   TRes
-> = ServerUnaryCall<TReq & { body: SchemaType<Map, K> }, TRes>;
+> = ServerWritableStream<TReq & { body: SchemaType<Map, K> }, TRes>;
 
 /**
  * Universal RPC validator for any schema map
  */
-export function createValidator<Map extends SchemaMap>(schemaMap: Map, logger: {error: (msg: string) => void}) {
+export function createUnaryValidator<Map extends SchemaMap>(schemaMap: Map, logger: {error: (msg: string) => void}) {
   return function validateBody<
     K extends keyof Map,
     TReq extends MaybeProtobufMessage,
@@ -46,30 +46,25 @@ export function createValidator<Map extends SchemaMap>(schemaMap: Map, logger: {
   >(
     method: K,
     handler: (
-      call: ValidatedCall<Map, K, TReq, TRes>,
-      callback: sendUnaryData<TRes>
+      call: ValidatedCall<Map, K, TReq, TRes>
     ) => void
   ) {
     return async (
-      call: ServerUnaryCall<TReq, TRes>,
-      callback: sendUnaryData<TRes>
+      call: ServerWritableStream<TReq, TRes>
     ) => {
       try {
         const raw = extractRequestData(call.request);
-        console.log("Raw request data:", raw);
         const schema = schemaMap[method].schema;
-        (raw)
         const parsed = await parseAsync(schema, raw);
-
         const callWithBody = call as unknown as ValidatedCall<Map, K, TReq, TRes>;
         (callWithBody.request as any).body = parsed;
-        handler(callWithBody, callback);
+        handler(callWithBody);
       } catch(e){
-        logger.error(`ERROR_OCCURED_IN_BODY_VALIDATION ${JSON.stringify(e,null,6)}`)
-        callback({
-          code: status.INVALID_ARGUMENT,
-          message: schemaMap[method].errMsg || "Invalid argument",
-        });
+        process.env.ENV!== "PRODUCTION" && logger.error(`ERROR_OCCURED_IN_BODY_VALIDATION ${JSON.stringify(e,null,6)}`)
+        call.destroy({
+            code:status.INVALID_ARGUMENT,
+            message:schemaMap[method].errMsg || "Invalid argument"
+        } as any)
       }
     };
   };
