@@ -1,14 +1,13 @@
 import { logger } from "@/libs/winston";
-import { JsonWebTokenError, verifyJwt } from "@shipoff/services-commons";
+import { verifyBearerTokenHeader } from "@/utils/req-util";
+import { JsonWebTokenError } from "@shipoff/services-commons";
 import { NextFunction, Request, Response } from "express";
 
 export async function authorizationMiddleware(req: Request, res: Response, next: NextFunction) {
     try {
-        const authHeader = req.headers.authorization;
-        const token = authHeader && authHeader.split('Bearer ')[1]
-        if (!token) throw new JsonWebTokenError("Token missing");
-        const decoded = await verifyJwt(token);
-        req.body = { ...req.body, authUserData: (decoded as any).authUserData };
+        const header = req.headers["authorization"];
+        const decoded = await verifyBearerTokenHeader(header) as any
+        req.body = { ...req.body, authUserData: decoded.authUserData };
         next();
     } catch (e: any) {
         if (e instanceof JsonWebTokenError) {

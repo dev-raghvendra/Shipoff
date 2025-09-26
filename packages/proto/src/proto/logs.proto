@@ -25,7 +25,12 @@ message GetLogsRequest {
 message GetLogsResponse {
     int32 code = 1;
     string message = 2;
-    repeated LogBody res = 3;
+    GetLogsResponseBody res = 3;
+}
+
+message GetLogsResponseBody {
+    string lastBatchId = 1;
+    string logs = 2;
 }
 
 message StreamLogsRequest {

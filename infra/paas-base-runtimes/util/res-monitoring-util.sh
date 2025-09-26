@@ -7,7 +7,7 @@ monitor_memory_limit() {
   while true; do
     current=$(< /sys/fs/cgroup/memory.current)
     if [ "$current" -ge "$soft_mem_limit" ]; then
-      echo "MEMORY_LIMIT_EXCEEDED" >> /tmp/shutdown_reason
+      echo "MEMORY_LIMIT_EXCEEDED" > /tmp/shutdown_reason
       kill -TERM "$main_pid"
       exit 0
     fi

@@ -34,20 +34,12 @@ export class ContainerConsumer {
            //Without this step, multiple deployments could incorrectly remain in PRODUCTION state.
 
            await dbService.startTransaction(async (tx)=>{
-              if(eventStatus === "PRODUCTION"){
-                await tx.deployment.updateMany({
-                    where:{
-                        projectId:event.projectId,
-                        status:DeploymentStatus.PRODUCTION
-                    },
-                    data:{status:DeploymentStatus.INACTIVE}
-                 })
-              }
               if(eventStatus === "PROVISIONING"){
-                await tx.buildEnviornment.deleteMany({
-                    where:{deploymentId:event.deploymentId}
+                await tx.buildEnvironment.updateMany({
+                    where:{deploymentId:event.deploymentId},
+                    data:{active:false}
                 })
-                await tx.buildEnviornment.create({
+                await tx.buildEnvironment.create({
                     data:{
                        buildId:event.builId,
                        deploymentId:event.deploymentId
@@ -55,10 +47,11 @@ export class ContainerConsumer {
                 })
               }
               else if(eventStatus === "PRODUCTION" && event.projectType === "DYNAMIC"){
-                await tx.runtimeEnviornment.deleteMany({
-                    where:{deploymentId:event.deploymentId}
+                await tx.runtimeEnvironment.updateMany({
+                    where:{deploymentId:event.deploymentId},
+                    data:{active:false}
                 })
-                await tx.runtimeEnviornment.create({
+                await tx.runtimeEnvironment.create({
                     data:{
                        runtimeId:event.runtimeId,
                        deploymentId:event.deploymentId
@@ -70,6 +63,17 @@ export class ContainerConsumer {
                     deploymentId:event.deploymentId
                 },
                 data:{status:eventStatus}
+              })
+              if(["INACTIVE","FAILED"].includes(eventStatus)) return;
+              await tx.deployment.updateMany({
+                 where:{
+                    deploymentId:{not:event.deploymentId},
+                    projectId:event.projectId,
+                    status:eventStatus
+                 },
+                 data:{
+                    status:DeploymentStatus.INACTIVE
+                 }
               })
            })
            await ackMessage();

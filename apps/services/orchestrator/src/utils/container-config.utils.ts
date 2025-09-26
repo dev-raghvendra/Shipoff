@@ -51,6 +51,8 @@ export class ContainerConfigUtil {
         const containerId = `${type[0]}-${deploymentId}-${Date.now()}`
         const buildId = `build-${deploymentId}-${Date.now()}`
         const runtimeId = `run-${deploymentId}-${Date.now()}`
+        console.log(buildId)
+        console.log(runtimeId)
         const webhooks = await Promise.all([
             this._createWebhookToken(project,deploymentId,containerId,buildId,runtimeId,"PROVISIONING","10M"),
             this._createWebhookToken(project,deploymentId,containerId,buildId,runtimeId,"RUNNING","10M"),
@@ -114,6 +116,9 @@ export class ContainerConfigUtil {
             },{
                 name:"ENVIRONMENT_TYPE",
                 value:CONFIG.ENV
+            },{
+                name:"PROJECT_TYPE",
+                value:project.framework.applicationType
             }],image,containerId}
     }
 

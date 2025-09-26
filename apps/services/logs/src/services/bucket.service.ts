@@ -1,6 +1,8 @@
 import { SECRETS } from "@/config";
-import { _Object, GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { _Object, DeleteObjectCommand, DeleteObjectsCommand, GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { logBody } from "@/types/Logs";
+import { GrpcAppError } from "@shipoff/services-commons";
+import { status } from "@grpc/grpc-js";
 export class BucketService {
     private _bucketClient : S3Client;
 
@@ -29,11 +31,16 @@ export class BucketService {
 
     
     async getLogs(fileKey:string){
-        const command = new GetObjectCommand({
+        try {
+            const command = new GetObjectCommand({
             Bucket:SECRETS.BUCKET_NAME,
             Key:fileKey,
         })
         return this._bucketClient.send(command)
+        } catch (e:any) {
+            if(e.$metadata.httpStatusCode === 404) throw new GrpcAppError(status.NOT_FOUND,"No logs found for the given key")
+            throw e;
+        }
     }
 
     async getNextLogKey(prefix:string,startAfter?:string){
@@ -45,10 +52,29 @@ export class BucketService {
         })
         const res = await this._bucketClient.send(command)
         if(res.Contents) return res.Contents[0].Key as string
-        return null
+        else throw new GrpcAppError(status.NOT_FOUND,"No logs found for the given environment")
+    }
+
+    async getAllLogKeys(prefix:string,continuationToken?:string){
+        const command = new ListObjectsV2Command({
+              Bucket:SECRETS.BUCKET_NAME,
+              Prefix:prefix,
+              ContinuationToken:continuationToken
+          })
+          return await this._bucketClient.send(command)
+    }
+
+    async deleteLogs(fileKeys:string[]){
+        const command = new DeleteObjectsCommand({
+            Bucket:SECRETS.BUCKET_NAME,
+            Delete:{
+                Objects:fileKeys.map(key=>({Key:key})),
+                Quiet:true
+            }
+        })
+        return await this._bucketClient.send(command)
     }
 
 }
 
 
-// new BucketService().getFile('test670fc34f49b8b7b272bd929a_AD_4nXdUoPz1oo8QaOY7vTmoGQBUun9zg0tNrrromF7VMnrTLcwk3meeL00DEaE2C6DwVkzUB3esjEFIpLlR1Hj4zG6L4Rgco4HJFAbmPcEx8uCzYUt2JNKrp1zmWu4SdJIQ6H4wmx2vWAuoPSpKn2LwzC4e1165.gif').then(res=>console.log(res.$metadata.)).catch(err=>console.log(err))

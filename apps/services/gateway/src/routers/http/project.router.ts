@@ -1,5 +1,5 @@
-import { createOrUpdateEnvironmentVariableController, createProjectController, createRepositoryController, deleteDeploymentController, deleteEnvironmentVariableController, deleteProjectController, deleteRepositoryController, getAllDeploymentsController, getAllUserProjectsController, getDeploymentController, getEnvironmentVariablesController, getFrameworksController, getProjectController, getRepositoryController, redeployController, updateProjectController } from "@/contollers/project.controller";
-import { authorizationMiddleware } from "@/middlewares/authorization.middleware";
+import { createOrUpdateEnvironmentVariableController, createProjectController, createRepositoryController, deleteDeploymentController, deleteEnvironmentVariableController, deleteProjectController, deleteRepositoryController, getAllDeploymentsController, getAllUserProjectsController, getDeploymentController, getEnvironmentVariablesController, getFrameworksController, getProjectController, getRepositoryController, redeployController, updateProjectController } from "@/contollers/http/project.controller";
+import { authorizationMiddleware } from "@/middlewares/http/authorization.middleware";
 import { Router } from "express";
 const projectRouter = Router();
 

@@ -28,7 +28,11 @@ message BulkResourceRequest {
 }
 
 
-message EnviornmentVariablesKeyValue {
+message EnvironmentVariablesKeyValue {
     string name = 1;
     string value = 2;
+}
+
+message InternalEmptyRequest {
+    RequestMeta reqMeta = 1;
 }

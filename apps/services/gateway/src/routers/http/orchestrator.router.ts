@@ -1,4 +1,4 @@
-import { getCloneURIController } from "@/contollers/orchestrator.controller";
+import { getCloneURIController } from "@/contollers/http/orchestrator.controller";
 import { Router } from "express";
 const orchestratorRouter = Router();
 

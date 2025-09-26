@@ -1,4 +1,4 @@
-FROM php:8.2-cli-alpine
+FROM php:8.3-fpm-alpine
 
 RUN apk add --no-cache \
     git \
@@ -27,5 +27,10 @@ RUN chmod +r /prod-util.sh
 RUN chmod +r /webhook-util.sh
 RUN chmod +r /shutdown-util.sh
 RUN chmod +r /res-monitoring-util.sh
+
+RUN chmod +x /entrypoint.sh && \
+    chmod +r /log-util.sh /health-check-util.sh /build-util.sh \
+             /webhook-util.sh /prod-util.sh /shutdown-util.sh /res-monitoring-util.sh && \
+    rm -rf /var/cache/apk/* /tmp/*
 
 ENTRYPOINT ["/entrypoint.sh"]

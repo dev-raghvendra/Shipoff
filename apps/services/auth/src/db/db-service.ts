@@ -39,6 +39,7 @@ export class Database {
 
     async findUniqueUserById(userId: string, select?: Prisma.UserSelect) {
         const res = await this._client.user.findUnique({ where: { userId }, select });
+       
         if(res) return res;
         throw new GrpcAppError(status.NOT_FOUND,"User not found",null);
     }

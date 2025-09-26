@@ -1,6 +1,6 @@
-import { acceptProjectInvitationController, acceptTeamInvitationController, createProjectMemberInvitationController, createTeamController, createTeamMemberInviteController, deleteProjectMemberController, deleteTeamController, deleteTeamMemberController, getMeController, getProjectMemberController, getTeamController, getTeamMemberController, getTeamsController, getUserController, loginController, OauthController, refreshTokenController, signinController } from "@/contollers/auth.controller";
-import { authenticateApiKey } from "@/middlewares/apikeyauth.middleware";
-import { authorizationMiddleware } from "@/middlewares/authorization.middleware";
+import { acceptProjectInvitationController, acceptTeamInvitationController, createProjectMemberInvitationController, createTeamController, createTeamMemberInviteController, deleteProjectMemberController, deleteTeamController, deleteTeamMemberController, getMeController, getProjectMemberController, getTeamController, getTeamMemberController, getTeamsController, getUserController, loginController, OauthController, refreshTokenController, signinController } from "@/contollers/http/auth.controller";
+import { authenticateApiKey } from "@/middlewares/http/apikeyauth.middleware";
+import { authorizationMiddleware } from "@/middlewares/http/authorization.middleware";
 import { Router } from "express";
 
 const authRouter = Router();

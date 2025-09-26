@@ -2,6 +2,7 @@ import { sendUnaryData, ServerUnaryCall, ServerWritableStream, status } from "@g
 import { LogsService } from "@/services/logs.service";
 import {GetLogsRequest, GetLogsResponse, google, IPutLogRequest, LogBody, StreamLogsRequest} from "@shipoff/proto";
 import { GetLogsRequestBodyType, IPutLogRequestBodyType, StreamLogsRequestBodyType } from "@/types/Logs";
+import {endStreamWithError} from "@/libs/grpc"
 
 export class LogsHandler {
     private _logsService : LogsService;
@@ -32,7 +33,11 @@ export class LogsHandler {
     }
 
     async handleStreamLogs(call:ServerWritableStream<StreamLogsRequest & {body:StreamLogsRequestBodyType},LogBody>){
-        const response = await this._logsService.streamLogs(call) 
-        response && call.destroy({code:response.code,message:response.message} as any)
+        try {
+            const response = await this._logsService.streamLogs(call) 
+            response && endStreamWithError.call(call,response.code,response.message)
+        } catch (e:any) {
+            endStreamWithError.call(call,status.INTERNAL,"Internal Server Error")
+        }
     }
 }

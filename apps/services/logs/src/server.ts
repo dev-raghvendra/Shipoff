@@ -1,18 +1,21 @@
-import { createUnaryValidator } from "@shipoff/services-commons";
+import { createStreamValidator, createUnaryValidator } from "@shipoff/services-commons";
 import { Server, ServerCredentials } from "@grpc/grpc-js";
-import { RPC_SCHEMA } from "@/config/rpc-schema";
+import { STREAM_RPC_SCHEMA, UNARY_RPC_SCHEMA } from "@/config/rpc-schema";
 import { LogsHandler } from "@/handlers/logs.handler";
 import { logger } from "@/libs/winston";
 import { UnimplementedLogServiceService } from "@shipoff/proto";
 import { SECRETS } from "./config";
 
 
-const validateRPCBody = createUnaryValidator(RPC_SCHEMA, logger);
+const validateUnaryRPCBody = createUnaryValidator(UNARY_RPC_SCHEMA, logger);
+const validateStreamRPCBody = createStreamValidator(STREAM_RPC_SCHEMA, logger);
 const server = new Server();
 const logsHandler = new LogsHandler();
 
 server.addService(UnimplementedLogServiceService.definition, {
-    IPutLog: validateRPCBody("IPutLog", logsHandler.handleIPutLog.bind(logsHandler)),
+    IPutLog: validateUnaryRPCBody("IPutLog", logsHandler.handleIPutLog.bind(logsHandler)),
+    GetLogs: validateUnaryRPCBody("GetLogs", logsHandler.handleGetLogs.bind(logsHandler)),
+    StreamLogs: validateStreamRPCBody("StreamLogs", logsHandler.handleStreamLogs.bind(logsHandler))
 })
 
 server.bindAsync(`${SECRETS.HOST}:${SECRETS.PORT}`,ServerCredentials.createInsecure(),(err)=>{

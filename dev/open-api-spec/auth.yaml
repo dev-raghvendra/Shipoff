@@ -135,7 +135,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  # Missing endpoint from proto - add this to your router
   /users/{targetUserId}:
     get:
       tags:
@@ -530,33 +529,6 @@ paths:
                 $ref: '#/components/schemas/DeleteProjectMemberResponse'
         '404':
           description: Project member not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  # Missing endpoint for permissions check
-  /permissions/check:
-    post:
-      tags:
-        - Authorization
-      summary: Check permissions
-      description: Check if user has specific permissions for a resource
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/HasPermissionsRequest'
-      responses:
-        '200':
-          description: Permission check completed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HasPermissionsResponse'
-        '400':
-          description: Bad request
           content:
             application/json:
               schema:
@@ -997,42 +969,6 @@ components:
           example: Member deleted successfully
         res:
           $ref: '#/components/schemas/DeleteProjectMemberResponseData'
-
-    HasPermissionsRequest:
-      type: object
-      required:
-        - scope
-        - permissions
-        - resourceId
-      properties:
-        scope:
-          type: string
-          example: "project"
-          enum: [team, project]
-        permissions:
-          type: array
-          items:
-            type: string
-          example: ["read", "write"]
-        resourceId:
-          type: string
-          example: "project_123"
-        targetUserId:
-          type: string
-          example: "user_456"
-
-    HasPermissionsResponse:
-      type: object
-      properties:
-        code:
-          type: integer
-          example: 200
-        message:
-          type: string
-          example: "Permission check completed"
-        res:
-          type: boolean
-          example: true
 
     ErrorResponse:
       type: object

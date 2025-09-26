@@ -28,7 +28,7 @@ type SchemaType<Map extends SchemaMap, K extends keyof Map> =
   Map[K]["schema"] extends ZodTypeAny ? ReturnType<Map[K]["schema"]["parse"]> : never;
 
 // Call with validated body
-export type ValidatedCall<
+ type ValidatedCall<
   Map extends SchemaMap,
   K extends keyof Map,
   TReq,

@@ -1,4 +1,4 @@
-import { githubWebHookController, orchestratorWebhookController } from "@/contollers/webhook.controller";
+import { githubWebHookController, orchestratorWebhookController } from "@/contollers/http/webhook.controller";
 import { Router } from "express";
 const webhookRouter = Router();
 

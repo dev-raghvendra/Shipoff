@@ -1,13 +1,13 @@
 import express, {  Request, Response } from 'express';
 import cors,{CorsOptions} from "cors"
 import {logger} from "@/libs/winston";
-import authRouter from './routers/auth.router';
-import projectRouter from './routers/project.router';
-import webhookRouter from './routers/webhook.router';
-import githubRouter from './routers/github.router';
-import orchestratorRouter from './routers/orchestrator.router';
-import { ridMiddleware } from './middlewares/rid.middleware';
-import logRouter from './routers/log.router';
+import authRouter from '@/routers/http/auth.router';
+import projectRouter from '@/routers/http/project.router';
+import webhookRouter from '@/routers/http/webhook.router';
+import githubRouter from '@/routers/http/github.router';
+import orchestratorRouter from '@/routers/http/orchestrator.router';
+import { ridMiddleware } from '@/middlewares/http/rid.middleware';
+import logRouter from '@/routers/http/log.router';
 
 const app = express();
 
@@ -15,13 +15,13 @@ const app = express();
 const corsOptions : CorsOptions = {
     origin:"*",
     methods:"GET,HEAD,PUT,PATCH,POST,DELETE",
-    allowedHeaders: ["Content-Type", "Authorization"]
+    allowedHeaders: ["Content-Type", "Authorization","X-Api-Key"]
 }
 app.use(cors(corsOptions))
 app.disable('x-powered-by');
 app.use(ridMiddleware)
 app.use("/apis/v1/webhooks",express.raw({type:"application/json"}),webhookRouter);
-app.use(express.json());
+app.use(express.json({limit:"3mb"}));
 app.use("/apis/v1/log",logRouter)
 app.use("/apis/v1/auth",authRouter);
 app.use("/apis/v1/projects",projectRouter);

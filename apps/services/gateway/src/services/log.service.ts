@@ -13,7 +13,7 @@ export class LogService {
         try {
             const request = IPutLogRequest.fromObject(data)
             const response = await promisifyGrpcCall(this._logService.IPutLog.bind(this._logService), request);
-            console.log("Log Service Response:", response);
+            
             return response
         } catch (e:any) {
             return e;

@@ -19,7 +19,7 @@ export async function getLogsController(req:RequestWithMeta,res:Response){
         reqMeta:req.meta,
         environmentId:req.params.envId,
         projectId:req.params.projectId,
-        lastBatchId:req.params.lastBatchId,
+        lastBatchId:req.query.lastBatchId ,
         ...req.body
     };
     const {code,message,res:data} = await logService.getLogs(body);

@@ -94,6 +94,60 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /orchestrator:
+    post:
+      tags:
+        - Orchestrator Webhooks
+      summary: Orchestrator webhook
+      description: Handle orchestrator webhook events for container and deployment status updates
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Orchestrator webhook payload
+              properties:
+                event:
+                  type: string
+                  example: deployment.completed
+                  enum: [deployment.started, deployment.completed, deployment.failed, container.started, container.stopped]
+                payload:
+                  type: object
+                  description: Event-specific payload data
+                  example:
+                    deploymentId: "deploy_123456"
+                    projectId: "project_789012"
+                    status: "success"
+                    message: "Deployment completed successfully"
+      responses:
+        '200':
+          description: Webhook processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Orchestrator webhook processed successfully
+        '400':
+          description: Bad request - Invalid payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Unprocessable Entity - Unsupported event type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
   schemas:
     ErrorResponse:
@@ -211,3 +265,30 @@ components:
             full_name:
               type: string
               example: user/my-repo
+
+    OrchestratorWebhookPayload:
+      type: object
+      description: Example payload for orchestrator events
+      properties:
+        event:
+          type: string
+          example: deployment.completed
+        payload:
+          type: object
+          properties:
+            deploymentId:
+              type: string
+              example: deploy_123456
+            projectId:
+              type: string
+              example: project_789012
+            status:
+              type: string
+              example: success
+            message:
+              type: string
+              example: Deployment completed successfully
+            timestamp:
+              type: string
+              format: date-time
+              example: "2024-01-15T10:30:00Z"

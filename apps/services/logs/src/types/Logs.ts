@@ -16,7 +16,6 @@ export const IPutLogRequestSchema = z.object({
 
 export const GetLogsRequestSchema = z.object({
     authUserData:UserSchema,
-    deploymentId:z.string().min(1),
     reqMeta:RequestMetaSchema,
     projectId:z.string().min(1),
     environmentId:z.string().min(1),

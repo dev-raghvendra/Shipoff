@@ -69,7 +69,10 @@ export class DeploymentConsumer implements IDeploymentConsumer {
                 projectId:evt.event.projectId,
                 deploymentId:evt.event.deploymentId,
                 containerId:"N/A",
-                requestId:evt.event.requestId
+                requestId:evt.event.requestId,
+                runtimeId:"N/A",
+                builId:"N/A",
+                projectType:evt.event.projectType
              })
           }
           else backoffTime = Math.min(backoffTime * 2, maxBackoffTime);

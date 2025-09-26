@@ -28,7 +28,7 @@ type SchemaType<Map extends SchemaMap, K extends keyof Map> =
   Map[K]["schema"] extends ZodTypeAny ? ReturnType<Map[K]["schema"]["parse"]> : never;
 
 // Call with validated body
-export type ValidatedCall<
+ type ValidatedCall<
   Map extends SchemaMap,
   K extends keyof Map,
   TReq,
@@ -38,7 +38,7 @@ export type ValidatedCall<
 /**
  * Universal RPC validator for any schema map
  */
-export function createUnaryValidator<Map extends SchemaMap>(schemaMap: Map, logger: {error: (msg: string) => void}) {
+export function createStreamValidator<Map extends SchemaMap>(schemaMap: Map, logger: {error: (msg: string) => void}) {
   return function validateBody<
     K extends keyof Map,
     TReq extends MaybeProtobufMessage,
@@ -53,7 +53,7 @@ export function createUnaryValidator<Map extends SchemaMap>(schemaMap: Map, logg
       call: ServerWritableStream<TReq, TRes>
     ) => {
       try {
-        const raw = extractRequestData(call.request);
+        const raw = extractRequestData(call.request)  
         const schema = schemaMap[method].schema;
         const parsed = await parseAsync(schema, raw);
         const callWithBody = call as unknown as ValidatedCall<Map, K, TReq, TRes>;
@@ -61,10 +61,11 @@ export function createUnaryValidator<Map extends SchemaMap>(schemaMap: Map, logg
         handler(callWithBody);
       } catch(e){
         process.env.ENV!== "PRODUCTION" && logger.error(`ERROR_OCCURED_IN_BODY_VALIDATION ${JSON.stringify(e,null,6)}`)
-        call.destroy({
-            code:status.INVALID_ARGUMENT,
-            message:schemaMap[method].errMsg || "Invalid argument"
-        } as any)
+        call.emit("error",{
+          code: status.INVALID_ARGUMENT,
+          message: schemaMap[method].errMsg || "Invalid request data"
+        })
+        call.end();
       }
     };
   };

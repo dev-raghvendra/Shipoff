@@ -209,7 +209,9 @@ export class Database {
                     commitMessage:true,
                     author:true,
                     createdAt:true,
-                    status:true
+                    status:true,
+                    buildEnvironment:{orderBy:{startedAt:"desc"},take:1,select:{ buildId:true, startedAt:true }},
+                    runtimeEnvironment:{orderBy:{startedAt:"desc"},take:1,select:{ runtimeId:true, startedAt:true }}
             }
         });
         if(res)return res;
@@ -218,7 +220,7 @@ export class Database {
         });
     }
 
-    async updateDeploymentById(deploymentId:string, projectId:string, data:Partial<Omit<CreateDeploymentRequestDBBodyType,"projectId">>){
+    async updateDeploymentById(deploymentId:string, projectId:string, data:Partial<Omit<CreateDeploymentRequestDBBodyType,"projectId"> & {lastDeployedAt?:string}>) {
         try {
             const res = await this.startTransaction(async(tx)=>{
                 if(data.status === "QUEUED"){
@@ -234,7 +236,8 @@ export class Database {
                 }
                 return tx.deployment.update({
                     where:{
-                        deploymentId
+                        deploymentId,
+                        projectId
                     },
                     data,
                     select:{
@@ -285,9 +288,9 @@ export class Database {
         }
     }
 
-    async findManyDeployments(args:Prisma.DeploymentFindManyArgs){
+    async findManyDeployments<T extends Prisma.DeploymentFindManyArgs>(args:T){
         const res = await this._client.deployment.findMany(args);
-        if(res.length)return res;
+        if(res.length)return res as Prisma.DeploymentGetPayload<T>[];
         throw new GrpcAppError(status.NOT_FOUND, "No deployments found");
     }
 
@@ -546,6 +549,14 @@ export class Database {
     startTransaction<T extends any>(fn:(tx: Omit<PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends">)=>Promise<T>){
         return this._client.$transaction(fn)
     }
+
+    startParallelTransaction(fn:(client:PrismaClient)=>Promise<any>[]){
+        return Promise.all([fn(this._client)])
+    }
+    getClient(){
+        return this._client
+    }
 }
+
 
 export const dbService = new Database();

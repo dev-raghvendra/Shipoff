@@ -1,5 +1,6 @@
 import { Request } from "express";
 import { IncomingMessage } from "http";
+import { URL } from "url";
 
 export interface RequestWithMeta extends Request {
     meta?:{
@@ -7,10 +8,11 @@ export interface RequestWithMeta extends Request {
     }
 }
 
-export interface LogsWebSocketIncomingMessage extends IncomingMessage {
+export interface WebSocketRequest extends IncomingMessage {
     user?:any,
-    params?:{
-        envId:string,
-        projectId:string
+    URL?:URL,
+    meta?:{
+        requestId:string
     }
 }
+

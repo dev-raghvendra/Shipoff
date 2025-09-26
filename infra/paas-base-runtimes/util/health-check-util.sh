@@ -13,7 +13,7 @@ send_health_check (){
        fi
        sleep $INTERVAL
     done
-    echo "SERVER_STARTUP_TIMEOUT" >> /tmp/shutdown_reason
+    echo "SERVER_STARTUP_TIMEOUT" > /tmp/shutdown_reason
     kill -TERM $main_pid
 }
 

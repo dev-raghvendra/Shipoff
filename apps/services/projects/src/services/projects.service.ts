@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/index";
 import { createAsyncErrHandler, createGrpcErrorHandler, GrpcAppError } from "@shipoff/services-commons";
 import { GrpcResponse } from "@shipoff/services-commons/utils/rpc-utils";
-import { BodyLessRequestBodyType, BulkResourceRequestBodyType } from "@shipoff/types";
+import { BodyLessRequestBodyType, BulkResourceRequestBodyType, InternalEmptyRequestBodyType } from "@shipoff/types";
 import { Database, dbService } from "@/db/db-service";
 import authExternalService, { AuthExternalService } from "@/externals/auth.external.service";
 import { CreateProjectRequestBodyType, DeleteEnvVarsRequestBodyType, GetEnvVarsRequestBodyType, GetProjectRequestBodyType, IGetProjectRequestBodyType, UpdateProjectRequestBodyType, UpsertEnvVarsRequestBodyType } from "@/types/projects";
@@ -68,7 +68,7 @@ export class ProjectsService {
 
     async getProject({authUserData,projectId,reqMeta}:GetProjectRequestBodyType){
         try {
-            await this._authService.getPermissions({authUserData,permissions:["READ"],scope:"PROJECT",resourceId:projectId,errMsg:"You do not have permission to read this project"});
+            await this._authService.getPermissions({authUserData,permissions:["READ"],scope:"PROJECT",resourceId:projectId,errMsg:"You do not have permission to read this project",reqMeta});
             const project = await this._dbService.findUniqueProject({where:{projectId},include:this._selectProjectFeilds});
             return GrpcResponse.OK(project, "Project found");
         } catch (e:any) {
@@ -76,18 +76,9 @@ export class ProjectsService {
         }
     }
 
-    async IGetProject({projectId,reqMeta}:IGetProjectRequestBodyType){
-        try {
-            const project = await this._dbService.findUniqueProject({where:{projectId},include:this._selectProjectFeilds});
-            return GrpcResponse.OK(project, "Project found");
-        } catch (e:any) {
-            return this._errHandler(e,"I-GET-PROJECT",reqMeta.requestId);
-        }
-    }
-
     async getAllUserProjects({authUserData,reqMeta}:BodyLessRequestBodyType){
         try {
-            const projectIds = await this._authService.getUserProjectIds(authUserData);
+            const projectIds = await this._authService.getUserProjectIds(authUserData,reqMeta);
             const projects = await this._dbService.findManyProjects({where:{
                 projectId:{in:projectIds}
             },
@@ -109,7 +100,8 @@ export class ProjectsService {
                 scope:"PROJECT",
                 resourceId:body.projectId,
                 errMsg:"You do not have permission to update this project",
-                permissions:["UPDATE"]
+                permissions:["UPDATE"],
+                reqMeta
             });
             if(body.updates.framework){
                await this._dbService.findUniqueFrameworkById(body.updates.framework.frameworkId);
@@ -128,7 +120,8 @@ export class ProjectsService {
                 scope:"PROJECT",
                 resourceId:projectId,
                 errMsg:"You do not have permission to delete this project",
-                permissions:["DELETE"]
+                permissions:["DELETE"],
+                reqMeta
             });
             const project = await this._dbService.deleteProjectById(projectId);
             this._asyncErrHandler.call(this._projectProducer.publishProjectEvent({
@@ -151,7 +144,8 @@ export class ProjectsService {
                 scope:"PROJECT",
                 resourceId:body.projectId,
                 errMsg:"You do not have permission to update environment variables of this project",
-                permissions:["UPDATE"]
+                permissions:["UPDATE"],
+                reqMeta
             });
             const project = await this._dbService.createEnvironmentVariable(body);
             return GrpcResponse.OK(project, "Environment variables updated");
@@ -167,7 +161,8 @@ export class ProjectsService {
                 scope:"PROJECT",
                 resourceId:body.projectId,
                 errMsg:"You do not have permission to delete environment variables of this project",
-                permissions:["DELETE"]
+                permissions:["DELETE"],
+                reqMeta
             });
             const project = await this._dbService.deleteEnvironmentVariable(body);
             return GrpcResponse.OK(project, "Environment variable deleted");
@@ -183,7 +178,8 @@ export class ProjectsService {
                 scope:"PROJECT",
                 resourceId:body.projectId,
                 errMsg:"You do not have permission to read environment variables of this project",
-                permissions:["READ"]
+                permissions:["READ"],
+                reqMeta
             });
             const envVars = await this._dbService.findManyEnvironmentVariablesByProjectId(body);
             return GrpcResponse.OK(envVars, "Environment variables found");
@@ -205,5 +201,54 @@ export class ProjectsService {
         } catch (e:any) {
             return this._errHandler(e, "GET-FRAMEWORKS", reqMeta.requestId);
         }
+    }
+
+    async IGetProject({projectId,reqMeta}:IGetProjectRequestBodyType){
+        try {
+            const project = await this._dbService.findUniqueProject({where:{projectId},include:this._selectProjectFeilds});
+            return GrpcResponse.OK(project, "Project found");
+        } catch (e:any) {
+            return this._errHandler(e,"I-GET-PROJECT",reqMeta.requestId);
+        }
+    }
+
+    async IGetStaleEnvironmentIds({reqMeta}:InternalEmptyRequestBodyType){
+       try {
+               const threeDaysAgo = new Date();
+               threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+               const dbClient = this._dbService.getClient()
+               const [staleBuildIds, staleRuntimeIds] = await dbClient.$transaction([
+                dbClient.buildEnvironment.findMany({
+                    where:{
+                        OR:[
+                            {active:false},
+                            {startedAt:{lt:threeDaysAgo}}
+                        ]
+                    },
+                    select:{
+                        buildId:true
+                    }
+                 }),
+                  dbClient.runtimeEnvironment.findMany({
+                    where:{
+                        OR:[
+                            {active:false},
+                            {startedAt:{lt:threeDaysAgo}}
+                        ]
+                    },
+                    select:{
+                        runtimeId:true
+                    }
+                 })
+               ])
+
+               const res = [...new Set([
+                ...staleBuildIds.map(b=>b.buildId),
+                ...staleRuntimeIds.map(r=>r.runtimeId)
+               ])]
+               return GrpcResponse.OK(res, "Stale environment ids found");
+       } catch (e:any) {
+           return this._errHandler(e,"I-GET-STALE-ENVIRONMENT-IDS",reqMeta.requestId);
+       }
     }
 }

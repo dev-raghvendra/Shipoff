@@ -1,4 +1,4 @@
-import { createGrpcErrorHandler, GrpcResponse } from "@shipoff/services-commons";
+import { createGrpcErrorHandler, generateId, GrpcResponse } from "@shipoff/services-commons";
 import { Database, dbService } from "@/db/db-service";
 import { DeploymentEventProducerService } from "@/producer/deployment.producer";
 import { verifySignature } from "@/libs/crypto";
@@ -58,7 +58,10 @@ export class GithubWebhookService {
                     }
                 })
                 return tx.deployment.create({
-                    data:deploymentData
+                    data:{
+                        deploymentId:`${generateId("deployment",{"deployment":"dep"})}`,
+                        ...deploymentData
+                    }
                 })
             });
             await this._deploymentProducer.publishDeploymentRequested({

@@ -17,7 +17,9 @@ data:
         Path              /logs/user-static-apps/*.log
         Parser            custom_log
         DB                /var/log/flb_user_static_apps.db
-        Mem_Buf_Limit     3MB
+        Buffer_Chunk_Size 32KB
+        Buffer_Max_Size   1MB      
+        Mem_Buf_Limit     2MB
         Skip_Long_Lines   On
 
     [FILTER]
@@ -34,7 +36,7 @@ data:
         Port            8000
         URI             /apis/v1/log
         Header          Content-Type application/json
-        Header          X-Api-Key  <your_api_key_here>
+        Header          X-Api-Key  <API_KEY>
         Format          json
         Json_date_key   timestamp
         Json_date_format iso8601

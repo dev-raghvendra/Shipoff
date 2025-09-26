@@ -38,7 +38,6 @@ export class K8Service {
         }
         try {
             const deleteExisting = await this.deleteFreeTierDeployment(projectId,"user-static-apps",requestId);
-            console.log("Deleted existing pod:",deleteExisting);
             if(!deleteExisting) throw new GrpcAppError(status.INTERNAL,"Failed to delete existing pod",deleteExisting)
             const res = await this._coreApi.createNamespacedPod(manifest);
             return res;
@@ -56,7 +55,6 @@ export class K8Service {
         }
         try {
             const deleteExisting = await this.deleteFreeTierDeployment(projectId,"user-dynamic-apps",requestId);
-            console.log("Deleted existing pod:",deleteExisting);
             if(!deleteExisting) throw new GrpcAppError(status.INTERNAL,"Failed to delete existing pod",deleteExisting)
             const res = await this._coreApi.createNamespacedPod(manifest);
             return res;
@@ -85,9 +83,9 @@ export class K8Service {
 
     async deleteFreeTierDeployment(projectId:string,namespace:namespace,requestId:string){
         try {      
-            const res = await this._coreApi.deleteNamespacedPod({name:projectId,namespace})
+            await this._coreApi.deleteNamespacedPod({name:projectId,namespace})
             await this._waitForFreeTierDeletion(projectId,namespace);
-            return res;
+            return true;
         } catch (e:any) {
             if(e.code === 404) return true;
             return this._errHandler(e,"DELETE-FREE-TIER-CONTAINER",requestId);
@@ -109,7 +107,7 @@ export class K8Service {
         while(true){
             try {
                 await this._coreApi.readNamespacedPod({name:podName,namespace})
-                await new Promise(res=>setTimeout(res,5000))
+                await new Promise(res=>setTimeout(res,2000))
             } catch (e:any) {
                 if(e.code === 404) {
                     return true;
@@ -131,89 +129,6 @@ export class K8Service {
                 throw e;
             }
         }
-     }
-
-
-     private async _getPaidTierDeploymentManifest(projectId:string,deploymentId:string,commitHash:string,requestId:string,namespace="user-dynamic-apps"):Promise<PaidTierK8DeploymentManifest>{
-           const {envs:env,image,containerId} = await this._containerConfUtil.getProdContainerConfig(projectId,deploymentId,commitHash,requestId);
-            env.push({
-            name:"CONTAINER_ID",
-            value:containerId
-           })
-
-           return {
-              new:{
-                 namespace,
-               body:{
-                  apiVersion:"apps/v1",
-                  kind:"Deployment",
-                  metadata:{
-                    name:projectId,
-                    namespace
-                  },
-                  spec:{
-                     replicas:1,
-                     selector:{
-                        matchLabels:{
-                            app:projectId
-                        }
-                     },
-                     
-                     template:{
-                        metadata:{
-                            labels:{
-                                app:projectId
-                            }
-                        },
-                        spec:{
-                            containers:[{
-                                name:containerId,
-                                image,
-                                env
-                            }]
-                        }
-                     }
-                  }
-               }
-              },
-            replacement:{
-               name:projectId,
-               namespace,
-               body:{
-                  apiVersion:"apps/v1",
-                  kind:"Deployment",
-                  metadata:{
-                    name:projectId,
-                    namespace
-                  },
-                  spec:{
-                     replicas:1,
-                     selector:{
-                        matchLabels:{
-                            app:projectId
-                        }
-                     },
-                     strategy:{
-                        type:"Recreate"
-                     },
-                     template:{
-                        metadata:{
-                            labels:{
-                                app:projectId
-                            }
-                        },
-                        spec:{
-                            containers:[{
-                                name:containerId,
-                                image,
-                                env
-                            }]
-                        }
-                     }
-                  }
-               }
-            }
-           }
      }
 
      private async _getFreeTierDeploymentManifest(projectId:string,deploymentId:string,commitHash:string,requestId:string,namespace="user-dynamic-apps"):Promise<FreeTierK8DeploymentManifest>{
