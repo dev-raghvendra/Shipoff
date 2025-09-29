@@ -50,9 +50,9 @@ export function createJwtErrHandler({invalidErrMsg="Invalid access token",expire
 }
 
 export function createSyncErrHandler({subServiceName,logger}:{subServiceName:string,logger:{error:(msg:string)=>void}}){
-   return function(err: Error,origin: string,requestId:string){
+   return function(err: Error | object | string,origin: string,requestId:string,message?:string){
       const e = typeof err === "object" ? JSON.stringify(err,null,2) : err;
-      logger.error(`[rid:${requestId}]:UNEXPECTED_ERROR_OCCURED_IN_${subServiceName}_AT_${origin}: ${e}`);
+      logger.error(`[rid:${requestId}]:UNEXPECTED_ERROR_OCCURED_IN_${subServiceName}_AT_${origin}_${message || ""}: ${e}`);
    }
 }
 

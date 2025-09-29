@@ -4,7 +4,7 @@ import { GrpcResponse } from "@shipoff/services-commons/utils/rpc-utils";
 import { BodyLessRequestBodyType, BulkResourceRequestBodyType, InternalEmptyRequestBodyType } from "@shipoff/types";
 import { Database, dbService } from "@/db/db-service";
 import authExternalService, { AuthExternalService } from "@/externals/auth.external.service";
-import { CreateProjectRequestBodyType, DeleteEnvVarsRequestBodyType, GetEnvVarsRequestBodyType, GetProjectRequestBodyType, IGetProjectRequestBodyType, UpdateProjectRequestBodyType, UpsertEnvVarsRequestBodyType } from "@/types/projects";
+import { CreateProjectRequestBodyType, DeleteEnvVarsRequestBodyType, GetEnvVarsRequestBodyType, GetProjectRequestBodyType, IDeleteStaleEnvironmentsRequestBodyType, IGetProjectRequestBodyType, UpdateProjectRequestBodyType, UpsertEnvVarsRequestBodyType } from "@/types/projects";
 import { ProjectProducer } from "@/producer/project.producer";
 import { status } from "@grpc/grpc-js";
 import { logger } from "@/libs/winston";
@@ -28,6 +28,16 @@ export class ProjectsService {
                     select:{
                         name:true,
                         value:true
+                    }
+                },
+                deployments:{
+                    orderBy:{
+                        lastDeployedAt:"desc"
+                    },
+                    take:1,
+                    select:{
+                        deploymentId:true,
+                        status:true,
                     }
                 }
             }
@@ -203,17 +213,17 @@ export class ProjectsService {
         }
     }
 
-    async IGetProject({projectId,reqMeta}:IGetProjectRequestBodyType){
+    async IGetProject({reqMeta,...where}:IGetProjectRequestBodyType){
         try {
-            const project = await this._dbService.findUniqueProject({where:{projectId},include:this._selectProjectFeilds});
+            const project = await this._dbService.findUniqueProject({where,include:this._selectProjectFeilds});
             return GrpcResponse.OK(project, "Project found");
         } catch (e:any) {
             return this._errHandler(e,"I-GET-PROJECT",reqMeta.requestId);
         }
     }
 
-    async IGetStaleEnvironmentIds({reqMeta}:InternalEmptyRequestBodyType){
-       try {
+     async IGetStaleEnvironmentIds({reqMeta}:InternalEmptyRequestBodyType){
+          try {
                const threeDaysAgo = new Date();
                threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
                const dbClient = this._dbService.getClient()
@@ -250,5 +260,6 @@ export class ProjectsService {
        } catch (e:any) {
            return this._errHandler(e,"I-GET-STALE-ENVIRONMENT-IDS",reqMeta.requestId);
        }
-    }
+     }
+
 }

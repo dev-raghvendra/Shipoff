@@ -4,6 +4,7 @@ import { PROJECT_TOPIC_CONSUMER_GROUPS } from "@shipoff/redis/config/config";
 import { DeploymentConsumer } from "./deployment.consumer";
 import { K8Service, K8ServiceClient } from "@/services/k8.service";
 import { logger } from "@/libs/winston";
+import { createSyncErrHandler } from "@shipoff/services-commons";
 
 type IProjectConsumer = {
     [$ProjectEvent.DELETED]: (e:ProjectEvent<"DELETED">) => Promise<boolean>;
@@ -13,10 +14,12 @@ export class ProjectConsumer implements IProjectConsumer {
     private _consumer: Consumer;
     private _deploymentConsumer:DeploymentConsumer
     private _k8ServiceClient: K8Service;
+    private _errHandler: ReturnType<typeof createSyncErrHandler>
     constructor(serviceName: keyof typeof PROJECT_TOPIC_CONSUMER_GROUPS,consumer:DeploymentConsumer) {
         this._consumer = new Consumer(serviceName);
         this._deploymentConsumer = consumer;
         this._k8ServiceClient = K8ServiceClient;
+        this._errHandler = createSyncErrHandler({subServiceName:"PROJECT_CONSUMER",logger});
     }
     
     DELETED = async(e:ProjectEvent<"DELETED">) =>{
@@ -34,19 +37,15 @@ export class ProjectConsumer implements IProjectConsumer {
         await this._consumer.initializeConsumerGroup();
         const res = await this._k8ServiceClient.initializeK8()
         if(!res) throw new Error("Failed to initialize K8 Service, cannot start deployment consumer");
-        await this._consumer.readUnackedMessages(async(event)=>{
-            if(event.event === "DELETED"){
-              await this.DELETED(event as ProjectEvent<"DELETED">);
-            }
-            else if(event.event !== "CREATED") logger.error(`[rid:${event.requestId}]:UNKNOWN_EVENT_TYPE_${event.event}_FOR_PROJECT_ID_${event.projectId}_IN_PROJECT_TOPIC_IN_PROJECT_CONSUMER_AT_${this._consumer._serviceName}`);
-        })
-       this._consumer.readNewMessages(async(event)=>{
-            if(event.event === "DELETED"){
-              await this.DELETED(event as ProjectEvent<"DELETED">);
-            }
-            else if(event.event !== "CREATED") logger.error(`[rid:${event.requestId}]:UNKNOWN_EVENT_TYPE_${event.event}_FOR_PROJECT_ID_${event.projectId}_IN_PROJECT_TOPIC_IN_PROJECT_CONSUMER_AT_${this._consumer._serviceName}`);
-        })
-
+        await this._consumer.readUnackedMessages(this.processEvents.bind(this))
+        this._consumer.readNewMessages(this.processEvents.bind(this))
     }
     
+
+    async processEvents(event:ProjectEvent<keyof typeof $ProjectEvent>){
+           if(event.event === "DELETED"){
+              await this.DELETED(event as ProjectEvent<"DELETED">);
+            }
+            else if(event.event !== "CREATED") this._errHandler({},"PROCESS_EVENTS",event.requestId,`UNKNOWN_EVENT_TYPE_${event.event}_FOR_PROJECT_ID_${event.projectId}_IN_PROJECT_TOPIC_IN_PROJECT_CONSUMER_AT_${this._consumer._serviceName}`);
+    }
 }

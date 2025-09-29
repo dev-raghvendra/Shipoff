@@ -60,7 +60,6 @@ export function createStreamValidator<Map extends SchemaMap>(schemaMap: Map, log
         (callWithBody.request as any).body = parsed;
         handler(callWithBody);
       } catch(e){
-        process.env.ENV!== "PRODUCTION" && logger.error(`ERROR_OCCURED_IN_BODY_VALIDATION ${JSON.stringify(e,null,6)}`)
         call.emit("error",{
           code: status.INVALID_ARGUMENT,
           message: schemaMap[method].errMsg || "Invalid request data"

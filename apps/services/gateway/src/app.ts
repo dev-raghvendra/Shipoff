@@ -8,9 +8,11 @@ import githubRouter from '@/routers/http/github.router';
 import orchestratorRouter from '@/routers/http/orchestrator.router';
 import { ridMiddleware } from '@/middlewares/http/rid.middleware';
 import logRouter from '@/routers/http/log.router';
+import { createSyncErrHandler } from '@shipoff/services-commons';
+import { RequestWithMeta } from './types/request';
 
 const app = express();
-
+const errHandler = createSyncErrHandler({ subServiceName: "EXPRESS_GATEWAY", logger });
 
 const corsOptions : CorsOptions = {
     origin:"*",
@@ -38,13 +40,13 @@ app.use((_, res:Response) => {
     });
 });
 
-app.use((err:any, _:Request, res:Response)=>{
+app.use((err:any, _:RequestWithMeta, res:Response)=>{
     res.status(500).json({
         code:500,
         message:"Internal Server Error",
         res:null
     })
-    logger.error(`UNEXPECTED_ERROR_OCCURED_AT_GATEWAY: ${JSON.stringify(err, null, 2)}`);
+    errHandler(err,"EXPRESS_GLOBAL_HANDLER",_.meta?.requestId || "N/A");
 })
 
 export default app;

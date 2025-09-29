@@ -1,9 +1,13 @@
 import { SECRETS } from "@/config";
 import { logger } from "@/libs/winston";
 import { JsonWebTokenError, verifyJwt } from "@shipoff/services-commons";
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Response } from "express";
+import { createSyncErrHandler } from "@shipoff/services-commons";
+import { RequestWithMeta } from "@/types/request";
 
-export async function authenticateApiKey(req:Request,res:Response,next:NextFunction){
+const errHandler = createSyncErrHandler({ subServiceName: "API_KEY_AUTH_MIDDLEWARE", logger });
+
+export async function authenticateApiKey(req:RequestWithMeta,res:Response,next:NextFunction){
     try {
         const apiKey = req.headers["x-api-key"];
         if(!apiKey) throw new JsonWebTokenError("API Key missing");
@@ -14,7 +18,7 @@ export async function authenticateApiKey(req:Request,res:Response,next:NextFunct
            res.status(401).json({code:401, message: "Unauthorized" ,res:null});
            return
         }
-        logger.error(`UNEXPECTED_ERROR_OCCURED_AT_API_KEY_VALIDATION_MIDDLEWARE ${e}`);
+        errHandler(e,"API_KEY_VALIDATION",req.meta?.requestId || "N/A");
         res.status(500).json({code:500,message:"Internal Server Error",res:null});
         return
     }

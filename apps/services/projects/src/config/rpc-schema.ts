@@ -3,7 +3,7 @@ import { DeleteDeploymentRequestSchema, GetAllDeploymentsRequestSchema, GetDeplo
 import { CreateProjectRequestSchema, DeleteEnvVarsRequestSchema, DeleteProjectRequestSchema, GetAllUserProjectsRequestSchema, GetEnvVarsRequestSchema, GetProjectRequestSchema, IGetProjectRequestSchema, UpdateProjectRequestSchema, UpsertEnvVarsRequestSchema } from "@/types/projects";
 import { CreateRepositoryRequestSchema, DeleteRepositoryRequestSchema, GetGithubRepositoryAccessTokenRequestSchema, GetGithubRepositoryDetailsRequestSchema, GetRepositoryRequestSchema, GetUserGithubRepositoriesRequestSchema, UpdateRepositoryRequestSchema } from "@/types/repositories";
 
-import { BodyLessRequestSchema, BulkResourceRequestSchema } from "@shipoff/types";
+import { BodyLessRequestSchema, BulkResourceRequestSchema, InternalEmptyRequestSchema } from "@shipoff/types";
 import { UnimplementedProjectsServiceService } from "@shipoff/proto";
 import { CreateGithubInstallationRequestSchema, GithubWebhookRequestSchema } from "@/types/webhooks";
  
@@ -35,5 +35,6 @@ export const RPC_SCHEMA: RPC_SCHEMA_T<RPCs> = {
     GetGithubInstallation: createRPCEntry(BodyLessRequestSchema),
     IGetProject: createRPCEntry(IGetProjectRequestSchema),
     UpdateRepository: createRPCEntry(UpdateRepositoryRequestSchema),
+    IGetStaleEnvironmentIds: createRPCEntry(InternalEmptyRequestSchema),
 } as const;
 

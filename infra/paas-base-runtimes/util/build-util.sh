@@ -47,8 +47,9 @@ run_filtered_build() {
     echo $BUILD_PID > "$BUILD_PID_PATH"
 
     # Now wait for the actual build process
-    wait $BUILD_PID
+    wait $BUILD_PID || true
     build_exit_code=$?
+
 
     # Cleanup
     kill $STDOUT_LOGGER_PID $STDERR_LOGGER_PID 2>/dev/null || true

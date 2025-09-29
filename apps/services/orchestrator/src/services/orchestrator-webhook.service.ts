@@ -26,7 +26,6 @@ export class OrchestratorWebhookService {
     async IWebhook({ payload, event, reqMeta }: OrchestratorWebhookRequestBodyType) {
         try {
             const eventPayload = await verifyJwt<TRAFFIC_DETECTED | STATE_CHANGED>(payload, SECRETS.ORCHESTRATOR_WEBHOOK_PAYLOAD_SECRET)
-            console.log("Webhook recived from container: ", eventPayload);
             switch (event) {
                 case "TRAFFIC_DETECTED":
                     return await this._trafficDetected(eventPayload as TRAFFIC_DETECTED, reqMeta.requestId)

@@ -4,7 +4,7 @@ import { GithubHandlers } from "@/handlers/github.handlers";
 import { DeploymentsHandlers } from "@/handlers/deployments.handlers";
 import { GithubWebhookHandlers } from "@/handlers/github-webhook.handlers";
 import { RepositoriesHandlers } from "@/handlers/repositories.handlers";
-import { createUnaryValidator } from "@shipoff/services-commons";
+import { createSyncErrHandler, createUnaryValidator } from "@shipoff/services-commons";
 import { UnimplementedProjectsServiceService } from "@shipoff/proto";
 import { RPC_SCHEMA } from "@/config/rpc-schema";
 import { SECRETS } from "@/config/secrets";
@@ -19,6 +19,7 @@ const githubWebhookHandlers = new GithubWebhookHandlers();
 const repositoriesHandlers = new RepositoriesHandlers();
 const githubHandlers = new GithubHandlers();
 const containerConsumer = new ContainerConsumer("PROJECT_SERVICE");
+const errHandler = createSyncErrHandler({ subServiceName: "PROJECTS_SERVER", logger });
 
 
 server.addService(UnimplementedProjectsServiceService.definition, {
@@ -48,18 +49,19 @@ server.addService(UnimplementedProjectsServiceService.definition, {
     GithubWebhook: validateRPCBody("GithubWebhook", githubWebhookHandlers.handleGithubWebhook.bind(githubWebhookHandlers)),
     CreateGithubInstallation: validateRPCBody("CreateGithubInstallation", githubHandlers.handleCreateGithubInstallation.bind(githubHandlers)),
     GetGithubInstallation:validateRPCBody("GetGithubInstallation", githubHandlers.handleGetGithubInstallation.bind(githubHandlers)),
-    IGetGithubRepoAccessToken: validateRPCBody("IGetGithubRepoAccessToken", githubHandlers.handleIGithubRepoAccessToken.bind(githubHandlers))
+    IGetGithubRepoAccessToken: validateRPCBody("IGetGithubRepoAccessToken", githubHandlers.handleIGithubRepoAccessToken.bind(githubHandlers)),
+    IGetStaleEnvironmentIds: validateRPCBody("IGetStaleEnvironmentIds", projectsHandlers.handleIGetStaleEnvironmentIds.bind(projectsHandlers)),
 });
 
 containerConsumer.startConsumer().then(() => {
     logger.info("CONTAINER_CONSUMER_STARTED");
 }).catch((err) => {
-    logger.error(`ERROR_STARTING_CONTAINER_CONSUMER: ${JSON.stringify(err, null, 2)}`);
+    errHandler(err,"CONTAINER_CONSUMER_STARTUP","N/A");
 });
 
 server.bindAsync(`${SECRETS.HOST}:${SECRETS.PORT}`,ServerCredentials.createInsecure(),(err)=>{
     if (err) {
-        logger.error(`ERROR_STARTING_PROJECT_GRPC_SERVER: ${err}`)
+        errHandler(err,"PROJECT_GRPC_SERVER_BINDING","N/A");
         process.exit(1);
     }
       logger.info(`PROJECT_GRPC_SERVER_LISTENING_ON ${SECRETS.HOST}:${SECRETS.PORT}`)
@@ -67,11 +69,11 @@ server.bindAsync(`${SECRETS.HOST}:${SECRETS.PORT}`,ServerCredentials.createInsec
 
 
 process.on("uncaughtException", (err) => {
-    logger.error(`UNCAUGHT_EXCEPTION_AT_PROJECTS_SERVICE: ${err.message}`);
+    errHandler(err,"PROJECTS_SERVICE_UNCAUGHT_EXCEPTION","N/A");
 });
 
 process.on("unhandledRejection", (reason) => {
-    logger.error(`UNHANDLED_REJECTION_AT_PROJECTS_SERVICE: ${reason}`);
+    errHandler(reason as any,"PROJECTS_SERVICE_UNHANDLED_REJECTION","N/A");
 });
 
 process.on("SIGINT", () => {

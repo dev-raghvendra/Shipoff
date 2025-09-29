@@ -66,8 +66,9 @@ message Project {
     string createdAt = 7;
     string updatedAt = 8;
     Repository repository = 9;
-    string outDir = 11;
-    repeated EnvironmentVariablesKeyValue environmentVariables = 10;
+    string outDir = 10;
+    repeated EnvironmentVariablesKeyValue environmentVariables = 11;
+    repeated Deployment deployments = 12;
 }
 
 message EnvironmentVariables {
@@ -262,6 +263,12 @@ message CreateGithubInstallationRequest {
 
 message IGetProjectRequest {
     string projectId = 1;
+    string domain = 2;
+    RequestMeta reqMeta = 3;
+}
+
+message IGetProjectByDomainRequest {
+    string domain = 1;
     RequestMeta reqMeta = 2;
 }
 
@@ -398,5 +405,4 @@ service ProjectsService {
     rpc IGetGithubRepoAccessToken (IGetGithubRepoAccessTokenRequest) returns (IGetGithubRepoAccessTokenResponse);
     rpc IGetProject (IGetProjectRequest) returns (ProjectResponse);
     rpc IGetStaleEnvironmentIds (InternalEmptyRequest) returns (StaleEnvironmentIdsResponse);
-
 }

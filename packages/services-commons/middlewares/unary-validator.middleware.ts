@@ -62,7 +62,6 @@ export function createUnaryValidator<Map extends SchemaMap>(schemaMap: Map, logg
         (callWithBody.request as any).body = parsed;
         handler(callWithBody, callback);
       } catch(e){
-        process.env.ENV!== "PRODUCTION" && logger.error(`ERROR_OCCURED_IN_BODY_VALIDATION ${JSON.stringify(e,null,6)}`)
         callback({
           code: status.INVALID_ARGUMENT,
           message: schemaMap[method].errMsg || "Invalid argument",

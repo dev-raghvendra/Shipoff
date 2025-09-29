@@ -3,18 +3,21 @@ import { createServer } from "http";
 import { logger } from "@/libs/winston";
 import { CONFIG } from "./config/config";
 import { createWebSocketServer } from "./ws-server";
+import { createSyncErrHandler } from "@shipoff/services-commons";
+
+const errHandler = createSyncErrHandler({ subServiceName: "GATEWAY_SERVER", logger });
 
 const server = createServer(app);
-const wss = createWebSocketServer(server);
+createWebSocketServer(server);
 
 server.listen(CONFIG.PORT,()=>logger.info(`GATEWAY_SERVICE_STARTED_ON_PORT: ${CONFIG.PORT}`));
 
 process.on("uncaughtException", (err) => {
-    logger.error(`UNCAUGHT_EXCEPTION: ${err.message}`);
+    errHandler(err,"UNCAUGHT_EXCEPTION","N/A");
 });
 
 process.on("unhandledRejection", (reason) => {
-    logger.error(`UNHANDLED_REJECTION: ${reason}`);
+    errHandler(reason as any,"UNHANDLED_REJECTION","N/A");
 });
 
 process.on("SIGINT", () => {

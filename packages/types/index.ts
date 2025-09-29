@@ -47,6 +47,7 @@ export const BodyLessRequestSchema = z.object({
 }).strict();
 
 export type UserType = z.infer<typeof UserSchema>;
+export type RequestMetaType = z.infer<typeof RequestMetaSchema>;
 export type PermissionsType = z.infer<typeof Permissions>;
 export type ScopesType = z.infer<typeof Scopes>;
 export type BodyLessRequestBodyType = z.infer<typeof BodyLessRequestSchema>;

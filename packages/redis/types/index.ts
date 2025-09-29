@@ -48,6 +48,7 @@ export enum $ContainerEvent {
 export enum $DeploymentEvent {
     CREATED = "CREATED",
     DELETED = "DELETED",
+    REQUESTED = "REQUESTED",
 }
 
 export enum $ProjectEvent {

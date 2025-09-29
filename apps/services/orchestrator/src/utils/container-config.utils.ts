@@ -20,7 +20,7 @@ export class ContainerConfigUtil {
                 value: project.buildCommand
             }, {
                 name: "BUCKET_URI",
-                value: `${SECRETS.BUCKET_URI}/${project.domain}`
+                value: `${SECRETS.BUCKET_URI}/${projectId}`
             }, {
                 name: "BUCKET_ENDPOINT",
                 value: SECRETS.BUCKET_ENDPOINT
@@ -51,8 +51,10 @@ export class ContainerConfigUtil {
         const containerId = `${type[0]}-${deploymentId}-${Date.now()}`
         const buildId = `build-${deploymentId}-${Date.now()}`
         const runtimeId = `run-${deploymentId}-${Date.now()}`
-        console.log(buildId)
-        console.log(runtimeId)
+        // console.log(`ws://localhost:8000/ws/logs/stream?envId=${buildId}&projectId=${project.projectId}`)
+        // console.log(`ws://localhost:8000/ws/logs/stream?envId=${runtimeId}&projectId=${project.projectId}`)
+        // console.log(`http://localhost:8000/apis/v1/log/${project.projectId}/${buildId}`)
+        // console.log(`http://localhost:8000/apis/v1/log/${project.projectId}/${runtimeId}`)
         const webhooks = await Promise.all([
             this._createWebhookToken(project,deploymentId,containerId,buildId,runtimeId,"PROVISIONING","10M"),
             this._createWebhookToken(project,deploymentId,containerId,buildId,runtimeId,"RUNNING","10M"),
@@ -121,7 +123,6 @@ export class ContainerConfigUtil {
                 value:project.framework.applicationType
             }],image,containerId}
     }
-
 
     private async _createWebhookToken(project: Project, deploymentId:string, containerId:string,builId:string,runtimeId:string, action: "PROVISIONING" | "RUNNING" | "FAILED" | "TERMINATED" | "PRODUCTION" | "INGRESSED", expiresIn:StringValue){
         return await createJwt<STATE_CHANGED | TRAFFIC_DETECTED>({

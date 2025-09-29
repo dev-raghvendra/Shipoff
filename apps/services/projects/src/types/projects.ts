@@ -87,12 +87,21 @@ export const GetEnvVarsRequestSchema = z.object({
 }).strict();
 
 export const IGetProjectRequestSchema = z.object({
-    projectId: z.string(),
+    projectId:optionalString(),
+    domain:optionalString(),
+    reqMeta:RequestMetaSchema
+}).refine(data=>Object.keys(data).length >= 2,{
+    error:"Either projectId or domain is required"
+}).strict();
+
+export const IDeleteStaleEnvironmentsRequestSchema = z.object({
+    environmentIds: z.array(z.string().min(1)).min(1),
     reqMeta:RequestMetaSchema
 }).strict();
 
 
-export type IGetProjectRequestBodyType = z.infer<typeof IGetProjectRequestSchema>;
+
+export type IGetProjectRequestBodyType = Required<z.infer<typeof IGetProjectRequestSchema>>;
 export type GetAllUserProjectRequestBodyType = z.infer<typeof GetAllUserProjectsRequestSchema>;
 export type GetAllUserProjectRequestDBBodyType = Omit<GetAllUserProjectRequestBodyType, "authUserData" | "reqMeta">;
 export type DeleteProjectRequestBodyType = z.infer<typeof DeleteProjectRequestSchema>;
@@ -114,3 +123,4 @@ export type DeleteEnvVarsRequestBodyType = z.infer<typeof DeleteEnvVarsRequestSc
 export type DeleteEnvVarsRequestDBBodyType = Omit<DeleteEnvVarsRequestBodyType, "authUserData" | "reqMeta">;
 export type GetEnvVarsRequestBodyType = z.infer<typeof GetEnvVarsRequestSchema>;
 export type GetEnvVarsRequestDBBodyType = Omit<GetEnvVarsRequestBodyType, "authUserData" | "reqMeta">;
+export type IDeleteStaleEnvironmentsRequestBodyType = z.infer<typeof IDeleteStaleEnvironmentsRequestSchema>;

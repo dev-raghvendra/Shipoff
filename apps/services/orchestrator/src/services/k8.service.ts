@@ -68,16 +68,16 @@ export class K8Service {
         try {
             manifest = await this._getFreeTierDeploymentManifest(projectId,deploymentId,commitHash,requestId,projectType==="STATIC"?"user-static-apps":"user-dynamic-apps")
         } catch (e:any) {
-            throw e
+            return this._errHandler(e,"GET-FREE-TIER-DEPLOYMENT-MANIFEST",requestId);
         }
         try {
-          const res = await this._coreApi.createNamespacedPod(manifest);
-          return {exists:true,created:false};
+          await this._coreApi.createNamespacedPod(manifest);
+          return true
         } catch (e:any) {
           if(e.code === 409){
-             return {created:false,exists:true}
+             true
           }
-         throw e
+          return this._errHandler(e,"TRY-CREATING-FREE-TIER-DEPLOYMENT",requestId);
        }
     }
 

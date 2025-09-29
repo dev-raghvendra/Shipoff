@@ -15,7 +15,7 @@ RUN npm install -g pnpm && \
 
 WORKDIR /app
 
-COPY ./node/dynamic/entrypoint.sh /entrypoint.sh
+COPY ./node/static/entrypoint.sh /entrypoint.sh
 COPY ./util/log-util.sh /log-util.sh
 COPY ./util/build-util.sh /build-util.sh
 COPY ./util/webhook-util.sh /webhook-util.sh
