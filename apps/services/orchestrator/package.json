@@ -4,12 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --exec ts-node -r tsconfig-paths/register ./src/server.ts"
+    "dev": "nodemon --exec ts-node -r tsconfig-paths/register ./src/server.ts",
+    "build": "tsc --build && tsc-alias",
+    "start": "node dist/server.js"
   },
   "devDependencies": {
     "@shipoff/typescript-config": "workspace:*",
     "nodemon": "^3.1.10",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "tsc-alias": "^1.8.16"
   },
   "keywords": [],
   "author": "",

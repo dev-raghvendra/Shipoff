@@ -2,11 +2,14 @@
   "name": "@shipoff/types",
   "version": "1.0.0",
   "description": "",
-  "main": "index.ts",
+  "main": "index",
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "zod": "^4.0.5"
+  },
+  "devDependencies": {
+    "@shipoff/typescript-config": "workspace:*"
   }
 }

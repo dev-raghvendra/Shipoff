@@ -4,14 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --exec ts-node -r tsconfig-paths/register ./src/server.ts"
+    "dev": "nodemon --exec ts-node -r tsconfig-paths/register ./src/server.ts",
+    "build": "tsc --build && tsc-alias",
+    "start":"node dist/server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@shipoff/typescript-config": "workspace:*",
-    "@shipoff/types": "workspace:*",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
@@ -19,9 +20,11 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.895.0",
     "@grpc/grpc-js": "^1.13.4",
-    "@shipoff/proto": "workspace:*",
     "@shipoff/grpc-clients": "workspace:*",
+    "@shipoff/proto": "workspace:*",
     "@shipoff/services-commons": "workspace:*",
+    "@shipoff/types": "workspace:*",
+    "tsc-alias": "^1.8.16",
     "zod": "^4.0.5"
   }
 }

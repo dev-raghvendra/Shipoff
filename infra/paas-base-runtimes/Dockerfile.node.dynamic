@@ -5,7 +5,11 @@ RUN apk add --no-cache \
     bash \
     curl \
     jq \
-    unzip 
+    unzip \
+    openssl \
+    make \
+    g++ \
+    libc6-compat
 
 
 RUN npm install -g pnpm && \

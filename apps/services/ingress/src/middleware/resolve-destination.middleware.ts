@@ -1,4 +1,4 @@
-import { CONFIG, SECRETS } from "@/config";
+import { SECRETS } from "@/config";
 import { ProjectsService } from "@/services/project.service";
 import { PopulatedRequest } from "@/types/request";
 import { notFound } from "@/util/res.util";

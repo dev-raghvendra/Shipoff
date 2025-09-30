@@ -32,7 +32,7 @@ deploymentConsumer.startConsumer().then(() => {
       errHandler(err,"STARTING_PROJECT_CONSUMER","N/A");
     });
 }).catch((err) => {
-    errHandler(err,"STARTING_DEPLOYMENT_CONSUMER","N/A");
+    errHandler(`${err}`,"STARTING_DEPLOYMENT_CONSUMER","N/A");
 });
 
 mongoose.connect(SECRETS.DATABASE_URI).then(()=>{

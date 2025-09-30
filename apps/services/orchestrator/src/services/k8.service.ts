@@ -7,7 +7,10 @@ import {  createSyncErrHandler, GrpcAppError } from "@shipoff/services-commons";
 
 type PaidTierK8DeploymentManifest = {new:k8.AppsV1ApiCreateNamespacedDeploymentRequest , replacement: k8.AppsV1ApiReplaceNamespacedDeploymentRequest}
 
-type FreeTierK8DeploymentManifest = k8.CoreV1ApiCreateNamespacedPodRequest
+type FreeTierK8DeploymentManifest = {
+    manifest: k8.CoreV1ApiCreateNamespacedPodRequest,
+    env:{name:string,value:string}[]
+}
 type namespace = "user-static-apps" | "user-dynamic-apps"
 
 export class K8Service {
@@ -16,7 +19,7 @@ export class K8Service {
     private _coreApi : k8.CoreV1Api
     private _containerConfUtil : ContainerConfigUtil
     private _errHandler : ReturnType<typeof createSyncErrHandler>
-    private INITALIZED = false;
+    public INITALIZED = false;
     constructor(){
         this._k8Config = new k8.KubeConfig();
         CONFIG.ENV === "PRODUCTION"
@@ -39,7 +42,7 @@ export class K8Service {
         try {
             const deleteExisting = await this.deleteFreeTierDeployment(projectId,"user-static-apps",requestId);
             if(!deleteExisting) throw new GrpcAppError(status.INTERNAL,"Failed to delete existing pod",deleteExisting)
-            const res = await this._coreApi.createNamespacedPod(manifest);
+            const res = await this._coreApi.createNamespacedPod(manifest.manifest);
             return res;
         } catch (e:any) {
             return this._errHandler(e,"CREATE-FREE-TIER-STATIC-DEPLOYMENT",requestId);
@@ -56,10 +59,43 @@ export class K8Service {
         try {
             const deleteExisting = await this.deleteFreeTierDeployment(projectId,"user-dynamic-apps",requestId);
             if(!deleteExisting) throw new GrpcAppError(status.INTERNAL,"Failed to delete existing pod",deleteExisting)
-            const res = await this._coreApi.createNamespacedPod(manifest);
+            const res = await this._coreApi.createNamespacedPod(manifest.manifest);
+            const port = parseInt(manifest.env.find(e=>e.name==="PORT")?.value!);
+            await this.createDynamicDeploymentService({projectId,requestId,port});
             return res;
         } catch (e:any) {
             return this._errHandler(e,"CREATE-FREE-TIER-DYNAMIC-DEPLOYMENT",requestId);
+        }
+    }
+
+    async createDynamicDeploymentService({projectId,requestId,port}:{projectId:string,requestId:string,port:number}){
+        const manifest : k8.CoreV1ApiCreateNamespacedServiceRequest = {
+            namespace:"user-dynamic-apps",
+            body:{
+                apiVersion:"v1",
+                kind:"Service",
+                metadata:{
+                    name:projectId,
+                    namespace:"user-dynamic-apps"
+                },
+                spec:{
+                    selector:{
+                        app:projectId
+                    },
+                    ports:[{
+                        protocol:"TCP",
+                        targetPort:port,
+                        port:80
+                    }]
+                }
+            }            
+        }
+        try {
+            await this._coreApi.replaceNamespacedService({name:projectId,...manifest});
+            return true
+        } catch (e:any) {
+            if(e.code === 404) await this._coreApi.createNamespacedService(manifest);
+            else return this._errHandler(e,"CREATE-DYNAMIC-DEPLOYMENT-SERVICE",requestId);
         }
     }
 
@@ -71,7 +107,8 @@ export class K8Service {
             return this._errHandler(e,"GET-FREE-TIER-DEPLOYMENT-MANIFEST",requestId);
         }
         try {
-          await this._coreApi.createNamespacedPod(manifest);
+          await this._coreApi.createNamespacedPod(manifest.manifest);
+          projectType === "DYNAMIC" && await this.createDynamicDeploymentService({projectId,requestId,port:parseInt(manifest.env.find(e=>e.name==="PORT")?.value!)});
           return true
         } catch (e:any) {
           if(e.code === 409){
@@ -139,8 +176,7 @@ export class K8Service {
             name:"CONTAINER_ID",
             value:containerId
            })
-
-           return {
+           const manifest : k8.CoreV1ApiCreateNamespacedPodRequest = {
              namespace,
              body:{
                 kind:"Pod",
@@ -156,34 +192,19 @@ export class K8Service {
                     containers:[{
                         name:containerId,
                         image,
-                        env,
-                        ...(CONFIG.ENV === "PRODUCTION" ? {} : {volumeMounts:[{
-                            name:"app-logs",
-                            mountPath:"/logs/user-static-apps"
-                        }]}),
-                        resources:{
-                        requests:{
-                            memory:"256Mi",
-                        },
-                        limits:{
-                            memory:"512Mi",
-                        }
-                    }
+                        env
                     }],
-                    ...(CONFIG.ENV === "PRODUCTION" ? {} : {volumes:[{
-                        name:"app-logs",
-                        hostPath:{
-                            path:"/var/log/user-static-apps",
-                            type:"DirectoryOrCreate"
-                        }
-                    }]}),
                     imagePullSecrets:[{
                         name:SECRETS.BASE_IMAGE_REGISTRY_SECRET
                     }],
-                    restartPolicy:"Never",
-                    terminationGracePeriodSeconds:30
+                    restartPolicy:"Never"
                 },
              }
+           }
+
+           return {
+              manifest,
+              env
            }
      }
 

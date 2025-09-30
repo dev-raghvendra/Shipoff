@@ -1,7 +1,7 @@
 import Redis from "ioredis";
 import { GetRedisClient } from "../redis-client/client";
 import { DEPLOYMENT_TOPIC_CONSUMER_GROUPS, TOPICS } from "../config/config";
-import { createObject, intilizeLogger } from "../../services-commons";
+import { createObject, intilizeLogger } from "@shipoff/services-commons";
 import { $DeploymentEvent, DeploymentEvent } from "../types";
 
 export class DeploymentConsumer {

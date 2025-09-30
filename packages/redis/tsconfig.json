@@ -1,0 +1,16 @@
+{
+  "extends":"@shipoff/typescript-config/service.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "baseUrl": ".",
+    "paths": {
+      "@/*":["*"]
+    },
+    "composite": true,
+  },
+  "references": [{
+    "path":"../services-commons"
+  }],
+  "include": ["."],
+  "exclude": ["dist","node_modules"]
+}

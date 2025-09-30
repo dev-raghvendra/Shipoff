@@ -6,8 +6,15 @@
     "paths": {
       "@/*":["*"],
       "@prisma/*":["../prisma/generated/*"]
-    }
+    },
+    "outDir": "dist"
   },
+  "references": [
+    {"path": "../../../packages/services-commons"},
+    {"path": "../../../packages/types"},
+    {"path": "../../../packages/proto"},
+    {"path": "../../../packages/redis"}
+  ],
   "include": ["src"],
-  "exclude": ["dist","node_modules"]
+  "exclude": ["dist","node_modules","prisma"]
 }

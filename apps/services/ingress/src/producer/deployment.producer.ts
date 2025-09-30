@@ -1,5 +1,5 @@
 import { CachedProject, projectCache } from "@/cache/project.cache";
-import { DeploymentEvent, $DeploymentEvent } from "@shipoff/redis";
+import { DeploymentEvent } from "@shipoff/redis";
 import { TOPICS } from "@shipoff/redis/config/config";
 import { GetRedisClient } from "@shipoff/redis/redis-client/client";
 import { flatenObject } from "@shipoff/services-commons";
