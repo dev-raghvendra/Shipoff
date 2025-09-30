@@ -1,7 +1,7 @@
 import Redis from "ioredis";
 import { GetRedisClient } from "../redis-client/client";
 import { DEPLOYMENT_TOPIC_CONSUMER_GROUPS, TOPICS } from "../config/config";
-import { createObject, intilizeLogger } from "../../services-commons";
+import { createObject, intilizeLogger } from "@shipoff/services-commons";
 import { $DeploymentEvent, DeploymentEvent } from "../types";
 
 export class DeploymentConsumer {
@@ -21,7 +21,7 @@ export class DeploymentConsumer {
         const groupName = DEPLOYMENT_TOPIC_CONSUMER_GROUPS[this._serviceName];
         const streamName = TOPICS.DEPLOYMENT_TOPIC;
         let backoffTime = 1000;
-        const maxBackoffTime = 60000;
+        const maxBackoffTime = 10000;
          while (true) {
               try {
                 const messages = await this._redisClient.xreadgroup(

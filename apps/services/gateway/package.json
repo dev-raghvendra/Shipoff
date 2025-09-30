@@ -4,29 +4,38 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --exec ts-node -r tsconfig-paths/register src/server.ts"
+    "dev": "nodemon --exec ts-node -r tsconfig-paths/register src/server.ts",
+    "build": "tsc --build && tsc-alias",
+    "start": "node dist/server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@shipoff/grpc-clients": "workspace:*",
-    "@shipoff/proto": "workspace:*",
-    "@shipoff/services-commons": "workspace:*",
     "@shipoff/typescript-config": "workspace:*",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/ws": "^8.18.1",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.9.2"
   },
   "dependencies": {
+    "@shipoff/grpc-clients": "workspace:*",
+    "@shipoff/proto": "workspace:*",
+    "@shipoff/services-commons": "workspace:*",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
-    "uuid": "^11.1.0"
+    "proto": "link:packages/proto",
+    "redis": "link:packages/redis",
+    "services-commons": "link:packages/services-commons",
+    "tsc-alias": "^1.8.16",
+    "types": "link:packages/types",
+    "uuid": "^11.1.0",
+    "ws": "^8.18.3"
   }
 }

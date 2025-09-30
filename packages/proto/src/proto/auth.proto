@@ -38,7 +38,7 @@ message GetCurrentUserResponseData {
   bool emailVerified = 7;
   string userId = 8;
   repeated GetTeamMemberResponseData teamMembers = 9;
-  repeated GetProjectMemberResponse  projectMembers = 10;
+  repeated GetProjectMemberResponseData  projectMembers = 10;
 }
 
 

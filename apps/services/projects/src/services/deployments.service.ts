@@ -1,9 +1,10 @@
-import { createAsyncErrHandler, createGrpcErrorHandler, GrpcResponse } from "@shipoff/services-commons";
+import { createAsyncErrHandler, createGrpcErrorHandler, GrpcAppError, GrpcResponse } from "@shipoff/services-commons";
 import { Database, dbService } from "@/db/db-service";
 import authExternalService, { AuthExternalService } from "@/externals/auth.external.service";
 import { DeleteDeploymentRequestBodyType, GetAllDeploymentsRequestBodyType, GetDeploymentRequestBodyType, RedeployRequestBodyType } from "@/types/deployments";
 import { DeploymentEventProducerService } from "@/producer/deployment.producer";
 import { logger } from "@/libs/winston";
+import { status } from "@grpc/grpc-js";
 
 
 export class DeploymentsService {
@@ -12,6 +13,8 @@ export class DeploymentsService {
     private _errHandler : ReturnType<typeof createGrpcErrorHandler>
     private _asyncErrHandler: ReturnType<typeof createAsyncErrHandler>  
     private _deploymentProducer : DeploymentEventProducerService;
+    private _deletableStatuses = ["FAILED","INACTIVE"];
+    private _redeployableStatuses = ["INACTIVE","FAILED"];
 
     constructor() {
         this._errHandler = createGrpcErrorHandler({subServiceName:"DEPLOYMENT_SERVICE",logger});
@@ -27,7 +30,8 @@ export class DeploymentsService {
                 permissions: ["READ"],
                 scope: "DEPLOYMENT",
                 resourceId: projectId,
-                errMsg: "You do not have permission to read this deployment"
+                errMsg: "You do not have permission to read this deployment",
+                reqMeta
             });
             const deployment = await this._dbService.findUniqueDeploymentById(deploymentId);
             return GrpcResponse.OK(deployment, "Deployment found");
@@ -43,7 +47,8 @@ export class DeploymentsService {
                 permissions: ["READ"],
                 scope: "DEPLOYMENT",
                 resourceId: projectId,
-                errMsg: "You do not have permission to read deployments of this project"
+                errMsg: "You do not have permission to read deployments of this project",
+                reqMeta
             });
             const deployments = await this._dbService.findManyDeployments({
                 where:{
@@ -61,7 +66,27 @@ export class DeploymentsService {
                       name:true,
                 }
                 },
-                    repository:true
+                    repository:true,
+                    buildEnvironment:{
+                        take:1,
+                        orderBy:{
+                           startedAt:"desc",
+                        },
+                        select:{
+                            buildId:true,
+                            startedAt:true
+                        }
+                    },
+                    runtimeEnvironment:{
+                        take:1,
+                        orderBy:{
+                           startedAt:"desc"
+                        },
+                        select:{
+                            runtimeId:true,
+                            startedAt:true
+                        }
+                    }
                 }
             });
             return GrpcResponse.OK(deployments, "Deployments found");
@@ -77,9 +102,12 @@ export class DeploymentsService {
                 permissions: ["DELETE"],
                 scope: "DEPLOYMENT",
                 resourceId: projectId,
-                errMsg: "You do not have permission to delete this deployment"
+                errMsg: "You do not have permission to delete this deployment",
+                reqMeta
             });
-            const deployment = await this._dbService.deleteDeploymentById(deploymentId);
+            const deployment = await this._dbService.findUniqueDeploymentById(deploymentId);
+            if(!this._deletableStatuses.includes(deployment.status))throw new GrpcAppError(status.FAILED_PRECONDITION,"Deployment is not in a deletable state, only deployments in FAILED or INACTIVE state can be deleted");
+            const deletedDeployment = await this._dbService.deleteDeploymentById(deploymentId);
             this._asyncErrHandler.call(this._deploymentProducer.publishDeploymentRequested({
                 event: "DELETED",
                 projectId,
@@ -89,7 +117,7 @@ export class DeploymentsService {
                 commitHash:deployment.commitHash,
                 requestId:reqMeta.requestId
             }),"DELETE-DEPLOYMENT",reqMeta.requestId);
-            return GrpcResponse.OK({}, "Deployment deleted");
+            return GrpcResponse.OK(deletedDeployment, "Deployment deleted");
         } catch (e:any) {
             return this._errHandler(e, "DELETE-DEPLOYMENT",reqMeta.requestId);
         }
@@ -102,9 +130,16 @@ export class DeploymentsService {
                 permissions: ["UPDATE"],
                 scope: "DEPLOYMENT",
                 resourceId: projectId,
-                errMsg: "You do not have permission to redeploy this deployment"
+                errMsg: "You do not have permission to redeploy this deployment",
+                reqMeta
             });
-            const deployment = await this._dbService.findUniqueDeploymentById(deploymentId);
+            const crrStatus = await this._dbService.findUniqueDeploymentById(deploymentId);
+            if(!this._redeployableStatuses.includes(crrStatus.status))throw new GrpcAppError(status.FAILED_PRECONDITION,"Deployment is not in a redeployable state, only deployments in INACTIVE or FAILED state can be redeployed");
+            
+            const deployment = await this._dbService.updateDeploymentById(deploymentId,projectId,{
+                status:"QUEUED",
+                lastDeployedAt:new Date().toISOString()
+            })
             this._asyncErrHandler.call(this._deploymentProducer.publishDeploymentRequested({
                 event:"CREATED",
                 projectId,

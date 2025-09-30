@@ -35,6 +35,10 @@ export const BulkResourceRequestSchema = z.object({
   reqMeta:RequestMetaSchema
 })
 
+export const InternalEmptyRequestSchema = z.object({
+  reqMeta:RequestMetaSchema
+}).strict();
+
 export type BulkResourceRequestBodyType = z.infer<typeof BulkResourceRequestSchema>
 
 export const BodyLessRequestSchema = z.object({
@@ -43,7 +47,9 @@ export const BodyLessRequestSchema = z.object({
 }).strict();
 
 export type UserType = z.infer<typeof UserSchema>;
+export type RequestMetaType = z.infer<typeof RequestMetaSchema>;
 export type PermissionsType = z.infer<typeof Permissions>;
 export type ScopesType = z.infer<typeof Scopes>;
 export type BodyLessRequestBodyType = z.infer<typeof BodyLessRequestSchema>;
+export type InternalEmptyRequestBodyType = z.infer<typeof InternalEmptyRequestSchema>;
 

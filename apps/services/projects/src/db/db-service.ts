@@ -2,9 +2,11 @@ import {Prisma, PrismaClient} from "@prisma/client"
 import { generateId, GrpcAppError } from "@shipoff/services-commons";
 import { CreateProjectRequestDBBodyType, DeleteEnvVarsRequestDBBodyType, GetEnvVarsRequestDBBodyType, UpdateProjectRequestDBBodyType, UpsertEnvVarsRequestDBBodyType } from "types/projects";
 import {status} from "@grpc/grpc-js";
-import { PrismaClientKnownRequestError } from "@prisma/runtime/library";
+import { DefaultArgs, PrismaClientKnownRequestError } from "@prisma/runtime/library";
 import { CreateDeploymentRequestDBBodyType } from "types/deployments";
 import { CreateRepositoryRequestDBBodyType } from "types/repositories";
+import { RetryThrottler } from "@grpc/grpc-js/build/src/retrying-call";
+import { Deployment } from "@shipoff/proto";
 
 const MODEL_MAP = {
     Project:"prj",
@@ -146,11 +148,23 @@ export class Database {
     async createDeployment(body:CreateDeploymentRequestDBBodyType){
         try {
             const deploymentId = generateId("Deployment", MODEL_MAP);
-            const res = await this._client.deployment.create({
-                data:{
-                    deploymentId,
-                    ...body
-                }
+            const res = this.startTransaction(async(tx)=>{
+                await tx.deployment.updateMany({
+                    where:{
+                        projectId:body.projectId,
+                        status:"QUEUED"
+                    },
+                    data:{
+                        status:"INACTIVE"
+                    }
+                })
+
+                return tx.deployment.create({
+                    data:{
+                        deploymentId,
+                        ...body
+                    }
+                })
             })
             return res;
         } catch (e:any) {
@@ -168,6 +182,7 @@ export class Database {
     }
 
     async findUniqueDeploymentById(deploymentId: string) {
+        
         const res = await this._client.deployment.findUnique({
             where: { deploymentId },
             select:{
@@ -193,8 +208,11 @@ export class Database {
                     deploymentId:true,
                     commitMessage:true,
                     author:true,
-                    createdAt:true
-                }
+                    createdAt:true,
+                    status:true,
+                    buildEnvironment:{orderBy:{startedAt:"desc"},take:1,select:{ buildId:true, startedAt:true }},
+                    runtimeEnvironment:{orderBy:{startedAt:"desc"},take:1,select:{ runtimeId:true, startedAt:true }}
+            }
         });
         if(res)return res;
         throw new GrpcAppError(status.NOT_FOUND, "Deployment not found", {
@@ -202,11 +220,53 @@ export class Database {
         });
     }
 
-    async updateDeploymentById(deploymentId:string, data:Partial<Omit<CreateDeploymentRequestDBBodyType,"projectId">>){
+    async updateDeploymentById(deploymentId:string, projectId:string, data:Partial<Omit<CreateDeploymentRequestDBBodyType,"projectId"> & {lastDeployedAt?:string}>) {
         try {
-            const res = await this._client.deployment.update({
-                where:{deploymentId},
-                data
+            const res = await this.startTransaction(async(tx)=>{
+                if(data.status === "QUEUED"){
+                    await tx.deployment.updateMany({
+                        where:{
+                            projectId,
+                            status:"QUEUED"
+                        },
+                        data:{
+                            status:"INACTIVE"
+                        }
+                    })
+                }
+                return tx.deployment.update({
+                    where:{
+                        deploymentId,
+                        projectId
+                    },
+                    data,
+                    select:{
+                    project:{
+                        select:{
+                            projectId:true,
+                            domain:true,
+                            framework:{
+                                select:{
+                                  applicationType:true
+                                }
+                            }
+                        }
+                    },
+                    repository:{
+                        select:{
+                            githubRepoFullName:true,
+                            githubRepoId:true,
+                            branch:true
+                        }
+                    },
+                    commitHash:true,
+                    deploymentId:true,
+                    commitMessage:true,
+                    author:true,
+                    createdAt:true,
+                    status:true
+            }
+                })
             })
             return res;
         } catch (e:any) {
@@ -228,9 +288,9 @@ export class Database {
         }
     }
 
-    async findManyDeployments(args:Prisma.DeploymentFindManyArgs){
+    async findManyDeployments<T extends Prisma.DeploymentFindManyArgs>(args:T){
         const res = await this._client.deployment.findMany(args);
-        if(res.length)return res;
+        if(res.length)return res as Prisma.DeploymentGetPayload<T>[];
         throw new GrpcAppError(status.NOT_FOUND, "No deployments found");
     }
 
@@ -486,6 +546,17 @@ export class Database {
             projectId
         });
     }
+    startTransaction<T extends any>(fn:(tx: Omit<PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends">)=>Promise<T>){
+        return this._client.$transaction(fn)
+    }
+
+    startParallelTransaction(fn:(client:PrismaClient)=>Promise<any>[]){
+        return Promise.all([fn(this._client)])
+    }
+    getClient(){
+        return this._client
+    }
 }
+
 
 export const dbService = new Database();

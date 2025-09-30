@@ -2,10 +2,7 @@
   "name": "@shipoff/services-commons",
   "version": "1.0.0",
   "description": "",
-  "main": "index.ts",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "main": "index",
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -18,6 +15,8 @@
     "zod": "^4.0.5"
   },
   "devDependencies": {
-    "@types/jsonwebtoken": "^9.0.10"
+    "@shipoff/typescript-config": "workspace:*",
+    "@types/jsonwebtoken": "^9.0.10",
+    "typescript": "^5.9.2"
   }
 }

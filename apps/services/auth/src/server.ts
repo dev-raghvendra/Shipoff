@@ -1,7 +1,7 @@
 import { Server, ServerCredentials } from "@grpc/grpc-js";
 import { UnimplementedAuthServiceService } from "@shipoff/proto";
 import AuthHandlers from "@/handlers/auth.handler";
-import {createValidator} from "@shipoff/services-commons"
+import {createSyncErrHandler, createUnaryValidator} from "@shipoff/services-commons"
 import { RPC_SCHEMA } from "@/config/rpc-schema";
 import TeamHandlers from "@/handlers/team.handler";
 import ProjectHandlers from "@/handlers/project.handlers";
@@ -10,12 +10,13 @@ import { ProjectConsumer } from "./consumer/project.consumer";
 import { logger } from "./libs/winston";
 
 
-const validateRPCBody = createValidator(RPC_SCHEMA,logger);
+const validateRPCBody = createUnaryValidator(RPC_SCHEMA,logger);
 const server = new Server();
 const authhandlers = new AuthHandlers();
 const teamHandlers = new TeamHandlers();
 const projectHandlers = new ProjectHandlers();
 const projectConsumer = new ProjectConsumer();
+const errHandler = createSyncErrHandler({subServiceName:"AUTH_SERVER",logger})
 
 server.addService(UnimplementedAuthServiceService.definition, {
     Login: validateRPCBody("Login", authhandlers.handleLogin.bind(authhandlers)),
@@ -44,7 +45,7 @@ server.addService(UnimplementedAuthServiceService.definition, {
 
 server.bindAsync(`${SECRETS.HOST}:${SECRETS.PORT}`,ServerCredentials.createInsecure(),(err)=>{
     if (err) {
-        logger.error(`ERROR_STARTING_AUTH_GRPC_SERVER: ${JSON.stringify(err,null,4)}`)
+        errHandler(err,"GRPC_SERVER_BINDING","N/A");
         process.exit(1);
     }
       logger.info(`AUTH_GRPC_SERVER_LISTENING_ON ${SECRETS.HOST}:${SECRETS.PORT}`)
@@ -53,19 +54,19 @@ server.bindAsync(`${SECRETS.HOST}:${SECRETS.PORT}`,ServerCredentials.createInsec
 projectConsumer.startProjectConsumer().then(() => {
     logger.info("PROJECT_CONSUMER_STARTED");
 }).catch((err) => {
-    logger.error(`ERROR_STARTING_PROJECT_CONSUMER: ${JSON.stringify(err, null, 2)}`);
+    errHandler(err,"PROJECT_CONSUMER_STARTUP","N/A");
 });
 
 process.on("uncaughtException", (err) => {
-    logger.error(`UNCAUGHT_EXCEPTION: ${err.message}`);
+    errHandler(err,"UNCAUGHT_EXCEPTION","N/A");
 });
 
 process.on("unhandledRejection", (reason) => {
-    logger.error(`UNHANDLED_REJECTION: ${reason}`);
+    errHandler(reason as {},"UNHANDLED_REJECTION","N/A");
 });
 
 process.on("SIGINT", () => {
     logger.info("AUTH_SERVICE_STOPPED");
-    process.exit(0);
+    server.tryShutdown(() => process.exit(0));
 });
 

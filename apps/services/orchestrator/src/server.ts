@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { SECRETS } from "@/config";
-import { createValidator } from "@shipoff/services-commons";
+import { createSyncErrHandler, createUnaryValidator } from "@shipoff/services-commons";
 import { UnimplementedOrchestratorServiceService } from "@shipoff/proto";
 import { Server, ServerCredentials } from "@grpc/grpc-js";
 import { RPC_SCHEMA } from "./config/rpc-schema";
@@ -11,11 +11,12 @@ import { ProjectConsumer } from "@/consumer/project.consumer";
 import { logger } from "@/libs/winston";
 
 const server = new Server()
-const validateRPCBody = createValidator(RPC_SCHEMA,logger);
+const validateRPCBody = createUnaryValidator(RPC_SCHEMA,logger);
 const orchestratorHandlers = new OrchestratorHandler();
 const orchestratorWebhookHandler = new OrchestratorWebhookHandler()
 const deploymentConsumer = new DeploymentConsumer("ORCHESTRATOR_SERVICE");
 const projectConsumer = new ProjectConsumer("ORCHESTRATOR_SERVICE",deploymentConsumer);
+const errHandler = createSyncErrHandler({subServiceName:"ORCHESTRATOR_SERVER",logger});
 
 server.addService(UnimplementedOrchestratorServiceService.definition, {
     IStartK8Deployment: validateRPCBody("IStartK8Deployment", orchestratorHandlers.handleIStartK8Deployment.bind(orchestratorHandlers)),
@@ -28,21 +29,36 @@ deploymentConsumer.startConsumer().then(() => {
     projectConsumer.startConsumer().then(() => {
     logger.info("PROJECT_CONSUMER_STARTED");
     }).catch((err) => {
-      logger.error(`ERROR_STARTING_PROJECT_CONSUMER: ${JSON.stringify(err, null, 2)}`);
+      errHandler(err,"STARTING_PROJECT_CONSUMER","N/A");
     });
 }).catch((err) => {
-    logger.error(`ERROR_STARTING_DEPLOYMENT_CONSUMER: ${JSON.stringify(err, null, 2)}`);
+    errHandler(`${err}`,"STARTING_DEPLOYMENT_CONSUMER","N/A");
 });
 
 mongoose.connect(SECRETS.DATABASE_URI).then(()=>{
     logger.info("MONGO-DB_CONNECTED");
 }).catch((error) => {
-    logger.error(`UNEXPECTED_ERR_OCCURED_WHILE_CONNECTING_MONGO-DB: ${error}`);
+    errHandler(error,"MONGO-DB-CONNECTION","N/A");
 });
 
 
 
 server.bindAsync(`${SECRETS.HOST}:${SECRETS.PORT}`,ServerCredentials.createInsecure(),(err)=>{
-    if(err) return logger.error(`ERROR_STARTING_ORCHESTRATOR_GRPC_SERVER: ${err}`);
+    if(err) return errHandler(err,"BINDING_SERVER","N/A");
     logger.info(`ORCHESTRATOR_GRPC_SERVER_LISTENING_ON ${SECRETS.HOST}:${SECRETS.PORT}`);
 })
+
+process.on("uncaughtException",(err)=>{
+    errHandler(err,"UNCAUGHT_EXCEPTION","N/A");
+    process.exit(1);
+});
+
+process.on("unhandledRejection",(reason)=>{
+    errHandler(reason as any,"UNHANDLED_REJECTION","N/A");
+    process.exit(1);
+});
+
+process.on("SIGINT", () => {
+    logger.info("ORCHESTRATOR_SERVICE_STOPPED");
+    server.tryShutdown(() => process.exit(0));
+});

@@ -1,6 +1,6 @@
 import { sendUnaryData, ServerUnaryCall, status } from "@grpc/grpc-js";
-import { AllProjectsResponse, BulkResourceRequest, CreateProjectRequest, DeleteEnvVarsRequest, DeleteEnvVarsResponse, DeleteProjectRequest, EnviornmentVariables, EnvVarsResponse, FrameworkResponse, GetAllUserProjectsRequest, GetEnvVarsRequest, GetProjectRequest, IGetProjectRequest, ProjectResponse, UpdateProjectRequest, UpsertEnvVarsRequest, UpsertEnvVarsResponse } from "@shipoff/proto";
-import { BulkResourceRequestBodyType } from "@shipoff/types";
+import { AllProjectsResponse, BulkResourceRequest, CreateProjectRequest, DeleteEnvVarsRequest, DeleteEnvVarsResponse, DeleteProjectRequest, EnvVarsResponse, FrameworkResponse, GetAllUserProjectsRequest, GetEnvVarsRequest, GetProjectRequest, IGetProjectRequest, InternalEmptyRequest, ProjectResponse, StaleEnvironmentIdsResponse, UpdateProjectRequest, UpsertEnvVarsRequest, UpsertEnvVarsResponse } from "@shipoff/proto";
+import { BulkResourceRequestBodyType, InternalEmptyRequestBodyType } from "@shipoff/types";
 import { ProjectsService } from "services/projects.service";
 import { CreateProjectRequestBodyType, DeleteEnvVarsRequestBodyType, DeleteProjectRequestBodyType, GetAllUserProjectRequestBodyType, GetEnvVarsRequestBodyType, GetProjectRequestBodyType, IGetProjectRequestBodyType, UpdateProjectRequestBodyType, UpsertEnvVarsRequestBodyType } from "types/projects";
 
@@ -38,19 +38,6 @@ export class ProjectsHandlers {
         }
     }
 
-    async handleIGetProject(call:ServerUnaryCall<IGetProjectRequest & {body:IGetProjectRequestBodyType},ProjectResponse>,callback:sendUnaryData<ProjectResponse>) {
-        try {
-            const {code,res,message} = await this._projectsService.IGetProject(call.request.body);
-            if(code !== status.OK) return callback({code,message});
-            const response = ProjectResponse.fromObject({code,message,res})
-            return callback(null,response);
-        } catch (e:any) {
-            return callback({
-                code:status.INTERNAL,
-                message:"Internal server error"
-            })
-        }
-    }
 
     async handleGetAllUserProjects(call:ServerUnaryCall<GetAllUserProjectsRequest & {body:GetAllUserProjectRequestBodyType}, AllProjectsResponse>,callback:sendUnaryData<AllProjectsResponse>) {
         try {
@@ -150,5 +137,31 @@ export class ProjectsHandlers {
         }
     }
     
+    async handleIGetProject(call:ServerUnaryCall<IGetProjectRequest & {body:IGetProjectRequestBodyType},ProjectResponse>,callback:sendUnaryData<ProjectResponse>) {
+        try {
+            const {code,res,message} = await this._projectsService.IGetProject(call.request.body);
+            if(code !== status.OK) return callback({code,message});
+            const response = ProjectResponse.fromObject({code,message,res})
+            return callback(null,response);
+        } catch (e:any) {
+            return callback({
+                code:status.INTERNAL,
+                message:"Internal server error"
+            })
+        }
+    }
 
+    async handleIGetStaleEnvironmentIds(call:ServerUnaryCall<InternalEmptyRequest & {body:InternalEmptyRequestBodyType},StaleEnvironmentIdsResponse>,callback:sendUnaryData<StaleEnvironmentIdsResponse>) {
+        try {
+            const {code,res,message} = await this._projectsService.IGetStaleEnvironmentIds(call.request.body);
+            if(code !== status.OK) return callback({code,message});
+            const response = StaleEnvironmentIdsResponse.fromObject({code,message,res})
+            return callback(null,response);
+        } catch (e:any) {
+            return callback({
+                code:status.INTERNAL,
+                message:"Internal server error"
+            })
+        }
+    }
 }

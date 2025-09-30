@@ -1,0 +1,36 @@
+{
+  "name": "ingress",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon --exec ts-node -r tsconfig-paths/register ./src/server.ts",
+    "build": "tsc --build && tsc-alias && cp -r src/static ./dist",
+    "start": "node dist/server.js"
+  },
+  "devDependencies": {
+    "@shipoff/typescript-config": "workspace:*",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/node": "^22.15.3",
+    "ioredis": "^5.7.0",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "tsc-alias": "^1.8.16",
+    "tsconfig-paths": "^4.2.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@shipoff/grpc-clients": "workspace:*",
+    "@shipoff/proto": "workspace:*",
+    "@shipoff/redis": "workspace:*",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "@shipoff/services-commons": "workspace:*",
+    "@shipoff/types": "workspace:*",
+    "node-cache": "^5.1.2",
+    "uuid": "^11.1.0"
+    }
+}

@@ -26,7 +26,6 @@ export class OrchestratorWebhookService {
     async IWebhook({ payload, event, reqMeta }: OrchestratorWebhookRequestBodyType) {
         try {
             const eventPayload = await verifyJwt<TRAFFIC_DETECTED | STATE_CHANGED>(payload, SECRETS.ORCHESTRATOR_WEBHOOK_PAYLOAD_SECRET)
-            console.log("Webhook recived from container: ", eventPayload);
             switch (event) {
                 case "TRAFFIC_DETECTED":
                     return await this._trafficDetected(eventPayload as TRAFFIC_DETECTED, reqMeta.requestId)
@@ -76,7 +75,10 @@ export class OrchestratorWebhookService {
                 event: payload.action,
                 projectId: payload.projectId,
                 deploymentId:payload.deploymentId,
-                requestId
+                requestId,
+                projectType: payload.projectType,
+                builId: payload.builId,
+                runtimeId: payload.runtimeId
             }), "STATE-CHANGED",requestId)
             return GrpcResponse.OK({}, "State changed webhook processed")
         } catch (e: any) {
@@ -101,7 +103,10 @@ export class OrchestratorWebhookService {
                 event: "TERMINATED",
                 projectId: decoded.projectId,
                 deploymentId:decoded.deploymentId,
-                requestId: webhook.reqMeta.requestId
+                requestId: webhook.reqMeta.requestId,
+                projectType: decoded.projectType,
+                builId: decoded.builId,
+                runtimeId: decoded.runtimeId
             }), "STATE-CHANGE-TOKEN-EXPIRED", webhook.reqMeta.requestId)
         }
     }

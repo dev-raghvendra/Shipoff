@@ -1,0 +1,49 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+import "common.proto";
+
+message LogBody {
+    string timestamp = 1;
+    string level = 2;
+    string type = 3;
+    string message = 4;
+    string envId = 5;
+}
+
+message IPutLogRequest {
+    repeated LogBody logs = 1;
+}
+
+message GetLogsRequest {
+    string projectId = 1;
+    string environmentId = 2;
+    string lastBatchId = 3;
+    User authUserData = 4;
+    RequestMeta reqMeta = 5;
+}
+
+message GetLogsResponse {
+    int32 code = 1;
+    string message = 2;
+    GetLogsResponseBody res = 3;
+}
+
+message GetLogsResponseBody {
+    string lastBatchId = 1;
+    string logs = 2;
+}
+
+message StreamLogsRequest {
+    User authUserData = 1;
+    RequestMeta reqMeta = 2;
+    string projectId = 3;
+    string environmentId = 4;
+}
+
+
+
+service LogService {
+    rpc IPutLog (IPutLogRequest) returns (google.protobuf.Empty);
+    rpc GetLogs (GetLogsRequest) returns (GetLogsResponse);
+    rpc StreamLogs (StreamLogsRequest) returns (stream LogBody);
+}

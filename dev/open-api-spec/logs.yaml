@@ -1,0 +1,188 @@
+openapi: 3.0.3
+info:
+  title: Logs Service API
+  description: Logging service for handling application logs and real-time log streaming
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8000/apis/v1/log
+    description: Development server
+  - url: https://api.shipoff.in/apis/v1/log
+    description: Production server
+  - url: ws://localhost:8000/logs/stream
+    description: WebSocket endpoint for log streaming
+  - url: wss://api.shipoff.in/logs/stream
+    description: Production WebSocket endpoint for log streaming
+
+security:
+  - BearerAuth: []
+
+paths:
+  /:
+    post:
+      tags:
+        - Logs
+      summary: Put logs
+      description: Submit log entries to the logging service
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PutLogRequest'
+      responses:
+        '200':
+          description: Logs submitted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /{projectId}/{envId}:
+    get:
+      tags:
+        - Logs
+      summary: Get logs
+      description: Retrieve logs for a specific project and environment
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          description: Project ID
+          schema:
+            type: string
+        - name: envId
+          in: path
+          required: true
+          description: Environment ID
+          schema:
+            type: string
+        - name: lastBatchId
+          in: query
+          description: Last batch ID for pagination
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Logs retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetLogsResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Project or environment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    LogBody:
+      type: object
+      required:
+        - timestamp
+        - level
+        - type
+        - message
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        level:
+          type: string
+          enum: [info, warn, error, debug]
+          example: info
+        type:
+          type: string
+          example: application
+        message:
+          type: string
+          example: Application started successfully
+        envId:
+          type: string
+          example: prod
+
+    PutLogRequest:
+      type: object
+      required:
+        - logs
+      properties:
+        logs:
+          type: array
+          items:
+            $ref: '#/components/schemas/LogBody'
+
+    GetLogsResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: Logs retrieved successfully
+        res:
+          type: array
+          items:
+            $ref: '#/components/schemas/LogBody'
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: Error message
+        res:
+          type: object
+          nullable: true
+
+    # WebSocket message schemas
+    WebSocketMessage:
+      type: object
+      description: WebSocket message format for real-time log streaming
+      properties:
+        type:
+          type: string
+          enum: [log, error, connect, disconnect]
+          example: log
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/LogBody'
+            - type: object
+              properties:
+                message:
+                  type: string
+                  example: Connected to log stream
+        timestamp:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"

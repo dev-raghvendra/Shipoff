@@ -4,6 +4,8 @@ import { $DeploymentEvent, DeploymentConsumer as Consumer, DeploymentEvent } fro
 import { DEPLOYMENT_TOPIC_CONSUMER_GROUPS } from "@shipoff/redis/config/config";
 import { logger } from "@/libs/winston";
 import { ContainerProducer } from "@/producer/container.producer";
+import { ProjectExternalService } from "@/externals/project.external.service";
+import { createSyncErrHandler } from "@shipoff/services-commons";
 
 
 type IDeploymentConsumer =  {
@@ -16,6 +18,8 @@ export class DeploymentConsumer implements IDeploymentConsumer {
     private _dbService : Database
     private _producer : ContainerProducer
     private _readCount = 0;
+    private _projectService:ProjectExternalService
+    private _errHandler: ReturnType<typeof createSyncErrHandler>
     private readonly allowedEvents = ["CREATED","DELETED"];
     private _eventQueue: {
         event: DeploymentEvent<keyof typeof $DeploymentEvent>;
@@ -27,12 +31,14 @@ export class DeploymentConsumer implements IDeploymentConsumer {
         this._k8ServiceClient = K8ServiceClient;
         this._dbService = dbService;
         this._producer = new ContainerProducer();
+        this._projectService = new ProjectExternalService();
+        this._errHandler = createSyncErrHandler({subServiceName:"DEPLOYMENT_CONSUMER",logger});
     }
 
     async addEventsInLocalQueue(event:DeploymentEvent<keyof typeof $DeploymentEvent>,ackMessage:()=>Promise<void>){
-        console.log("NEW EVENT RECEIVED",event);
         const staleFound = await this._filterStaleDuplicateEventsInQueue(event,ackMessage);
-        if(!staleFound) {
+        const sameProjectDifferentEventFound = await this._filterSameProjectDifferentEventsInQueue(event,ackMessage);
+        if(!staleFound && !sameProjectDifferentEventFound) {
             this._eventQueue.push({event,ackMessage});
         }
         this._readCount++;
@@ -51,25 +57,28 @@ export class DeploymentConsumer implements IDeploymentConsumer {
     
     async processEvents(){
         let backoffTime = 1000;
-        const maxBackoffTime = 60000;
+        const maxBackoffTime = 10000;
         while(true){
           if(this._eventQueue.length && this._readCount){
              backoffTime = 1000;
              const evt = this._eventQueue.shift();
              if(!evt) continue;
              if(!this.allowedEvents.includes(evt.event.event)){
-               logger.error(`[rid:${evt?.event.requestId}]:UNKNOWN_EVENT_TYPE_"${evt.event.event}"_FOR_PROJECT_ID_${evt?.event.projectId}_IN_DEPLOYMENT_TOPIC_IN_DEPLOYMENT_CONSUMER_AT_${this._consumer._serviceName}`);
+               this._errHandler({},"PROCCESSING_EVENT",evt.event.requestId,`WHILE_PROCESSING_UNSUPPORTED_EVENT_TYPE_${evt.event.event}_FOR_PROJECT_ID_${evt.event.projectId}_IN_DEPLOYMENT_CONSUMER_AT_${this._consumer._serviceName}`);
                continue;
              }
              const res = await this[evt.event.event](evt.event)
-             if(res) return await evt.ackMessage();
-             else logger.error(`[rid:${evt.event.requestId}]:UNEXPECTED_ERROR_OCCURED_WHILE_PROCESSING_EVENT_TYPE_"${evt.event.event}"_FOR_PROJECT_ID_"${evt.event.projectId}"_IN_DEPLOYMENT_CONSUMER_AT_"${this._consumer._serviceName}"`);
+             if(res) {await evt.ackMessage();continue}
+             this._errHandler({},"PROCCESSING_EVENT",evt.event.requestId,`WHILE_PROCESSING_EVENT_TYPE_${evt.event.event}_FOR_PROJECT_ID_${evt.event.projectId}_IN_DEPLOYMENT_CONSUMER_AT_${this._consumer._serviceName}`);
              this._producer.publishContainerEvent({
                 event:"FAILED",
                 projectId:evt.event.projectId,
                 deploymentId:evt.event.deploymentId,
                 containerId:"N/A",
-                requestId:evt.event.requestId
+                requestId:evt.event.requestId,
+                runtimeId:"N/A",
+                builId:"N/A",
+                projectType:evt.event.projectType
              })
           }
           else backoffTime = Math.min(backoffTime * 2, maxBackoffTime);
@@ -125,6 +134,37 @@ export class DeploymentConsumer implements IDeploymentConsumer {
         }
     }
 
+    private async _filterSameProjectDifferentEventsInQueue(event:DeploymentEvent<keyof typeof $DeploymentEvent>,ackMessage:()=>Promise<void>){
+        for(let i=0;i<this._eventQueue.length;i++){
+            if(this._eventQueue[i].event.projectId === event.projectId){
+                if(event.event === "CREATED"){
+                    const fn = this._eventQueue[i].ackMessage;
+                    this._eventQueue[i]={event,ackMessage};
+                    await fn();
+                }
+                else await ackMessage()
+                return true
+            }
+        }
+    }
+
+
+    REQUESTED = async(event:DeploymentEvent<keyof typeof $DeploymentEvent>)=>{
+        let res;
+        const project = await this._projectService.getProjectById(event.projectId,event.requestId)
+        if(!project.deployments.length){
+             this._errHandler({},"PROCCESSING_'REQUESTED'_EVENT",event.requestId,`NO_DEPLOYMENTS_FOUND_FOR_PROJECT_ID_${event.projectId}_IN_DEPLOYMENT_CONSUMER_AT_${this._consumer._serviceName}`);
+             return false
+        }
+        res = await this._k8ServiceClient.tryCreatingFreeTierDeployment({
+            projectId:event.projectId,
+            deploymentId:project.deployments[0].deploymentId,
+            commitHash:project.deployments[0].commitHash,
+            projectType:project.framework.applicationType as "STATIC" | "DYNAMIC",
+            requestId:event.requestId
+        })
+        return res === true
+    }
 }
 
 

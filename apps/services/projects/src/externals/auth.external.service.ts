@@ -11,21 +11,24 @@ export class AuthExternalService {
         this._authService = GetAuthClient();
     }
 
-    async getPermissions({authUserData,permissions,scope,resourceId,errMsg}:{
+    async getPermissions({authUserData,permissions,scope,resourceId,errMsg,reqMeta}:{
         authUserData: UserType
         permissions: PermissionsType[],
         scope: ScopesType,
         resourceId: string,
-        errMsg?: string
+        errMsg?: string,
+        reqMeta?: {requestId:string}
     }) {
         try {
             const req = HasPermissionsRequest.fromObject({
                 authUserData,
                 permissions,
                 scope,
-                resourceId
+                resourceId,
+                reqMeta
             })
-            const res = await promisifyGrpcCall(this._authService.HasPermissions,req,status.PERMISSION_DENIED)
+            const res = await promisifyGrpcCall(this._authService.HasPermissions,req)
+            if(!(res as ReturnType<typeof res.toObject>).res) throw new GrpcAppError(status.PERMISSION_DENIED,"")   
             return res.res;
         } catch (e:any) {
             if (e.code === status.PERMISSION_DENIED){
@@ -35,10 +38,11 @@ export class AuthExternalService {
         }
     }
 
-    async getUserProjectIds(authUserData: UserType) {
+    async getUserProjectIds(authUserData: UserType,reqMeta:{requestId:string}) {
         try {
             const req = BodyLessRequest.fromObject({
-                authUserData
+                authUserData,
+                reqMeta
             })
         const res = await promisifyGrpcCall(this._authService.GetAllUserProjectIds, req, status.NOT_FOUND);
         return res.res as string[];

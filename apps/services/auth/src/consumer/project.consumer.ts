@@ -1,20 +1,23 @@
 import { dbService } from "@/db/db-service";
 import { $ProjectEvent, ProjectConsumer as Consumer } from "@shipoff/redis";
 import {logger} from "@/libs/winston";
+import { createSyncErrHandler } from "@shipoff/services-commons";
 
 
 type IProjectConsumer =  {
-   [key in keyof typeof $ProjectEvent]: (projectId: string, userId: string) => Promise<void>;
+   [key in keyof typeof $ProjectEvent]: (projectId: string, userId: string, requestId: string) => Promise<void>;
 }
 
 export class ProjectConsumer implements IProjectConsumer {
    private _consumer: Consumer;
+   private _errHandler:ReturnType<typeof createSyncErrHandler>;
    constructor(){
     this._consumer = new Consumer("AUTH_SERVICE");
+      this._errHandler = createSyncErrHandler({subServiceName:"PROJECT_CONSUMER",logger});
    }
 
    
-    CREATED = async (projectId:string,userId:string)=>{
+    CREATED = async (projectId:string,userId:string,requestId:string)=>{
       try {
          await dbService.createProjectMember({
             projectId,
@@ -22,13 +25,11 @@ export class ProjectConsumer implements IProjectConsumer {
             role: "PROJECT_OWNER",
          });
       } catch (e: any) {
-         logger.error(
-            `ERR_PROCESSING_CREATED_EVENT_FOR_PROJECT_ID_${projectId}_USER_ID_${userId}_IN_AUTH_SERVICE: ${JSON.stringify(e, null, 2)}`
-         );
+         this._errHandler(e,"CREATED_EVENT_PROCESSING",requestId);
       }
    }
 
-   DELETED = async (projectId:string,userId:string)=>{
+   DELETED = async (projectId:string,userId:string,requestId:string)=>{
       try {
          await dbService.deleteProjectMember({
             userId_projectId: {
@@ -37,20 +38,18 @@ export class ProjectConsumer implements IProjectConsumer {
             },
          });
       } catch (e: any) {
-         logger.error(
-            `ERR_PROCESSING_DELETED_EVENT_FOR_PROJECT_ID_${projectId}_USER_ID_${userId}_IN_AUTH_SERVICE: ${JSON.stringify(e, null, 2)}`
-         );
+         this._errHandler(e,"DELETED_EVENT_PROCESSING",requestId);
       }
    }
 
    async startProjectConsumer(){
     await this._consumer.initializeConsumerGroup();
-    await this._consumer.readUnackedMessages(async({projectId,userId,event})=>{
-         await this[event](projectId,userId);
+    await this._consumer.readUnackedMessages(async({projectId,userId,event,requestId})=>{
+         await this[event](projectId,userId,requestId);
     })
 
-    this._consumer.readNewMessages(async({projectId,event,userId})=>{
-          await this[event](projectId,userId);
+    this._consumer.readNewMessages(async({projectId,event,userId,requestId})=>{
+          await this[event](projectId,userId,requestId);
     })
    }
 

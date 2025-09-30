@@ -1,1 +1,2 @@
-export * from "./body-validatior.middleware"
+export * from "./stream-validator.middleware"
+export * from "./unary-validator.middleware"

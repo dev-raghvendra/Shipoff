@@ -40,6 +40,20 @@ message Deployment {
     string author = 5;
     string projectId = 6;
     string repositoryId = 7;
+    string createdAt = 8;
+    string lastDeployedAt = 9;
+    repeated BuildEnvironment buildEnvironment = 10;
+    repeated RuntimeEnvironment runtimeEnvironment = 11;
+}
+
+message BuildEnvironment {
+    string buildId = 1;
+    string startedAt = 2;
+}
+
+message RuntimeEnvironment {
+    string runtimeId = 1;
+    string startedAt = 2;
 }
 
 message Project {
@@ -52,11 +66,12 @@ message Project {
     string createdAt = 7;
     string updatedAt = 8;
     Repository repository = 9;
-    string outDir = 11;
-    repeated EnviornmentVariablesKeyValue environmentVariables = 10;
+    string outDir = 10;
+    repeated EnvironmentVariablesKeyValue environmentVariables = 11;
+    repeated Deployment deployments = 12;
 }
 
-message EnviornmentVariables {
+message EnvironmentVariables {
     string projectId = 1;
     string name = 2;
     string value = 3;
@@ -106,7 +121,7 @@ message CreateProjectRequest {
     string prodCommand = 8;
     string branch = 9;
     string outDir = 10;
-    repeated EnviornmentVariablesKeyValue environmentVars = 11;
+    repeated EnvironmentVariablesKeyValue environmentVars = 11;
     string domain = 12;
     RequestMeta reqMeta= 13;
 }
@@ -175,7 +190,7 @@ message GetDeploymentRequest {
 message UpsertEnvVarsRequest {
     User authUserData = 1;
     string projectId = 2;
-    repeated EnviornmentVariablesKeyValue envs = 3;
+    repeated EnvironmentVariablesKeyValue envs = 3;
     RequestMeta reqMeta = 4;
 }
 
@@ -248,8 +263,16 @@ message CreateGithubInstallationRequest {
 
 message IGetProjectRequest {
     string projectId = 1;
+    string domain = 2;
+    RequestMeta reqMeta = 3;
+}
+
+message IGetProjectByDomainRequest {
+    string domain = 1;
     RequestMeta reqMeta = 2;
 }
+
+
 
 // Responses
 message ProjectResponse {
@@ -279,7 +302,7 @@ message AllDeploymentsResponse {
 message EnvVarsResponse {
     int32 code = 1;
     string message = 2;
-    repeated EnviornmentVariables res = 3;
+    repeated EnvironmentVariables res = 3;
 }
 
 message UpsertEnvVarsResponse {
@@ -314,7 +337,7 @@ message GithubRepoResponse {
 message DeleteEnvVarsResponse {
     int32 code = 1;
     string message = 2;
-    EnviornmentVariables res = 3;
+    EnvironmentVariables res = 3;
 }
 
 message IGetGithubRepoAccessTokenRequest {
@@ -332,6 +355,12 @@ message GithubInstallationResponse {
     int32 code = 1;
     string message = 2;
     GithubInstallation res = 3;
+}
+
+message StaleEnvironmentIdsResponse {
+    int32 code = 1;
+    string message = 2;
+    repeated string res = 3;
 }
 
 // Service
@@ -375,5 +404,5 @@ service ProjectsService {
     //internal rpcs
     rpc IGetGithubRepoAccessToken (IGetGithubRepoAccessTokenRequest) returns (IGetGithubRepoAccessTokenResponse);
     rpc IGetProject (IGetProjectRequest) returns (ProjectResponse);
-
+    rpc IGetStaleEnvironmentIds (InternalEmptyRequest) returns (StaleEnvironmentIdsResponse);
 }

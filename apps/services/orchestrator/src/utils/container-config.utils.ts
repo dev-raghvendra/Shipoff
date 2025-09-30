@@ -3,7 +3,7 @@ import { CONFIG } from "@/config";
 import { ProjectExternalService } from "@/externals/project.external.service";
 import { STATE_CHANGED, TRAFFIC_DETECTED } from "@/types/orchestrator";
 import { Project } from "@shipoff/proto";
-import { createJwt } from "@shipoff/services-commons";
+import { createJwt, StringValue } from "@shipoff/services-commons";
 
 export class ContainerConfigUtil {
     private _projectService: ProjectExternalService;
@@ -20,7 +20,7 @@ export class ContainerConfigUtil {
                 value: project.buildCommand
             }, {
                 name: "BUCKET_URI",
-                value: `${SECRETS.BUCKET_URI}/${project.domain}`
+                value: `${SECRETS.BUCKET_URI}/${projectId}`
             }, {
                 name: "BUCKET_ENDPOINT",
                 value: SECRETS.BUCKET_ENDPOINT
@@ -39,56 +39,29 @@ export class ContainerConfigUtil {
     async getProdContainerConfig(projectId: string,deploymentId:string,commitHash:string,requestId:string) {
         const project = await this._projectService.getProjectById(projectId,requestId);
         const commonConfig = await this._getCommonConfig(project,"prod",deploymentId,commitHash)
-        const ingressedWebhook = await createJwt<TRAFFIC_DETECTED>({
-            projectId: project.projectId,
-            action:"INGRESSED",
-            containerId:commonConfig.containerId,
-            deploymentId
-        },"30D",SECRETS.ORCHESTRATOR_WEBHOOK_PAYLOAD_SECRET)
         commonConfig.envs.push({
             name:"PROD_COMMAND",
             value: project.prodCommand
-        },{
-            name:"INGRESSED_WEBHOOK",
-            value:ingressedWebhook
         })
         return commonConfig
     }
 
     private async _getCommonConfig(project:Project,type:"build"|"prod",deploymentId:string,commitHash:string){
         const image = `${CONFIG.BASE_IMAGE_PREFIX}:${project.framework.runtime}-${project.framework.applicationType}`.toLowerCase()
-        const containerId = `${type[0]}-cont-${project.projectId}-${Date.now()}`
+        const containerId = `${type[0]}-${deploymentId}-${Date.now()}`
+        const buildId = `build-${deploymentId}-${Date.now()}`
+        const runtimeId = `run-${deploymentId}-${Date.now()}`
+        // console.log(`ws://localhost:8000/ws/logs/stream?envId=${buildId}&projectId=${project.projectId}`)
+        // console.log(`ws://localhost:8000/ws/logs/stream?envId=${runtimeId}&projectId=${project.projectId}`)
+        // console.log(`http://localhost:8000/apis/v1/log/${project.projectId}/${buildId}`)
+        // console.log(`http://localhost:8000/apis/v1/log/${project.projectId}/${runtimeId}`)
         const webhooks = await Promise.all([
-            createJwt<STATE_CHANGED>({
-                projectId:project.projectId,
-                action:"PROVISIONING",
-                containerId,
-                deploymentId
-            },"10M",SECRETS.ORCHESTRATOR_WEBHOOK_PAYLOAD_SECRET),
-            createJwt<STATE_CHANGED>({
-                projectId:project.projectId,
-                action:"RUNNING",
-                containerId,
-                deploymentId
-            },"10M",SECRETS.ORCHESTRATOR_WEBHOOK_PAYLOAD_SECRET),
-            createJwt<STATE_CHANGED>({
-                projectId:project.projectId,
-                action:"PRODUCTION",
-                containerId,
-                deploymentId
-            },"20M",SECRETS.ORCHESTRATOR_WEBHOOK_PAYLOAD_SECRET),
-            createJwt<STATE_CHANGED>({
-                projectId:project.projectId,
-                action:"TERMINATED",
-                containerId,
-                deploymentId
-            },"30D",SECRETS.ORCHESTRATOR_WEBHOOK_PAYLOAD_SECRET),
-            createJwt<STATE_CHANGED>({
-                projectId:project.projectId,
-                action:"FAILED",
-                containerId,
-                deploymentId
-            },"30D",SECRETS.ORCHESTRATOR_WEBHOOK_PAYLOAD_SECRET),
+            this._createWebhookToken(project,deploymentId,containerId,buildId,runtimeId,"PROVISIONING","10M"),
+            this._createWebhookToken(project,deploymentId,containerId,buildId,runtimeId,"RUNNING","10M"),
+            this._createWebhookToken(project,deploymentId,containerId,buildId,runtimeId,"PRODUCTION","20M"),
+            this._createWebhookToken(project,deploymentId,containerId,buildId,runtimeId,"TERMINATED","30D"),
+            this._createWebhookToken(project,deploymentId,containerId,buildId,runtimeId,"FAILED","30D"),
+            this._createWebhookToken(project,deploymentId,containerId,buildId,runtimeId,"INGRESSED","30D")
         ])
         return {envs:[...project.environmentVariables,
             {
@@ -133,9 +106,35 @@ export class ContainerConfigUtil {
             },{
                 name:"COMMIT_HASH",
                 value:commitHash
+            },{
+                name:"SOFT_MEMORY_LIMIT",
+                value:`${500*1024*1024}`
+            },{
+                name:"BUILD_ID",
+                value:buildId
+            },{
+                name:"RUNTIME_ID",
+                value:runtimeId
+            },{
+                name:"ENVIRONMENT_TYPE",
+                value:CONFIG.ENV
+            },{
+                name:"PROJECT_TYPE",
+                value:project.framework.applicationType
             }],image,containerId}
     }
 
+    private async _createWebhookToken(project: Project, deploymentId:string, containerId:string,builId:string,runtimeId:string, action: "PROVISIONING" | "RUNNING" | "FAILED" | "TERMINATED" | "PRODUCTION" | "INGRESSED", expiresIn:StringValue){
+        return await createJwt<STATE_CHANGED | TRAFFIC_DETECTED>({
+            action,
+            projectId: project.projectId,
+            containerId,
+            builId,
+            runtimeId,
+            deploymentId,
+            projectType: project.framework.applicationType as "STATIC" | "DYNAMIC"
+        },expiresIn,SECRETS.ORCHESTRATOR_WEBHOOK_PAYLOAD_SECRET)
+    }
 }
 
 

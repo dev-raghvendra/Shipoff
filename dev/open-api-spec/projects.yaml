@@ -444,38 +444,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-    patch:
-      tags:
-        - Repository
-      summary: Update repository
-      description: Update repository information
-      parameters:
-        - name: projectId
-          in: path
-          required: true
-          description: Project ID
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateRepositoryRequest'
-      responses:
-        '200':
-          description: Repository updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RepositoryResponse'
-        '404':
-          description: Repository not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
     delete:
       tags:
         - Repository
@@ -614,28 +582,6 @@ components:
           type: string
           example: "https://github.com/my-org/my-repo"
 
-    UpdateRepositoryRequest:
-      type: object
-      properties:
-        updates:
-          type: object
-          properties:
-            branch:
-              type: string
-              example: develop
-            github:
-              type: object
-              properties:
-                githubRepoId:
-                  type: string
-                  example: "987654321"
-                githubRepoURI:
-                  type: string
-                  example: "https://github.com/my-org/new-repo"
-                githubRepoFullName:
-                  type: string
-                  example: "my-org/new-repo"
-
     EnvironmentVariablesKeyValue:
       type: object
       required:
@@ -734,6 +680,26 @@ components:
           type: string
         repositoryId:
           type: string
+        buildEnvironment:
+          type: array
+          items:
+            type: object
+            properties:
+              buildId:
+                type: string
+              startedAt:
+                type: string
+                format: date-time
+        runtimeEnvironment:
+          type: array
+          items:
+            type: object
+            properties:
+              runtimeId:
+                type: string
+              startedAt:
+                type: string
+                format: date-time
 
     Project:
       type: object

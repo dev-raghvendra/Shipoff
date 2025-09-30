@@ -1,0 +1,36 @@
+FROM php:8.3-fpm-alpine
+
+RUN apk add --no-cache \
+    git \
+    bash \
+    curl \
+    jq \
+    unzip \
+    zip 
+
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+COPY ./php/dynamic/entrypoint.sh /entrypoint.sh
+COPY ./util/log-util.sh /log-util.sh
+COPY ./util/build-util.sh /build-util.sh
+COPY ./util/webhook-util.sh /webhook-util.sh
+COPY ./util/health-check-util.sh /health-check-util.sh
+COPY ./util/prod-util.sh /prod-util.sh
+COPY ./util/shutdown-util.sh /shutdown-util.sh
+COPY ./util/res-monitoring-util.sh /res-monitoring-util.sh
+
+RUN chmod +x /entrypoint.sh
+RUN chmod +r /log-util.sh
+RUN chmod +r /health-check-util.sh
+RUN chmod +r /build-util.sh
+RUN chmod +r /prod-util.sh
+RUN chmod +r /webhook-util.sh
+RUN chmod +r /shutdown-util.sh
+RUN chmod +r /res-monitoring-util.sh
+
+RUN chmod +x /entrypoint.sh && \
+    chmod +r /log-util.sh /health-check-util.sh /build-util.sh \
+             /webhook-util.sh /prod-util.sh /shutdown-util.sh /res-monitoring-util.sh && \
+    rm -rf /var/cache/apk/* /tmp/*
+
+ENTRYPOINT ["/entrypoint.sh"]

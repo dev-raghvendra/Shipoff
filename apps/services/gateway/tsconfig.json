@@ -5,8 +5,14 @@
      "baseUrl": "./src",
      "paths": {
        "@/*": ["*"]
-     }
+     },
+     "outDir": "dist"
   },
+  "references": [
+    {"path": "../../../packages/services-commons"},
+    {"path": "../../../packages/grpc-clients"},
+    {"path": "../../../packages/proto"}
+  ],
   "include": ["src"],
   "exclude": ["dist", "node_modules"]
 }

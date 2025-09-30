@@ -1,9 +1,10 @@
-import {AuthServiceClient, OrchestratorServiceClient, ProjectsServiceClient} from "@shipoff/proto";
+import {AuthServiceClient, LogServiceClient, OrchestratorServiceClient, ProjectsServiceClient} from "@shipoff/proto";
 import {credentials} from "@grpc/grpc-js"
 import { CONFIG } from "./config/config";
  let AuthClientInstance : AuthServiceClient | null = null ;
  let ProjectClientInstance : ProjectsServiceClient | null = null;
  let OrchestratorClientInstance : OrchestratorServiceClient | null = null;
+ let LogClientInstance : LogServiceClient | null = null;
 
 
  export const GetAuthClient = () => {
@@ -25,4 +26,11 @@ export const GetOrchestratorClient = () => {
      OrchestratorClientInstance = new OrchestratorServiceClient(CONFIG.GRPC_ORCHESTRATOR_SERVICE_URL, credentials.createInsecure());
   }
   return OrchestratorClientInstance;
+}
+
+export const GetLogClient = () =>{
+  if(!LogClientInstance){
+    LogClientInstance = new LogServiceClient(CONFIG.GRPC_LOG_SERVICE_URL, credentials.createInsecure());
+  }
+  return LogClientInstance;
 }

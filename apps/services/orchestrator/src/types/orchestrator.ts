@@ -36,6 +36,9 @@ export type TRAFFIC_DETECTED = {
     containerId:string;
     action:"INGRESSED";
     deploymentId:string;    
+    projectType:"STATIC" | "DYNAMIC";
+    builId:string;
+    runtimeId:string;
 }
 
 export type STATE_CHANGED = {
@@ -43,6 +46,9 @@ export type STATE_CHANGED = {
     containerId:string;
     deploymentId:string;
     action:"PROVISIONING"|"RUNNING"|"FAILED"|"TERMINATED"|"PRODUCTION"
+    projectType:"STATIC" | "DYNAMIC";
+    builId:string;
+    runtimeId:string;
 }
 
 export type OrchestratorWebhookRequestBodyType = z.infer<typeof OrchestratorWebhookRequestSchema>;

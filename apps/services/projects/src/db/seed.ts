@@ -1,7 +1,7 @@
 import { generateId } from "@shipoff/services-commons";
 import { dbService } from "./db-service";
 import { Framework } from "@prisma/index";
-import {logger} from "@shipoff/services-commons/libs/winston";
+import {logger} from "@/libs/winston";
 
 async function seedFrameworks(){
     const frameworks: Framework[] = [

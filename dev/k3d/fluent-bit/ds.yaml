@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: fluent-bit
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: fluent-bit
+  template:
+    metadata:
+      labels:
+        app: fluent-bit
+    spec:
+      serviceAccountName: fluent-bit
+      containers:
+      - name: fluent-bit
+        image: fluent/fluent-bit:2.2
+        volumeMounts:
+          # Mount actual logs from node
+          - name: app-logs
+            mountPath: /logs/user-static-apps
+          # Mount config files
+          - name: fluent-bit-config
+            mountPath: /fluent-bit/etc
+        env:
+          - name: LOG_HOST
+            value: host.k3d.internal   # override with prod host in production
+      volumes:
+        # Node-level shared logs
+        - name: app-logs
+          hostPath:
+            path: /var/log/user-static-apps
+            type: DirectoryOrCreate
+        # ConfigMap for Fluent Bit configuration
+        - name: fluent-bit-config
+          configMap:
+            name: fluent-bit-config
+

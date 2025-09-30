@@ -2,7 +2,7 @@
   "name": "@shipoff/proto",
   "version": "1.0.0",
   "description": "",
-  "main": "index.ts",
+  "main": "index",
   "scripts": {
     "proto:gen": "npm run clean && npm run generate",
     "clean": "rm -rf generated && mkdir -p generated",
@@ -14,7 +14,8 @@
   "devDependencies": {
     "@types/google-protobuf": "^3.15.12",
     "grpc-tools": "^1.13.0",
-    "protoc-gen-ts": "^0.8.7"
+    "protoc-gen-ts": "^0.8.7",
+    "@shipoff/typescript-config": "workspace:*"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.13.4",

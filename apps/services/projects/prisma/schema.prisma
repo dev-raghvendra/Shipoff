@@ -78,37 +78,37 @@ model Repository {
 model Deployment {
   deploymentId    String           @id @default(uuid())
   commitHash      String           @unique
-  status          DeploymentStatus? @default(QUEUED)
+  status          DeploymentStatus @default(QUEUED)
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   commitMessage   String
   author          String
   projectId       String
   repositoryId    String
-  production      Boolean?         @default(false)
+  lastDeployedAt  DateTime?
 
-  buildEnviornment  BuildEnviornment[]
-  runtimeEnviornment  RuntimeEnviornment[]
+  buildEnvironment  BuildEnvironment[]
+  runtimeEnvironment  RuntimeEnvironment[]
   project         Project          @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
   repository      Repository       @relation(fields: [repositoryId], references: [repositoryId])
 }
 
-model BuildEnviornment{
+model BuildEnvironment{
   buildId       String    @id @default(uuid())
   deploymentId  String
   startedAt     DateTime? @default(now())
-  finishedAt    DateTime?
+  active        Boolean   @default(true)
 
-  deployment    Deployment @relation(fields: [deploymentId], references: [deploymentId], onDelete: Cascade)
+  deployment    Deployment @relation(fields: [deploymentId], references: [deploymentId])
 }
 
-model RuntimeEnviornment{
+model RuntimeEnvironment{
   runtimeId     String    @id @default(uuid())
   deploymentId  String
   startedAt     DateTime? @default(now())
-  finishedAt    DateTime?
+  active        Boolean   @default(true)
 
-  deployment    Deployment @relation(fields: [deploymentId], references: [deploymentId], onDelete: Cascade)
+  deployment    Deployment @relation(fields: [deploymentId], references: [deploymentId])
 }
 
 model EnvironmentVariable {

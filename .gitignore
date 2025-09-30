@@ -37,3 +37,4 @@ yarn-error.log*
 
 **/generated/
 **/.prisma/
+dev/k3d/fluent-bit/config.yaml

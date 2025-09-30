@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon --exec ts-node -r tsconfig-paths/register ./src/server.ts",
+    "build": "tsc --build && tsc-alias",
+    "start":"node dist/server.js"
   },
   "keywords": [],
   "author": "",
@@ -12,11 +14,17 @@
   "devDependencies": {
     "@shipoff/typescript-config": "workspace:*",
     "nodemon": "^3.1.10",
-    "prisma": "^6.12.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@prisma/client": "6.12.0"
+    "@aws-sdk/client-s3": "^3.895.0",
+    "@grpc/grpc-js": "^1.13.4",
+    "@shipoff/grpc-clients": "workspace:*",
+    "@shipoff/proto": "workspace:*",
+    "@shipoff/services-commons": "workspace:*",
+    "@shipoff/types": "workspace:*",
+    "tsc-alias": "^1.8.16",
+    "zod": "^4.0.5"
   }
 }
