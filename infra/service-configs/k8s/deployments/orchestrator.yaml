@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orchestrator
+  namespace: prod-services
+  labels:
+    app: orchestrator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orchestrator
+  template:
+    metadata:
+      labels:
+        app: orchestrator
+    spec:
+      serviceAccountName: orchestrator-sa
+      containers:
+        - name: orchestrator
+          image: shipoff/shipoff-services:orchestrator-1.0.0
+          ports:
+            - containerPort: 50052
+          envFrom:
+            - secretRef:
+                name: orchestrator-env
+            - secretRef:
+                name: general-env
+            - secretRef:
+                name: redis-env
+            - secretRef:
+                name: service-url-env 
+          resources:
+            requests:
+              memory: 500Mi
+              cpu: 100m
+            limits:
+              memory: 1Gi
+              cpu: 1000m
+      imagePullSecrets:
+        - name: shipoff-registry-secret
+
+
+---
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: orchestrator
+  namespace: prod-services
+spec:
+  selector:
+    app: orchestrator
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 50052
+  type: ClusterIP

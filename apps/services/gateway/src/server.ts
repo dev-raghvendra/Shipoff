@@ -10,7 +10,7 @@ const errHandler = createSyncErrHandler({ subServiceName: "GATEWAY_SERVER", logg
 const server = createServer(app);
 createWebSocketServer(server);
 
-server.listen(CONFIG.PORT,()=>logger.info(`GATEWAY_SERVICE_STARTED_ON_PORT: ${CONFIG.PORT}`));
+server.listen(CONFIG.PORT,()=>logger.info(`[rid:N/A]: GATEWAY_SERVICE_STARTED_ON_PORT: ${CONFIG.PORT}`));
 
 process.on("uncaughtException", (err) => {
     errHandler(err,"UNCAUGHT_EXCEPTION","N/A");
@@ -21,8 +21,19 @@ process.on("unhandledRejection", (reason) => {
 });
 
 process.on("SIGINT", () => {
-    logger.info("GATEWAY_SERVICE_STOPPED");
-    process.exit(0);
+    server.close((err)=>{
+        if(err) errHandler(err,"SIGINT_SERVER_CLOSE","N/A");
+        logger.info("[rid:N/A]: GATEWAY_SERVICE_SHUTDOWN_GRACEFULLY");
+        process.exit(0);
+    })
+});
+
+process.on("SIGTERM", () => {
+    server.close((err)=>{
+        if(err) errHandler(err,"SIGTERM_SERVER_CLOSE","N/A");
+        logger.info("[rid:N/A]: GATEWAY_SERVICE_SHUTDOWN_GRACEFULLY");
+        process.exit(0);
+    })
 });
 
 

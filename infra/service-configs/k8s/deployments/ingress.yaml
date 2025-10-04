@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ingress
+  namespace: prod-services
+  labels:
+    app: ingress
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ingress
+  template:
+    metadata:
+      labels:
+        app: ingress
+    spec:
+      containers:
+        - name: ingress
+          image: shipoff/shipoff-services:ingress-1.0.0
+          ports:
+            - containerPort: 8001
+          envFrom:
+            - secretRef:
+                name: ingress-env
+            - secretRef:
+                name: general-env
+            - secretRef:
+                name: redis-env
+            - secretRef:
+                name: service-url-env
+          resources:
+            requests:
+              memory: 500Mi
+              cpu: 100m
+            limits:
+              memory: 1Gi
+              cpu: 500m
+      imagePullSecrets:
+        - name: shipoff-registry-secret
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingress
+  namespace: prod-services
+spec:
+  selector:
+    app: ingress
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8001
+      nodePort: 30081
+  type: NodePort

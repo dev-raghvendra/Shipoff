@@ -1,5 +1,5 @@
 import { SECRETS } from "@/config";
-import { _Object, DeleteObjectCommand, DeleteObjectsCommand, GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { _Object, DeleteObjectsCommand, GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { logBody } from "@/types/Logs";
 import { GrpcAppError } from "@shipoff/services-commons";
 import { status } from "@grpc/grpc-js";

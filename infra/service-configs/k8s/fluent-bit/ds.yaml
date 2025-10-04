@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: fluent-bit
+  namespace: default
+  labels:
+    app: fluent-bit
+spec:
+  selector:
+    matchLabels:
+      app: fluent-bit
+  template:
+    metadata:
+      labels:
+        app: fluent-bit
+    spec:
+      serviceAccountName: fluent-bit
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      # Tolerations for single-node K3s (control-plane and worker combined)
+      tolerations:
+      - operator: Exists
+        effect: NoSchedule
+      containers:
+      - name: fluent-bit
+        image: fluent/fluent-bit:2.2
+        imagePullPolicy: IfNotPresent
+        command:
+          - /fluent-bit/bin/fluent-bit
+          - -c
+          - /fluent-bit/etc/fluent-bit.conf
+        resources:
+          limits:
+            memory: 200Mi
+            cpu: 500m
+          requests:
+            memory: 100Mi
+            cpu: 100m
+        volumeMounts:
+        - name: varlog
+          mountPath: /var/log
+          readOnly: true
+        - name: varlibrancher
+          mountPath: /var/lib/rancher/k3s/agent/containerd
+          readOnly: true
+        - name: fluent-bit-config
+          mountPath: /fluent-bit/etc/
+        securityContext:
+          runAsUser: 0
+          privileged: true
+      terminationGracePeriodSeconds: 10
+      volumes:
+      - name: varlog
+        hostPath:
+          path: /var/log
+      - name: varlibrancher
+        hostPath:
+          path: /var/lib/rancher/k3s/agent/containerd
+      - name: fluent-bit-config
+        configMap:
+          name: fluent-bit-config

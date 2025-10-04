@@ -150,7 +150,7 @@ export class LogsService {
                 const batch = keys.slice(i, i + 1000);
                 await this._bucketService.deleteLogs(batch);
             }
-            logger.info(`Periodic cleanup completed. Deleted ${keys.length} log files for ${staleEnvIds.length} stale environments`)
+            logger.info(`[rid:N/A]: Periodic cleanup completed. Deleted ${keys.length} log files for ${staleEnvIds.length} stale environments`)
         } catch (e:any) {
             this._syncErrHandler(e,"PERIODIC_CLEANUP_IN_LOGS_SERVICE",rid)
         }

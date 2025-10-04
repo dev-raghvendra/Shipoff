@@ -5,8 +5,6 @@ import {status} from "@grpc/grpc-js";
 import { DefaultArgs, PrismaClientKnownRequestError } from "@prisma/runtime/library";
 import { CreateDeploymentRequestDBBodyType } from "types/deployments";
 import { CreateRepositoryRequestDBBodyType } from "types/repositories";
-import { RetryThrottler } from "@grpc/grpc-js/build/src/retrying-call";
-import { Deployment } from "@shipoff/proto";
 
 const MODEL_MAP = {
     Project:"prj",

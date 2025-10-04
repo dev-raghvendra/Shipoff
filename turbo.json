@@ -3,10 +3,11 @@
   "ui": "tui",
   "tasks": {
     "build": {
-      "dependsOn": ["^build","^generate"],
+      "dependsOn": ["generate","^generate","^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**", "!.next/cache/**"]
     },
+    "start":{},
     "lint": {
       "dependsOn": ["^lint"],
       "inputs": [
@@ -29,13 +30,8 @@
       "inputs": ["src/**",".env*"]
     },
     "generate":{
-       "dependsOn": ["^generate","^proto:gen"],
+       "dependsOn": ["^generate"],
        "inputs":["$TURBO_DEFAULT$",".prisma*"]
-    },
-    "proto:gen":{
-      "dependsOn": ["^proto:gen"],
-      "inputs": ["src/proto/**/*.proto"],
-      "outputs": ["generated/**"]
     },
     "migrate:dev":{
       "dependsOn": ["^migrate:dev"],

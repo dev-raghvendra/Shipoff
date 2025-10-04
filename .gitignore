@@ -37,4 +37,6 @@ yarn-error.log*
 
 **/generated/
 **/.prisma/
-dev/k3d/fluent-bit/config.yaml
+dev/k3d/fluent-bit/config.yaml\
+setup-secrets.sh
+setup-namespaces.sh

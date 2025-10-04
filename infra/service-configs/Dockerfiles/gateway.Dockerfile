@@ -34,7 +34,6 @@ RUN pnpm install -r \
     --filter ./packages/typescript-config
 
 # Build TypeScript for the service
-WORKDIR /app/apps/services/gateway
 RUN pnpm build
 
 

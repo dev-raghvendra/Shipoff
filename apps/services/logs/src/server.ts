@@ -24,7 +24,7 @@ server.bindAsync(`${SECRETS.HOST}:${SECRETS.PORT}`,ServerCredentials.createInsec
         errHandler(err,"LOGS_GRPC_SERVER_BINDING","N/A");
         process.exit(1);
     }
-      logger.info(`LOGS_GRPC_SERVER_LISTENING_ON ${SECRETS.HOST}:${SECRETS.PORT}`)
+      logger.info(`[rid:N/A]: LOGS_GRPC_SERVER_LISTENING_ON ${SECRETS.HOST}:${SECRETS.PORT}`)
 })
 
 process.on("uncaughtException", (err) => {
@@ -38,7 +38,18 @@ process.on("unhandledRejection", (reason) => {
 });
 
 process.on("SIGINT", () => {
-    logger.info("LOGS_SERVICE_STOPPED");
-    server.tryShutdown(() => process.exit(0));
+    server.tryShutdown(err=>{
+        if(err) errHandler(err,"SIGINT_SERVER_CLOSE","N/A");
+        logger.info("[rid:N/A]: LOGS_SERVICE_SHUTDOWN_GRACEFULLY");
+        process.exit(0);
+    })
+});
+
+process.on("SIGTERM", () => {
+    server.tryShutdown(err=>{
+        if(err) errHandler(err,"SIGTERM_SERVER_CLOSE","N/A");
+        logger.info("[rid:N/A]: LOGS_SERVICE_SHUTDOWN_GRACEFULLY");
+        process.exit(0);
+    })
 });
 

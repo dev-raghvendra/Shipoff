@@ -1,6 +1,6 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import passHashMiddleware from "./middleware";
-import { OAuthRequestBodyType, OAuthRequestDBBodyType, SigninRequestBodyType, SigninRequestDBBodyType } from "@/types/user";
+import {  OAuthRequestDBBodyType, SigninRequestDBBodyType } from "@/types/user";
 import { CreateTeamRequestDBBodyType, DeleteTeamRequestDBBodyType, TeamMemberDBBodyType, TeamMemberInvitationRequestDBBodyType } from "@/types/team";
 import { ProjectMemberDBBodyType, ProjectMemberInvitationRequestDBBodyType } from "@/types/project";
 import { generateId, GrpcAppError } from "@shipoff/services-commons";

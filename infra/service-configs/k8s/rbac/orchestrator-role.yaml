@@ -1,0 +1,61 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: orchestrator-namespace-role
+rules:
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list", "create", "update", "delete", "watch"]
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: orchestrator-role
+  namespace: prod-services
+rules:
+  - apiGroups: [""] 
+    resources: ["pods", "services", "configmaps", "secrets"]
+    verbs: ["get", "list", "create", "update", "delete", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "statefulsets", "daemonsets"]
+    verbs: ["get", "list", "create", "update", "delete", "watch"]
+  - apiGroups: ["batch"]
+    resources: ["jobs", "cronjobs"]
+    verbs: ["get", "list", "create", "update", "delete", "watch"]
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: orchestrator-role
+  namespace: user-static-apps
+rules:
+  - apiGroups: [""] 
+    resources: ["pods", "services", "configmaps", "secrets"]
+    verbs: ["get", "list", "create", "update", "delete", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "statefulsets", "daemonsets"]
+    verbs: ["get", "list", "create", "update", "delete", "watch"]
+  - apiGroups: ["batch"]
+    resources: ["jobs", "cronjobs"]
+    verbs: ["get", "list", "create", "update", "delete", "watch"]
+---
+
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: orchestrator-role
+  namespace: user-dynamic-apps
+rules:
+  - apiGroups: [""] 
+    resources: ["pods", "services", "configmaps", "secrets"]
+    verbs: ["get", "list", "create", "update", "delete", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "statefulsets", "daemonsets"]
+    verbs: ["get", "list", "create", "update", "delete", "watch"]
+  - apiGroups: ["batch"]
+    resources: ["jobs", "cronjobs"]
+    verbs: ["get", "list", "create", "update", "delete", "watch"]
+

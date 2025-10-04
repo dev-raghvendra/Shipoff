@@ -54,7 +54,7 @@ server.addService(UnimplementedProjectsServiceService.definition, {
 });
 
 containerConsumer.startConsumer().then(() => {
-    logger.info("CONTAINER_CONSUMER_STARTED");
+    logger.info("[rid:N/A]: CONTAINER_CONSUMER_STARTED");
 }).catch((err) => {
     errHandler(err,"CONTAINER_CONSUMER_STARTUP","N/A");
 });
@@ -64,7 +64,7 @@ server.bindAsync(`${SECRETS.HOST}:${SECRETS.PORT}`,ServerCredentials.createInsec
         errHandler(err,"PROJECT_GRPC_SERVER_BINDING","N/A");
         process.exit(1);
     }
-      logger.info(`PROJECT_GRPC_SERVER_LISTENING_ON ${SECRETS.HOST}:${SECRETS.PORT}`)
+      logger.info(`[rid:N/A]: PROJECT_GRPC_SERVER_LISTENING_ON ${SECRETS.HOST}:${SECRETS.PORT}`)
 })
 
 
@@ -77,8 +77,18 @@ process.on("unhandledRejection", (reason) => {
 });
 
 process.on("SIGINT", () => {
-    logger.info("PROJECTS_SERVICE_STOPPED");
-    server.tryShutdown(() => process.exit(0));
+    server.tryShutdown(err=>{
+        if(err) errHandler(err,"SIGINT_SERVER_CLOSE","N/A");
+        logger.info("[rid:N/A]: PROJECTS_SERVICE_SHUTDOWN_GRACEFULLY");
+        process.exit(0);
+    })
 });
 
+process.on("SIGTERM", () => {
+    server.tryShutdown(err=>{
+        if(err) errHandler(err,"SIGTERM_SERVER_CLOSE","N/A");
+        logger.info("[rid:N/A]: PROJECTS_SERVICE_SHUTDOWN_GRACEFULLY");
+        process.exit(0);
+    })
+});
 

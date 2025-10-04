@@ -48,11 +48,11 @@ server.bindAsync(`${SECRETS.HOST}:${SECRETS.PORT}`,ServerCredentials.createInsec
         errHandler(err,"GRPC_SERVER_BINDING","N/A");
         process.exit(1);
     }
-      logger.info(`AUTH_GRPC_SERVER_LISTENING_ON ${SECRETS.HOST}:${SECRETS.PORT}`)
+      logger.info(`[rid:N/A]: AUTH_GRPC_SERVER_LISTENING_ON ${SECRETS.HOST}:${SECRETS.PORT}`)
 })
 
 projectConsumer.startProjectConsumer().then(() => {
-    logger.info("PROJECT_CONSUMER_STARTED");
+    logger.info("[rid:N/A]: PROJECT_CONSUMER_STARTED");
 }).catch((err) => {
     errHandler(err,"PROJECT_CONSUMER_STARTUP","N/A");
 });
@@ -66,7 +66,18 @@ process.on("unhandledRejection", (reason) => {
 });
 
 process.on("SIGINT", () => {
-    logger.info("AUTH_SERVICE_STOPPED");
-    server.tryShutdown(() => process.exit(0));
+    server.tryShutdown(err=>{
+        if(err) errHandler(err,"SIGINT_SERVER_SHUTDOWN","N/A");
+        logger.info("[rid:N/A]: AUTH_SERVICE_SHUTDOWN_GRACEFULLY");
+        process.exit(0);
+    })
+});
+
+process.on("SIGTERM", () => {
+    server.tryShutdown(err=>{
+        if(err) errHandler(err,"SIGTERM_SERVER_SHUTDOWN","N/A");
+        logger.info("[rid:N/A]: AUTH_SERVICE_SHUTDOWN_GRACEFULLY");
+        process.exit(0);
+    })
 });
 

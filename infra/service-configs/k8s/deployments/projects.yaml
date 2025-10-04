@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: projects
+  namespace: prod-services
+  labels:
+    app: projects
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: projects
+  template:
+    metadata:
+      labels:
+        app: projects
+    spec:
+      containers:
+        - name: projects
+          image: shipoff/shipoff-services:projects-1.0.0
+          ports:
+            - containerPort: 50051
+          envFrom:
+            - secretRef:
+                name: projects-env
+            - secretRef:
+                name: general-env
+            - secretRef:
+                name: redis-env
+            - secretRef:
+                name: service-url-env
+          resources:
+            requests:
+              memory: 500Mi
+              cpu: 100m
+            limits:
+              memory: 1Gi
+              cpu: 500m
+      imagePullSecrets:
+        - name: shipoff-registry-secret
+        
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: projects
+  namespace: prod-services
+spec:
+  selector:
+    app: projects
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 50051
+  type: ClusterIP

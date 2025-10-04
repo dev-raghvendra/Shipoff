@@ -1,14 +1,12 @@
 import { ProjectService } from "@/services/project.service";
-import { Request, Response } from "express";
+import {  Response } from "express";
 import { grpcToHttpResponse } from "@/utils/res-utils";
 import { RequestWithMeta } from "@/types/request";
 
 const projectService = new ProjectService();
 
 export async function createProjectController(req:RequestWithMeta, res: Response) {
-    const { code, message, res: data } = await projectService.createProject({...req.body,reqMeta:{
-        requestId: req.meta
-    }});
+    const { code, message, res: data } = await projectService.createProject({...req.body,reqMeta:req.meta});
     grpcToHttpResponse.call(res, code, message, data);
 }
 

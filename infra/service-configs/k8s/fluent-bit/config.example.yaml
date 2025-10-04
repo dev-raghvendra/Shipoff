@@ -1,0 +1,142 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluent-bit-config
+  namespace: default
+data:
+  fluent-bit.conf: |
+    [SERVICE]
+        Flush        1
+        Daemon       Off
+        Log_Level    info
+        Parsers_File parsers.conf
+
+    # ---------- INPUTS ----------
+    # User namespaces (static + dynamic apps) → custom API
+    [INPUT]
+        Name              tail
+        Tag               user-apps.*
+        Path              /var/log/containers/*_user-static-apps_*.log,/var/log/containers/*_user-dynamic-apps_*.log
+        DB                /fluent-bit/state/flb_user_apps.db 
+        Buffer_Chunk_Size 32KB
+        Buffer_Max_Size   1MB      
+        Mem_Buf_Limit     5MB
+        Skip_Long_Lines   On
+        Refresh_Interval  10
+
+    # Default namespace → Loki
+    [INPUT]
+        Name              tail
+        Tag               prod-services.*
+        Path              /var/log/containers/*_prod-services_*.log
+        multiline.parser  prod_services_multiline
+        DB                /fluent-bit/state/flb_prod_services.db
+        Mem_Buf_Limit     5MB
+        Skip_Long_Lines   On
+        Refresh_Interval  10
+
+    # ---------- FILTERS ----------
+    # Kubernetes enrichment for user apps
+    [FILTER]
+        Name                kubernetes
+        Match               user-apps.*
+        Merge_Log           On
+        Keep_Log            On
+        K8S-Logging.Parser  On
+        K8S-Logging.Exclude Off
+        Labels              On
+        Annotations         On
+
+    # Kubernetes enrichment for default namespace
+    [FILTER]
+        Name                kubernetes
+        Match               prod-services.*
+        Merge_Log           On
+        Keep_Log            On
+        K8S-Logging.Parser  On
+        K8S-Logging.Exclude Off
+        Labels              On
+        Annotations         On
+
+    # Parse custom logs for user apps
+    [FILTER]
+        Name              parser
+        Match             user-apps.*
+        Parser            custom_log
+        Key_Name          log
+        Reserve_Data      On
+
+
+    [FILTER]
+        Name              record_modifier
+        Match             user-apps.*
+        Whitelist_key     timestamp
+        Whitelist_key     envId
+        Whitelist_key     type
+        Whitelist_key     level
+        Whitelist_key     message
+
+    # Parse default service logs
+    # [FILTER]
+    #     Name              parser
+    #     Match             prod-services.*
+    #     Parser            prod_services_multiline
+    #     Key_Name          log
+    #     Reserve_Data      On
+
+    # ---------- OUTPUTS ----------
+    # User namespaces → custom API
+    [OUTPUT]
+        Name            http
+        Match           user-apps.*
+        Host            gateway.prod-services.svc.cluster.local
+        Port            8000
+        URI             /apis/v1/log
+        Header          Content-Type application/json
+        Header          X-Api-Key <your_api_key_here>
+        Format          json
+        Json_date_key   timestamp
+        Json_date_format iso8601
+        tls             Off
+        Retry_Limit     3
+
+    # Default namespace → Grafana Loki
+    [OUTPUT]
+        Name            loki
+        Match           prod-services.*
+        Host            logs-prod-028.grafana.net
+        Port            443
+        HTTP_User       1350969
+        HTTP_Passwd     <your_api_key_here>
+        TLS             On
+        TLS.Verify      On
+        Line_Format     json
+        Labels          job=prod-services,cluster=k3
+        Label_Keys      level,service,kubernetes_namespace_name,kubernetes_pod_name
+        Remove_Keys     level,service
+        Auto_Kubernetes_Labels on
+
+  parsers.conf: |
+    [PARSER]
+        Name         custom_log
+        Format       regex
+        Regex        \[(?<envId>[^\]]+)\] \[(?<timestamp>[^\]]+)\] \[(?<type>[^\]]+)\] \[(?<level>[^\]]+)\]: (?<message>.*)
+        Time_Key     timestamp
+        Time_Format  %Y-%m-%dT%H:%M:%SZ
+
+    [MULTILINE_PARSER]
+        Name          prod_services_multiline
+        Type          regex
+        Flush_timeout 1000
+        # Rule format: "state_name" "regex_pattern" "next_state_name"
+        # First line: matches [timestamp] [service] LEVEL: [rid:xxx]: message
+        Rule          "start_state"   "^\[(?<timestamp>[^\]]+)\] \[(?<service>[^\]]+)\] (?<level>\w+): \[rid:(?<rid>[^\]]+)\]: (?<message>.*)"   "cont"
+        # Continuation lines: any line that does NOT start with [
+        Rule          "cont"          "^(?!\[).*$"   "cont"
+
+    # [PARSER]
+    #     Name         prod_services_log
+    #     Format       regex
+    #     Regex        \[(?<timestamp>[^\]]+)\] \[(?<service>[^\]]+)\] (?<level>\w+): \[rid:(?<rid>[^\]]+)\]: (?<message>.*)
+    #     Time_Key     timestamp
+    #     Time_Format  %a %b %d %Y %H:%M:%S GMT%z (%Z)

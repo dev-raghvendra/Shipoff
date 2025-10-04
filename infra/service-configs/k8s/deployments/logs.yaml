@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logs
+  namespace: prod-services
+  labels:
+    app: logs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logs
+  template:
+    metadata:
+      labels:
+        app: logs
+    spec:
+      containers:
+        - name: logs
+          image: shipoff/shipoff-services:logs-1.0.0
+          ports:
+            - containerPort: 50053
+          envFrom:
+            - secretRef:
+                name: logs-env
+            - secretRef:
+                name: general-env
+            - secretRef:
+                name: redis-env
+            - secretRef:
+                name: service-url-env
+          resources:
+            requests:
+              memory: 500Mi
+              cpu: 100m
+            limits:
+              memory: 1Gi
+              cpu: 500m
+      imagePullSecrets:
+        - name: shipoff-registry-secret
+        
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: logs
+  namespace: prod-services
+spec:
+  selector:
+    app: logs
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 50053
+  type: ClusterIP

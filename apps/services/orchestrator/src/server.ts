@@ -25,9 +25,9 @@ server.addService(UnimplementedOrchestratorServiceService.definition, {
 })
 
 deploymentConsumer.startConsumer().then(() => {
-    logger.info("DEPLOYMENT_CONSUMER_STARTED");
+    logger.info("[rid:N/A]: DEPLOYMENT_CONSUMER_STARTED");
     projectConsumer.startConsumer().then(() => {
-    logger.info("PROJECT_CONSUMER_STARTED");
+    logger.info("[rid:N/A]: PROJECT_CONSUMER_STARTED");
     }).catch((err) => {
       errHandler(err,"STARTING_PROJECT_CONSUMER","N/A");
     });
@@ -36,7 +36,7 @@ deploymentConsumer.startConsumer().then(() => {
 });
 
 mongoose.connect(SECRETS.DATABASE_URI).then(()=>{
-    logger.info("MONGO-DB_CONNECTED");
+    logger.info("[rid:N/A]: MONGO-DB_CONNECTED");
 }).catch((error) => {
     errHandler(error,"MONGO-DB-CONNECTION","N/A");
 });
@@ -45,7 +45,7 @@ mongoose.connect(SECRETS.DATABASE_URI).then(()=>{
 
 server.bindAsync(`${SECRETS.HOST}:${SECRETS.PORT}`,ServerCredentials.createInsecure(),(err)=>{
     if(err) return errHandler(err,"BINDING_SERVER","N/A");
-    logger.info(`ORCHESTRATOR_GRPC_SERVER_LISTENING_ON ${SECRETS.HOST}:${SECRETS.PORT}`);
+    logger.info(`[rid:N/A]: ORCHESTRATOR_GRPC_SERVER_LISTENING_ON ${SECRETS.HOST}:${SECRETS.PORT}`);
 })
 
 process.on("uncaughtException",(err)=>{
@@ -59,6 +59,15 @@ process.on("unhandledRejection",(reason)=>{
 });
 
 process.on("SIGINT", () => {
-    logger.info("ORCHESTRATOR_SERVICE_STOPPED");
-    server.tryShutdown(() => process.exit(0));
+    server.tryShutdown((err) =>{
+        if(err) errHandler(err,"SIGINT_SERVER_CLOSE","N/A");
+        logger.info("[rid:N/A]: ORCHESTRATOR_SERVICE_SHUTDOWN_GRACEFULLY");
+    });
+});
+
+process.on("SIGTERM", () => {
+    server.tryShutdown((err) =>{
+        if(err) errHandler(err,"SIGTERM_SERVER_CLOSE","N/A");
+        logger.info("[rid:N/A]: ORCHESTRATOR_SERVICE_SHUTDOWN_GRACEFULLY");
+    });
 });

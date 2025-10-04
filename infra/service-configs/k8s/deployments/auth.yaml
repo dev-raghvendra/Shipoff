@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth
+  namespace: prod-services
+  labels:
+    app: auth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth
+  template:
+    metadata:
+      labels:
+        app: auth
+    spec:
+      containers:
+        - name: auth
+          image: shipoff/shipoff-services:auth-1.0.0
+          ports:
+            - containerPort: 50050
+          envFrom:
+            - secretRef:
+                name: auth-env
+            - secretRef:
+                name: general-env
+            - secretRef:
+                name: redis-env
+            - secretRef:
+                name: service-url-env
+          resources:
+            requests:
+              memory: 500Mi
+              cpu: 100m
+            limits:
+              memory: 1Gi
+              cpu: 500m
+      imagePullSecrets:
+        - name: shipoff-registry-secret
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth
+  namespace: prod-services
+spec:
+  selector:
+    app: auth
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 50050
+  type: ClusterIP

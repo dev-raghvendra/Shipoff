@@ -6,7 +6,7 @@
     "dev": "nodemon --exec ts-node -r tsconfig-paths/register ./src/server.ts",
     "generate": "prisma generate",
     "migrate:dev": "prisma migrate dev",
-    "build": "tsc --build && tsc-alias && cp -r prisma ./dist",
+    "build": "tsc --build &&  cp -r prisma ./dist && tsc-alias",
     "start": "node dist/server.js"
   },
   "license": "ISC",

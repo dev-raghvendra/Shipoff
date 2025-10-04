@@ -37,7 +37,6 @@ RUN pnpm install -r \
     --filter ./packages/redis
 
 # Build TypeScript for the service
-WORKDIR /app/apps/services/orchestrator
 RUN pnpm build
 
 
