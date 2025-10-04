@@ -40,3 +40,4 @@ yarn-error.log*
 dev/k3d/fluent-bit/config.yaml\
 setup-secrets.sh
 setup-namespaces.sh
+infra/service-configs/k8s/fluent-bit/config.yaml
