@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: ingress
-          image: shipoff/platform-services:ingress-1.1.0
+          image: shipoff/platform-services:ingress-1.1.1
           ports:
             - containerPort: 8001
           envFrom:

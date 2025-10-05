@@ -38,6 +38,7 @@ export class ProjectsService {
                     select:{
                         deploymentId:true,
                         status:true,
+                        commitHash:true
                     }
                 }
             }
