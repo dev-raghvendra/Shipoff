@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: logs
-          image: shipoff/shipoff-services:logs-1.0.0
+          image: shipoff/platform-services:logs-1.0.0
           ports:
             - containerPort: 50053
           envFrom:
@@ -32,7 +32,7 @@ spec:
           resources:
             requests:
               memory: 500Mi
-              cpu: 100m
+              cpu: 200m
             limits:
               memory: 1Gi
               cpu: 500m

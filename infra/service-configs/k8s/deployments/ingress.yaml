@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: ingress
-          image: shipoff/shipoff-services:ingress-1.0.0
+          image: shipoff/platform-services:ingress-1.1.0
           ports:
             - containerPort: 8001
           envFrom:
@@ -32,10 +32,9 @@ spec:
           resources:
             requests:
               memory: 500Mi
-              cpu: 100m
+              cpu: 300m
             limits:
               memory: 1Gi
-              cpu: 500m
       imagePullSecrets:
         - name: shipoff-registry-secret
 

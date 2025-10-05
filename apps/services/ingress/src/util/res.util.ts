@@ -16,7 +16,7 @@ export function getDefaultHeaders(requestId:string,headers?:IncomingHttpHeaders)
 
 export function notFound(this:Response,req:PopulatedRequest){
     return this.status(404).setHeaders(getDefaultHeaders(req.rid as string)).send(
-        CONFIG.NOT_FOUND.replace("{{REQUEST_ID_HERE}}",req.rid as string).replaceAll("{{URL_HERE}}",`${req.hostname}${req.url}` as string)
+        CONFIG.NOT_FOUND.replace("{{RID_HERE}}",req.rid as string)
     )
 }
 
@@ -32,6 +32,6 @@ export function ok(this:Response,req:PopulatedRequest,proxyRes:IncomingMessage){
 
 export function internalErr(this:Response,req:PopulatedRequest){
     return this.status(500).setHeaders(getDefaultHeaders(req.rid as string)).send(
-        CONFIG.INTERNAL_ERROR.replace("{{REQUEST_ID_HERE}}",req.rid as string).replace("{{URL_HERE}}",`${req.hostname}${req.url}` as string)
+        CONFIG.INTERNAL_ERROR.replace("{{RID_HERE}}",req.rid as string)
     )
 }

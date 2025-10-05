@@ -45,6 +45,8 @@ spec:
           readOnly: true
         - name: fluent-bit-config
           mountPath: /fluent-bit/etc/
+        - name: fluent-bit-state          # ADD THIS
+          mountPath: /fluent-bit/state    # ADD THIS
         securityContext:
           runAsUser: 0
           privileged: true
@@ -56,6 +58,10 @@ spec:
       - name: varlibrancher
         hostPath:
           path: /var/lib/rancher/k3s/agent/containerd
+      - name: fluent-bit-state           # ADD THIS
+        hostPath:                         # ADD THIS
+          path: /var/fluent-bit-state     # ADD THIS
+          type: DirectoryOrCreate         # ADD THIS
       - name: fluent-bit-config
         configMap:
           name: fluent-bit-config

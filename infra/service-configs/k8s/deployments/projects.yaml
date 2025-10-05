@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: projects
-          image: shipoff/shipoff-services:projects-1.0.0
+          image: shipoff/platform-services:projects-1.0.0
           ports:
             - containerPort: 50051
           envFrom:
@@ -32,7 +32,7 @@ spec:
           resources:
             requests:
               memory: 500Mi
-              cpu: 100m
+              cpu: 300m
             limits:
               memory: 1Gi
               cpu: 500m

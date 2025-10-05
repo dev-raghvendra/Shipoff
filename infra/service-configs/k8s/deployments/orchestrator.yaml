@@ -18,7 +18,7 @@ spec:
       serviceAccountName: orchestrator-sa
       containers:
         - name: orchestrator
-          image: shipoff/shipoff-services:orchestrator-1.0.0
+          image: shipoff/platform-services:orchestrator-1.1.0
           ports:
             - containerPort: 50052
           envFrom:
@@ -33,7 +33,7 @@ spec:
           resources:
             requests:
               memory: 500Mi
-              cpu: 100m
+              cpu: 300m
             limits:
               memory: 1Gi
               cpu: 1000m

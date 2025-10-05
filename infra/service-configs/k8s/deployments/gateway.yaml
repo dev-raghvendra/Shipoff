@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: gateway
-          image: shipoff/shipoff-services:gateway-1.0.0
+          image: shipoff/platform-services:gateway-1.0.1
           ports:
             - containerPort: 8000
           envFrom:
@@ -30,10 +30,9 @@ spec:
           resources:
             requests:
               memory: 500Mi
-              cpu: 100m
+              cpu: 300m
             limits:
               memory: 1Gi
-              cpu: 500m
       imagePullSecrets:
         - name: shipoff-registry-secret
         
