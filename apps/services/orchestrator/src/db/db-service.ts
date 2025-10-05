@@ -19,6 +19,15 @@ export class Database{
         }
     }
 
+    async findManyK8Deployment(filter:FilterQuery<K8DeploymentDocument>){
+        try {
+            const deployments = await K8DeploymentModel.find(filter).sort({createdAt:-1});
+            return deployments.map(d=>d.toObject());
+        } catch (e:any) {
+            throw new GrpcAppError(status.INTERNAL, e.message, e);
+        }
+    }
+
     async upsertK8Deployment(filter:FilterQuery<K8DeploymentDocument>, update:Partial<K8DeploymentDocument>){
         try {
             const deployment = await K8DeploymentModel.findOneAndUpdate(filter,update,{
@@ -39,7 +48,6 @@ export class Database{
                 new:true
             })
             if(deployment) return deployment.toObject();
-            throw new GrpcAppError(status.NOT_FOUND, "Deployment not found");
         } catch (e:any) {
             throw new GrpcAppError(status.INTERNAL, e.message, e);
         }

@@ -112,7 +112,12 @@ export class K8Service {
           return true
         } catch (e:any) {
           if(e.code === 409){
-             true
+             const pod = await this._coreApi.readNamespacedPod({name:projectId,namespace:projectType==="STATIC"?"user-static-apps":"user-dynamic-apps"})
+             if (pod.status?.phase !== "Failed") return true
+             const res = projectType === "STATIC"
+             ? await this.createFreeTierStaticDeployment({projectId,deploymentId,commitHash,requestId})
+             : await this.createFreeTierDynamicDeployment({projectId,deploymentId,commitHash,requestId})
+             return res;
           }
           return this._errHandler(e,"TRY-CREATING-FREE-TIER-DEPLOYMENT",requestId);
        }
@@ -192,12 +197,27 @@ export class K8Service {
                     containers:[{
                         name:containerId,
                         image,
-                        env
+                        env,
+                        ...(CONFIG.ENV==="DEVELOPMENT" ? {
+                            volumeMounts:[{
+                                name:"app-logs",
+                                mountPath:"/logs/user-static-apps/"
+                            }]
+                        }:{})
                     }],
                     imagePullSecrets:[{
                         name:SECRETS.BASE_IMAGE_REGISTRY_SECRET
                     }],
-                    restartPolicy:"Never"
+                    restartPolicy:"Never",
+                    ...(CONFIG.ENV==="DEVELOPMENT" ? {
+                        volumes:[{
+                            name:"app-logs",
+                            hostPath:{
+                                path:"/var/log/user-static-apps",
+                                type:"DirectoryOrCreate"
+                            }
+                        }]
+                    }:{})
                 },
              }
            }

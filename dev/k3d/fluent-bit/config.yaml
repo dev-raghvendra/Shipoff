@@ -36,7 +36,7 @@ data:
         Port            8000
         URI             /apis/v1/log
         Header          Content-Type application/json
-        Header          X-Api-Key  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6InNoaXBvZmYtYXBpLWtleSIsImFkbWluIjp0cnVlLCJpYXQiOjE1MTYyMzkwMjJ9.GITKjwT0CiUANz_TPCkjQN0pgcrgQz6SmV5iMGCvCR0
+        Header          X-Api-Key  <your-api-key-here>
         Format          json
         Json_date_key   timestamp
         Json_date_format iso8601

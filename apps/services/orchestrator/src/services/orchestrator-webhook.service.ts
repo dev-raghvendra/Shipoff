@@ -1,7 +1,7 @@
 import { SECRETS } from "@/config";
 import { Database, dbService } from "@/db/db-service";
 import { ContainerProducer } from "@/producer/container.producer";
-import { OrchestratorWebhookRequestBodyType, STATE_CHANGED, TRAFFIC_DETECTED } from "@/types/orchestrator";
+import { OrchestratorWebhookRequestBodyType, STATE_CHANGED } from "@/types/orchestrator";
 import { status } from "@grpc/grpc-js";
 import { createAsyncErrHandler, createGrpcErrorHandler, createJwtErrHandler, decodeJwt, GrpcAppError, GrpcResponse, JsonWebTokenError, TokenExpiredError, verifyJwt } from "@shipoff/services-commons";
 import {logger} from "@/libs/winston";
@@ -25,12 +25,9 @@ export class OrchestratorWebhookService {
 
     async IWebhook({ payload, event, reqMeta }: OrchestratorWebhookRequestBodyType) {
         try {
-            const eventPayload = await verifyJwt<TRAFFIC_DETECTED | STATE_CHANGED>(payload, SECRETS.ORCHESTRATOR_WEBHOOK_PAYLOAD_SECRET)
+            const eventPayload = await verifyJwt<STATE_CHANGED>(payload, SECRETS.ORCHESTRATOR_WEBHOOK_PAYLOAD_SECRET)
             switch (event) {
-                case "TRAFFIC_DETECTED":
-                    return await this._trafficDetected(eventPayload as TRAFFIC_DETECTED, reqMeta.requestId)
-
-                case "STATE_CHANGED":
+                    case "STATE_CHANGED":
                     return await this._stateChanged(eventPayload as STATE_CHANGED, reqMeta.requestId)
                 default:
                     throw new GrpcAppError(status.INVALID_ARGUMENT, "Invalid event type")
@@ -43,29 +40,11 @@ export class OrchestratorWebhookService {
             return this._errHandler(e, "WEBHOOK", reqMeta.requestId)
         }
     }
-
-    private async _trafficDetected(payload: TRAFFIC_DETECTED, requestId:string) {
-        try {
-            const res = payload.action == "INGRESSED"
-                ? await this._dbService.findAndUpdateK8Deployment({
-                    projectId: payload.projectId,
-                    deploymentId: payload.deploymentId
-                }, {
-                    lastIngressedAt: Date.now()
-                })
-                : null;
-            if (res) return GrpcResponse.OK(null, "Traffic detected webhook processed")
-            return new GrpcAppError(status.INVALID_ARGUMENT, "Invalid traffic event")
-        } catch (e: any) {
-            return this._errHandler(e, "WEBHOOK", requestId);
-        }
-    }
-
     private async _stateChanged(payload: STATE_CHANGED, requestId:string) {
         try {
             await this._dbService.upsertK8Deployment({
                 projectId: payload.projectId,
-                deploymentId:payload.deploymentId
+                projectType: payload.projectType,
             }, {
                 status: payload.action,
                 ...(payload.action === "TERMINATED" ? { terminatedAt: Date.now() } : {}),

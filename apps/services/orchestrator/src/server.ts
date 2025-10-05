@@ -19,9 +19,9 @@ const projectConsumer = new ProjectConsumer("ORCHESTRATOR_SERVICE",deploymentCon
 const errHandler = createSyncErrHandler({subServiceName:"ORCHESTRATOR_SERVER",logger});
 
 server.addService(UnimplementedOrchestratorServiceService.definition, {
-    IStartK8Deployment: validateRPCBody("IStartK8Deployment", orchestratorHandlers.handleIStartK8Deployment.bind(orchestratorHandlers)),
     IGetCloneURI: validateRPCBody("IGetCloneURI", orchestratorHandlers.handleIGetCloneURI.bind(orchestratorHandlers)),
     IOrchestratorWebhook: validateRPCBody("IOrchestratorWebhook", orchestratorWebhookHandler.handleIOrchestratorWebhook.bind(orchestratorWebhookHandler)),
+    IDeploymentIngressed: validateRPCBody("IDeploymentIngressed", orchestratorHandlers.handleIDeploymentIngressed.bind(orchestratorHandlers)),
 })
 
 deploymentConsumer.startConsumer().then(() => {
@@ -35,7 +35,7 @@ deploymentConsumer.startConsumer().then(() => {
     errHandler(`${err}`,"STARTING_DEPLOYMENT_CONSUMER","N/A");
 });
 
-mongoose.connect(SECRETS.DATABASE_URI).then(()=>{
+mongoose.connect(SECRETS.DATABASE_URL).then(()=>{
     logger.info("[rid:N/A]: MONGO-DB_CONNECTED");
 }).catch((error) => {
     errHandler(error,"MONGO-DB-CONNECTION","N/A");

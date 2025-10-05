@@ -20,7 +20,7 @@ export class DeploymentConsumer implements IDeploymentConsumer {
     private _readCount = 0;
     private _projectService:ProjectExternalService
     private _errHandler: ReturnType<typeof createSyncErrHandler>
-    private readonly allowedEvents = ["CREATED","DELETED"];
+    private readonly allowedEvents = ["CREATED","DELETED","REQUESTED"];
     private _eventQueue: {
         event: DeploymentEvent<keyof typeof $DeploymentEvent>;
         ackMessage: () => Promise<void>;
@@ -163,7 +163,7 @@ export class DeploymentConsumer implements IDeploymentConsumer {
             projectType:project.framework.applicationType as "STATIC" | "DYNAMIC",
             requestId:event.requestId
         })
-        return res === true
+        return res ? true : false;
     }
 }
 

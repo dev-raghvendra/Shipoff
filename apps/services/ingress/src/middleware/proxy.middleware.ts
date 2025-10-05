@@ -26,7 +26,7 @@ export async function proxyMiddleware(req: PopulatedRequest, res: Response, next
    req.pipe(proxyReq)
    proxyReq.on("error", (err: NodeJS.ErrnoException) => {
       if (["ECONNREFUSED", "ENOTFOUND", "ETIMEDOUT"].includes(err.code as string)) {
-         errHandler.call(producer.publishDeploymentRequested(req.project as CachedProject), "ON-PROXY-RES", req.rid as string)
+         errHandler.call(producer.publishDeploymentRequested(req.project as CachedProject, req.rid as string), "ON-PROXY-RES", req.rid as string)
          return serviceUnavailable.call(res, req)
       }
       return next(err)

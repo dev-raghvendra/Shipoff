@@ -1,7 +1,7 @@
 import { SECRETS } from "@/config";
 import { CONFIG } from "@/config";
 import { ProjectExternalService } from "@/externals/project.external.service";
-import { STATE_CHANGED, TRAFFIC_DETECTED } from "@/types/orchestrator";
+import { STATE_CHANGED } from "@/types/orchestrator";
 import { Project } from "@shipoff/proto";
 import { createJwt, StringValue } from "@shipoff/services-commons";
 
@@ -60,8 +60,7 @@ export class ContainerConfigUtil {
             this._createWebhookToken(project,deploymentId,containerId,buildId,runtimeId,"RUNNING","10M"),
             this._createWebhookToken(project,deploymentId,containerId,buildId,runtimeId,"PRODUCTION","20M"),
             this._createWebhookToken(project,deploymentId,containerId,buildId,runtimeId,"TERMINATED","30D"),
-            this._createWebhookToken(project,deploymentId,containerId,buildId,runtimeId,"FAILED","30D"),
-            this._createWebhookToken(project,deploymentId,containerId,buildId,runtimeId,"INGRESSED","30D")
+            this._createWebhookToken(project,deploymentId,containerId,buildId,runtimeId,"FAILED","30D")
         ])
         return {envs:[...project.environmentVariables,
             {
@@ -124,8 +123,8 @@ export class ContainerConfigUtil {
             }],image,containerId}
     }
 
-    private async _createWebhookToken(project: Project, deploymentId:string, containerId:string,builId:string,runtimeId:string, action: "PROVISIONING" | "RUNNING" | "FAILED" | "TERMINATED" | "PRODUCTION" | "INGRESSED", expiresIn:StringValue){
-        return await createJwt<STATE_CHANGED | TRAFFIC_DETECTED>({
+    private async _createWebhookToken(project: Project, deploymentId:string, containerId:string,builId:string,runtimeId:string, action: "PROVISIONING" | "RUNNING" | "FAILED" | "TERMINATED" | "PRODUCTION", expiresIn:StringValue){
+        return await createJwt<STATE_CHANGED>({
             action,
             projectId: project.projectId,
             containerId,

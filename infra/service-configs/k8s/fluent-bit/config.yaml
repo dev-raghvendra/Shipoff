@@ -93,7 +93,7 @@ data:
         Port            8000
         URI             /apis/v1/log
         Header          Content-Type application/json
-        Header          X-Api-Key eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6InNoaXBvZmYtYXBpLWtleSIsImFkbWluIjp0cnVlLCJpYXQiOjE1MTYyMzkwMjJ9.GITKjwT0CiUANz_TPCkjQN0pgcrgQz6SmV5iMGCvCR0
+        Header          X-Api-Key <youtr-api-key-here>
         Format          json
         Json_date_key   timestamp
         Json_date_format iso8601
@@ -104,10 +104,10 @@ data:
     [OUTPUT]
         Name            loki
         Match           prod-services.*
-        Host            logs-prod-028.grafana.net
+        Host            <your-grafana-loki-instance>.grafana.net
         Port            443
         HTTP_User       1350969
-        HTTP_Passwd     glc_eyJvIjoiMTU0OTUwMCIsIm4iOiJmbHVlbnQtYml0LWFjY2Vzcy1mbHVlbnQtYml0LWRlZmF1bHQtbmFtZXNhcGNlLWxvZ3MiLCJrIjoiNVkzMG9mMmczTU5PRDhRajh0VDg1OENvIiwibSI6eyJyIjoicHJvZC1hcC1zb3V0aC0xIn19
+        HTTP_Passwd     <your-api-key-here>
         TLS             On
         TLS.Verify      On
         Line_Format     json

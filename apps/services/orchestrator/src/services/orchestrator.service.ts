@@ -1,45 +1,52 @@
 import { ProjectExternalService } from "@/externals/project.external.service";
-import { GetCloneURIRequestBodyType, StartK8DeploymentRequestBodyType } from "@/types/orchestrator";
+import { IDeploymentIngressedRequestType, GetCloneURIRequestBodyType, StartK8DeploymentRequestBodyType } from "@/types/orchestrator";
 import {
     createGrpcErrorHandler,
     createJwtErrHandler,
+    createSyncErrHandler,
     GrpcResponse,
     JsonWebTokenError,
     verifyJwt,
 } from "@shipoff/services-commons";
-import { K8Service, K8ServiceClient } from "./k8.service";
 import {logger} from "@/libs/winston";
+import { Database } from "@/db/db-service";
+import { K8Service, K8ServiceClient } from "./k8.service";
 
 export class OrchestratorService {
-    private _k8ServiceClient: K8Service;
-    private _errHandler: ReturnType<typeof createGrpcErrorHandler>;
+    private _dbService : Database
     private _projectService: ProjectExternalService;
+    private _k8sService: K8Service;
+    private _grpcErrHandler: ReturnType<typeof createGrpcErrorHandler>;
     private _jwtErrHandler: ReturnType<typeof createJwtErrHandler>;
+    private _syncErrHandler:ReturnType<typeof createSyncErrHandler>
     constructor() {
-        this._k8ServiceClient = K8ServiceClient;
-        this._errHandler = createGrpcErrorHandler({
+        this._dbService = new Database();
+        this._k8sService = K8ServiceClient;
+        this._projectService = new ProjectExternalService();
+        this._grpcErrHandler = createGrpcErrorHandler({
             subServiceName: "CONTAINER_SERVICE",
             logger
         });
-        this._projectService = new ProjectExternalService();
         this._jwtErrHandler = createJwtErrHandler({
             expiredErrMsg: "Time limit exceeded.",
             invalidErrMsg: "Malformed Clone request.",
         });
+
+        this._syncErrHandler = createSyncErrHandler({subServiceName:"ORCHESTRATOR_SERVICE",logger})
+        setInterval(async()=>await this._cleanupFreeTierInactiveDynamicDeployments(),13*60*1000);
     }
 
-    async IStartK8Deployment({projectId,projectType,deploymentId,commitHash,reqMeta}: StartK8DeploymentRequestBodyType) {
+    async IDeploymentIngressed({projectId,reqMeta}: IDeploymentIngressedRequestType) {
         try {
-            const deployment = await this._k8ServiceClient.tryCreatingFreeTierDeployment({
+            const deployment = await this._dbService.findAndUpdateK8Deployment({
                 projectId,
-                deploymentId,
-                commitHash,
-                projectType,
-                requestId:reqMeta.requestId
-             })
-            return GrpcResponse.OK(deployment,"K8 Deployment started");
+                status:"PRODUCTION"
+            },{
+                lastIngressedAt:Date.now()
+            })
+            return GrpcResponse.OK(deployment,"Ingress time updated");
         } catch (e: any) {
-            return this._errHandler(e, "I-GET-CONTAINER",reqMeta.requestId);
+            return this._grpcErrHandler(e, "I-GET-CONTAINER",reqMeta.requestId);
         }
     }
 
@@ -51,7 +58,25 @@ export class OrchestratorService {
             return GrpcResponse.OK({REPO_CLONE_URI},"Clone URI fetched");
         } catch (e:any) {
             if(e instanceof JsonWebTokenError) return this._jwtErrHandler(e)
-            return this._errHandler(e, "I-GET-CLONE-URI",reqMeta.requestId);
+            return this._grpcErrHandler(e, "I-GET-CLONE-URI",reqMeta.requestId);
+        }
+    }
+
+    private async _cleanupFreeTierInactiveDynamicDeployments(){
+        try {
+            const res = await this._dbService.findManyK8Deployment({
+                status:"PRODUCTION",
+                projectType:"DYNAMIC",
+                lastIngressedAt:{$lt:Date.now() - 15*60*1000}
+            })
+            res.forEach(async(deployment)=>{
+                await this._k8sService.deleteFreeTierDeployment(deployment.projectId,
+                    "user-dynamic-apps",
+                    "N/A"
+                )
+            })
+        } catch (e:any) {
+            this._syncErrHandler(e,"CLEANUP-FREE-TIER-INACTIVE-DYNAMIC-DEPLOYMENTS","N/A");
         }
     }
 }

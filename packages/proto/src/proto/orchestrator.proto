@@ -8,6 +8,10 @@ message IGetCloneURIRequest {
     RequestMeta reqMeta = 2;
 }
 
+message IDeploymentIngressedRequest {
+    string projectId = 1;
+    RequestMeta reqMeta = 2;
+}
 
 message CloneURIResponse {
     int32 code = 1;
@@ -36,9 +40,10 @@ message IStartK8DeploymentResponse {
 }
 
 
+
 service OrchestratorService {
-    rpc IStartK8Deployment (IStartK8DeploymentRequest) returns (IStartK8DeploymentResponse);
     rpc IGetCloneURI (IGetCloneURIRequest) returns (CloneURIResponse);
     rpc IOrchestratorWebhook (OrchestratorWebhookRequest) returns (google.protobuf.Empty);
+    rpc IDeploymentIngressed (IDeploymentIngressedRequest) returns (google.protobuf.Empty);
 }
 

@@ -13,7 +13,7 @@ export class DeploymentProducer {
         this._redisClient = GetRedisClient();
     }
 
-    async publishDeploymentRequested(project:CachedProject) {
+    async publishDeploymentRequested(project:CachedProject,requestId:string) {
         try {
             if(project.deploymentRequested) return "ALREADY-REQUESTED"
             const message : DeploymentEvent<"REQUESTED"> = {
@@ -23,7 +23,7 @@ export class DeploymentProducer {
                 projectType: project.projectType,
                 event: "REQUESTED",
                 commitHash: "N/A",
-                requestId: "N/A"
+                requestId
             }
             const topic = TOPICS.DEPLOYMENT_TOPIC;
             const flattenedMessage = flatenObject(message);
@@ -34,5 +34,4 @@ export class DeploymentProducer {
             throw new GrpcAppError(13, "Failed to publish deployment requested event", e);
         }
     }
-    
 }
