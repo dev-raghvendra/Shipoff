@@ -9,7 +9,8 @@ export async function pollUpStreamMiddleware(req:PopulatedRequest,res:Response,n
         }})
         res.status(204).end()
     } catch (e:any) {
-        if(e.code==="ECONNREFUSED" || e.code==="ENOTFOUND" || e.code==="ETIMEDOUT") return res.status(503).end()
+        const code = e instanceof Error ? (e.cause as any)?.code : e
+        if(code==="ECONNREFUSED" || code==="ENOTFOUND" || code==="ETIMEDOUT") return res.status(503).end()
         else throw e
     }
 }

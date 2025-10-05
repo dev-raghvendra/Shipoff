@@ -24,7 +24,8 @@ export class ProjectsService {
                 projectId:res.res?.projectId!,
                 projectType:res.res?.framework?.applicationType as "STATIC" | "DYNAMIC",
                 deploymentRequested:false,
-                domain
+                domain,
+                name:res.res?.name!,
             }
             projectCache.set(domain,payload)
             return payload

@@ -4,7 +4,8 @@ export type CachedProject = {
     projectId:string;
     projectType:"STATIC" | "DYNAMIC";
     deploymentRequested:boolean;
-    domain:string
+    domain:string;
+    name:string
 }
 
 

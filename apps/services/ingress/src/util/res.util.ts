@@ -22,7 +22,7 @@ export function notFound(this:Response,req:PopulatedRequest){
 
 export function serviceUnavailable(this:Response,req:PopulatedRequest){
     return this.status(503).setHeaders(getDefaultHeaders(req.rid as string)).send(
-        CONFIG.SERVICE_UNAVAILABLE.replace("{{PROJECT_NAME_HERE}}",req.project?.domain as string)
+        CONFIG.SERVICE_UNAVAILABLE.replace("{{PROJECT_NAME_HERE}}",req.project?.name as string)
     )
 }
 
