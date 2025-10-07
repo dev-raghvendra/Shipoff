@@ -14,7 +14,8 @@
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
-    "clean:build":"find . -name \"*.d.ts\" -type f -exec rm -rf {} '+' && find . -name \"tsconfig.tsbuildinfo\" -type f -exec rm -rf {} '+' &&  find . -name \"*.js\" -type f -exec rm -rf {} '+' &&  find . -name \"dist\" -type d -exec rm -rf {} '+' && find . -name \".turbo\" -type d -exec rm -rf {} '+'",
+   "clean:build": "find . -path './apps' -prune -o -name \"*.d.ts\" -type f -exec rm -f {} + && find . -path './apps' -prune -o -name 'tsconfig.tsbuildinfo' -type f -exec rm -f {} + && find . -path './apps' -prune -o -name \"*.js\" -type f -exec rm -f {} + && find . -path './apps' -prune -o -name 'dist' -type d -exec rm -rf {} + && find . -path './apps' -prune -o -name '.turbo' -type d -exec rm -rf {} +"
+   ,
     "clean":"pnpm store prune && find . -name \"node_modules\" -type d -exec rm -rf {} '+'"
   },
   "devDependencies": {

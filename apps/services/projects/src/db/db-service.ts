@@ -218,7 +218,7 @@ export class Database {
         });
     }
 
-    async updateDeploymentById(deploymentId:string, projectId:string, data:Partial<Omit<CreateDeploymentRequestDBBodyType,"projectId"> & {lastDeployedAt?:string}>) {
+    async updateDeploymentById(deploymentId:string, projectId:string, data:Partial<Omit<CreateDeploymentRequestDBBodyType,"projectId">>) {
         try {
             const res = await this.startTransaction(async(tx)=>{
                 if(data.status === "QUEUED"){

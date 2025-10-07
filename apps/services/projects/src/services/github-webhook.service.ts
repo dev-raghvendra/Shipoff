@@ -45,7 +45,8 @@ export class GithubWebhookService {
               status:"QUEUED",
               commitMessage:parsedPayload.head_commit?.message || "no commit message",
               author:parsedPayload.head_commit?.author.name || "unknown",
-              repositoryId:repo.repositoryId
+              repositoryId:repo.repositoryId,
+              lastDeployedAt:new Date()
           }
             const deployment = await this._dbService.startTransaction(async(tx)=>{
                await tx.deployment.updateMany({

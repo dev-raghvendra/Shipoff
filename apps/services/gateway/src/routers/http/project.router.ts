@@ -12,7 +12,7 @@ projectRouter.delete("/:projectId",authorizationMiddleware,deleteProjectControll
 projectRouter.get("/:projectId/deployments",authorizationMiddleware, getAllDeploymentsController);
 projectRouter.get("/:projectId/deployments/:deploymentId",authorizationMiddleware, getDeploymentController);
 projectRouter.delete("/:projectId/deployments/:deploymentId",authorizationMiddleware, deleteDeploymentController);
-projectRouter.post("/:projectId/deployments/:deploymentId",authorizationMiddleware, redeployController);
+projectRouter.post("/:projectId/deployments/:deploymentId/redeploy",authorizationMiddleware, redeployController);
 projectRouter.get("/:projectId/env-vars",authorizationMiddleware,getEnvironmentVariablesController);
 projectRouter.put("/:projectId/env-vars",authorizationMiddleware,createOrUpdateEnvironmentVariableController);
 projectRouter.delete("/:projectId/env-vars/:env_name",authorizationMiddleware,deleteEnvironmentVariableController);

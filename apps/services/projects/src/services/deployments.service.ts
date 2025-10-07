@@ -138,7 +138,7 @@ export class DeploymentsService {
             
             const deployment = await this._dbService.updateDeploymentById(deploymentId,projectId,{
                 status:"QUEUED",
-                lastDeployedAt:new Date().toISOString()
+                lastDeployedAt:new Date()
             })
             this._asyncErrHandler.call(this._deploymentProducer.publishDeploymentRequested({
                 event:"CREATED",

@@ -44,14 +44,14 @@ export const DeploymentDBSchema = z.object({
     commitMessage:z.string().min(1),
     author:z.string().min(1),
     repositoryId:z.string().min(1),
-    production:z.boolean().optional(),
+    production:z.boolean().optional()
 }).strict();
 
 
 
 
 export type CreateDeploymentRequestBodyType = z.infer<typeof CreateDeploymentRequestSchema>;
-export type CreateDeploymentRequestDBBodyType = z.infer<typeof DeploymentDBSchema> 
+export type CreateDeploymentRequestDBBodyType = z.infer<typeof DeploymentDBSchema> & {lastDeployedAt?:Date}
 export type RedeployRequestBodyType = z.infer<typeof RedeployRequestSchema>;
 export type RedeployRequestDBBodyType = Omit<RedeployRequestBodyType, "authUserData"|"reqMeta">;
 export type DeleteDeploymentRequestBodyType = z.infer<typeof DeleteDeploymentRequestSchema>;

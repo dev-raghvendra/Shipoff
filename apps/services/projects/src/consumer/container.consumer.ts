@@ -61,7 +61,10 @@ export class ContainerConsumer {
                 where:{
                     deploymentId:event.deploymentId
                 },
-                data:{status:eventStatus}
+                data:{
+                    status:eventStatus,
+                    lastDeployedAt:new Date()
+                }
               })
               if(["INACTIVE","FAILED"].includes(eventStatus)) return;
               await tx.deployment.updateMany({
