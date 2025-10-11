@@ -71,6 +71,7 @@ message OAuthRequest {
   string password = 3;
   string avatarUri = 4;
   string provider = 5;
+  RequestMeta reqMeta= 6;
 }
 
 message Tokens {

@@ -6,6 +6,7 @@
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.1450 0 0);
+  --test: oklch(0.7 0.17 162.65);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.1450 0 0);
   --popover: oklch(1 0 0);
@@ -29,14 +30,22 @@
   --chart-4: oklch(0.4900 0.2200 264);
   --chart-5: oklch(0.4200 0.1800 266);
   --radius: 0.5rem;
-  --sidebar: oklch(0.9850 0 0);
-  --sidebar-foreground: oklch(0.1450 0 0);
-  --sidebar-primary: oklch(0.2050 0 0);
+  --sidebar: hsl(0 0% 98%);
+  --sidebar-foreground: hsl(240 5.3% 26.1%);
+  --sidebar-primary: oklch(0.7 0.17 162.65);
   --sidebar-primary-foreground: oklch(0.9850 0 0);
-  --sidebar-accent: oklch(0.9700 0 0);
-  --sidebar-accent-foreground: oklch(0.2050 0 0);
-  --sidebar-border: oklch(0.9220 0 0);
-  --sidebar-ring: oklch(0.7080 0 0);
+  --sidebar-accent: #ecffe4;
+  --sidebar-accent-foreground: #3c830a;
+  --sidebar-border: hsl(220 13% 91%);
+  --sidebar-ring: hsl(217.2 91.2% 59.8%);
+  --label-success: color-mix(in oklab, var(--color-green-600) 10%, transparent);
+  --label-success-foreground: #008236;
+  --label-destructive: color-mix(in oklab, var(--color-red-600) 10%, transparent);
+  --label-destructive-foreground: #c10007;
+  --label-alert: color-mix(in oklab, var(--color-yellow-600) 10%, transparent);
+  --label-alert-foreground: #a65f00;
+  --label-quiet: color-mix(in oklab, var(--color-gray-600) 10%, transparent);
+  --label-quiet-foreground: #52606d;
   --font-sans: 'Geist', 'Geist Fallback';
   --font-mono: 'Geist', 'Geist Fallback';
   --font-serif: 'Poppins', 'Poppins Fallback';
@@ -63,7 +72,7 @@
   --muted-foreground: oklch(0.7080 0 0);
   --accent: #2a2a2a;
   --accent-foreground: #73f70a;
-  --destructive: oklch(0.7040 0.1910 22.2160);
+  --destructive: oklch(54.132% 0.21532 28.198);
   --destructive-foreground: oklch(0.9850 0 0);
   --border: oklch(0.2750 0 0);
   --input: oklch(0.3250 0 0);
@@ -73,14 +82,22 @@
   --chart-3: oklch(0.5500 0.2200 263);
   --chart-4: oklch(0.4900 0.2200 264);
   --chart-5: oklch(0.4200 0.1800 266);
-  --sidebar: oklch(0.2050 0 0);
-  --sidebar-foreground: oklch(0.9850 0 0);
-  --sidebar-primary: oklch(0.4880 0.2430 264.3760);
-  --sidebar-primary-foreground: oklch(0.9850 0 0);
-  --sidebar-accent: oklch(0.2690 0 0);
-  --sidebar-accent-foreground: oklch(0.9850 0 0);
-  --sidebar-border: oklch(0.2750 0 0);
-  --sidebar-ring: oklch(0.4390 0 0);
+  --sidebar: hsl(240 5.9% 10%);
+  --sidebar-foreground: hsl(240 4.8% 95.9%);
+  --sidebar-primary: oklch(0.7 0.17 162.65);
+  --sidebar-primary-foreground: oklch(0.2050 0 0);
+  --sidebar-accent: #2a2a2a;
+  --sidebar-accent-foreground: #73f70a;
+  --sidebar-border: hsl(240 3.7% 15.9%);
+  --sidebar-ring: hsl(217.2 91.2% 59.8%);
+  --label-success: #0082362c;
+  --label-success-foreground: #05df72;
+  --label-destructive: #e7000c2c;
+  --label-destructive-foreground: #ff0008;
+  --label-alert: #a65e002c;
+  --label-alert-foreground: #fdc700;
+  --label-quiet: #3641539c;
+  --label-quiet-foreground: #4d779e;
   --shadow-x: 0px;
   --shadow-y: 1px;
   --shadow-blur: 7px;
@@ -144,6 +161,14 @@
   --shadow-blur: var(--shadow-blur);
   --shadow-y: var(--shadow-y);
   --shadow-x: var(--shadow-x);
+  --label-bg-success: var(--label-success);
+  --label-fg-success: var(--label-success-foreground);  
+  --label-bg-destructive: var(--label-destructive);
+  --label-fg-destructive: var(--label-destructive-foreground);
+  --label-bg-alert: var(--label-alert);
+  --label-fg-alert: var(--label-alert-foreground);
+  --label-bg-quiet: var(--label-quiet);
+  --label-fg-quiet: var(--label-quiet-foreground);
 }
 
 @layer base {

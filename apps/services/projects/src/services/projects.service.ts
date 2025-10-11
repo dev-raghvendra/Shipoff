@@ -257,6 +257,18 @@ export class ProjectsService {
                 ...staleBuildIds.map(b=>b.buildId),
                 ...staleRuntimeIds.map(r=>r.runtimeId)
                ])]
+               const [res1,res2] = await dbClient.$transaction([
+                dbClient.buildEnvironment.deleteMany({
+                    where:{
+                        buildId:{in:staleBuildIds.map(b=>b.buildId)}
+                    }
+                }),
+                dbClient.runtimeEnvironment.deleteMany({
+                    where:{
+                        runtimeId:{in:staleRuntimeIds.map(r=>r.runtimeId)}
+                    }
+                })
+               ])
                return GrpcResponse.OK(res, "Stale environment ids found");
        } catch (e:any) {
            return this._errHandler(e,"I-GET-STALE-ENVIRONMENT-IDS",reqMeta.requestId);

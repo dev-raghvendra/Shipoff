@@ -32,9 +32,11 @@ export class AuthService {
     async OAuth(data:any){
         try {
             const req =  OAuthRequest.fromObject(data);
+            console.log(data)
             const response = await promisifyGrpcCall(this._authService.OAuth.bind(this._authService), req);
             return response;
         } catch (e:any) {
+            console.log(e)
             return e;
         }
     }
@@ -45,7 +47,6 @@ export class AuthService {
             const response = await promisifyGrpcCall(this._authService.GetMe.bind(this._authService), req);
             return response;
         } catch (e:any) {
-            (e);
             return e;
         }
     }

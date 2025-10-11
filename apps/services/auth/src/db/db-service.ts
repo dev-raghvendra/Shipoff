@@ -157,7 +157,7 @@ export class Database {
             if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
                 throw new GrpcAppError(status.ALREADY_EXISTS,"User already exists",null);
             }
-            throw new GrpcAppError(status.INTERNAL,"Unexpected error occurred",null);
+            throw new GrpcAppError(status.INTERNAL,"Unexpected error occurred",error);
         }
     }
 
@@ -183,7 +183,7 @@ export class Database {
             if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
                 throw new GrpcAppError(status.ALREADY_EXISTS,"Team already exists",null);
             }
-            throw new GrpcAppError(status.INTERNAL,"Unexpected error occurred",null);
+            throw new GrpcAppError(status.INTERNAL,"Unexpected error occurred",error);
         }
     }
 

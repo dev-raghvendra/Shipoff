@@ -12,7 +12,8 @@ declare module "next-auth" {
   interface User extends UserData {
      accessToken:string,
      refreshToken:string,
-     refreshTokenExpiresAt:number
+     refreshTokenExpiresAt:number,
+     error?:string
   }
 }
 
@@ -21,6 +22,7 @@ declare module "next-auth/jwt" {
         user:UserData,
         accessToken:string,
         refreshToken:string,
+        accessTokenExpiresAt:number,
         refreshTokenExpiresAt:number,
         error?:string
     }

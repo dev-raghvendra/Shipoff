@@ -45,7 +45,7 @@ class AuthService {
                 where:{email:body.email}
             });
             const isVerified = await compare(body.password,u.password)
-            if(!isVerified) throw new GrpcAppError(status.NOT_FOUND,"Invalid credentials",null);
+            if(!isVerified) throw new GrpcAppError(status.UNAUTHENTICATED,"Invalid credentials",null);
             const {password, ...user} = u;
             return this.createSession(user);
         } catch (e:any) {

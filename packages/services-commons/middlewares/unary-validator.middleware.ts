@@ -61,10 +61,10 @@ export function createUnaryValidator<Map extends SchemaMap>(schemaMap: Map, logg
         const callWithBody = call as unknown as ValidatedCall<Map, K, TReq, TRes>;
         (callWithBody.request as any).body = parsed;
         handler(callWithBody, callback);
-      } catch(e){
+      } catch(e:any){
         callback({
           code: status.INVALID_ARGUMENT,
-          message: schemaMap[method].errMsg || "Invalid argument",
+          message: `${e.issues[0].path[0]}: ${e.issues[0].message}` || schemaMap[method].errMsg,
         });
       }
     };
