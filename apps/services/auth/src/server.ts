@@ -35,12 +35,14 @@ server.addService(UnimplementedAuthServiceService.definition, {
     GetTeamMember: validateRPCBody("GetTeamMember", teamHandlers.handleGetTeamMember.bind(teamHandlers)),
     DeleteTeamMember: validateRPCBody("DeleteTeamMember", teamHandlers.handleDeleteTeamMember.bind(teamHandlers)),
     GetAllUserTeams:validateRPCBody("GetAllUserTeams",teamHandlers.handleGetAllUserTeams.bind(teamHandlers)),
+    TransferTeamOwnership:validateRPCBody("TransferTeamOwnership",teamHandlers.handleTransferTeamOwnership.bind(teamHandlers)),
 
     CreateProjectMemberInvitation: validateRPCBody("CreateProjectMemberInvitation", projectHandlers.handleCreateProjectMemberInvitation.bind(projectHandlers)),
     AcceptProjectInvitation: validateRPCBody("AcceptProjectInvitation", projectHandlers.handleAcceptInvitation.bind(projectHandlers)),
     GetProjectMember: validateRPCBody("GetProjectMember", projectHandlers.handleGetProjectMember.bind(projectHandlers)),
     DeleteProjectMember: validateRPCBody("DeleteProjectMember", projectHandlers.handleDeleteProjectMember.bind(projectHandlers)),
-    GetAllUserProjectIds:validateRPCBody("GetAllUserProjectIds",projectHandlers.handleGetAllUserProjectIds.bind(projectHandlers))
+    GetAllUserProjectIds:validateRPCBody("GetAllUserProjectIds",projectHandlers.handleGetAllUserProjectIds.bind(projectHandlers)),
+    TransferProjectOwnership:validateRPCBody("TransferProjectOwnership",projectHandlers.handleTransferProjectOwnership.bind(projectHandlers))
 });
 
 server.bindAsync(`${SECRETS.HOST}:${SECRETS.PORT}`,ServerCredentials.createInsecure(),(err)=>{

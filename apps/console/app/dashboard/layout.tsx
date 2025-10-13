@@ -22,13 +22,13 @@ import {
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { LayoutDashboard, Boxes, Rocket, Settings, Handshake, User, ChevronLeft } from "lucide-react"
+import { LayoutDashboard, Boxes, Rocket, Settings, User, ChevronLeft, Users2 } from "lucide-react"
 
 const getDashboardNav = () => [
   {group:"General",items:[
-    { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
+    { label: "Overview", href: "/dashboard/overview", icon: LayoutDashboard },
     { label: "Projects", href: "/dashboard/projects", icon: Boxes },
-    { label: "Teams", href: "/dashboard/teams", icon: Handshake },
+    { label: "Teams", href: "/dashboard/teams", icon: Users2 },
     { label: "Account", href: "/dashboard/account", icon: User },
   ]}
 ]
@@ -48,7 +48,7 @@ const getDeploymentNav = (projectId:string,deploymentId:string) => [
   ]}
 ]
 
-// Helper to generate breadcrumbs
+
 const getBreadcrumbs = (pathname: string, params: any) => {
   const segments = pathname.split('/').filter(Boolean)
   const breadcrumbs = [{ label: 'Dashboard', href: '/dashboard' }]

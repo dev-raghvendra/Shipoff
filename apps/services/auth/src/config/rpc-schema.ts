@@ -30,5 +30,7 @@ export const RPC_SCHEMA: RPC_SCHEMA_T<RPCs> = {
     AcceptProjectInvitation:createRPCEntry(AcceptMemberInviteRequestSchema),
     HasPermissions:createRPCEntry(HasPermissionsRequestSchema),
     GetAllUserProjectIds:createRPCEntry(BodyLessRequestSchema),
-    GetAllUserTeams:createRPCEntry(BulkResourceRequestSchema)
+    GetAllUserTeams:createRPCEntry(BulkResourceRequestSchema),
+    TransferProjectOwnership:createRPCEntry(ProjectMemberInvitationRequestSchema),
+    TransferTeamOwnership:createRPCEntry(TeamMemberInvitationRequestSchema)
 } as const

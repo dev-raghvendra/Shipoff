@@ -4,6 +4,7 @@ syntax = "proto3";
 
 
 import "common.proto";
+import "google/protobuf/empty.proto";
 
 
 
@@ -133,6 +134,13 @@ message DeleteTeamResponse {
   Team res = 3;
 }
 
+message TransferTeamOwnershipRequest {
+  User authUserData = 1;
+  string teamId = 2;
+  string newOwnerId = 3;
+  RequestMeta reqMeta= 4;
+}
+
 // Team member invitation messages
 message CreateTeamMemberInvitationRequest {
   User authUserData = 1;
@@ -167,6 +175,13 @@ message GetTeamMemberRequest {
   string targetUserId = 1;
   string teamId = 2;
   User   authUserData = 3;
+  RequestMeta reqMeta= 4;
+}
+
+message TransferProjectOwnershipRequest {
+  User authUserData = 1;
+  string projectId = 2;
+  string newOwnerId = 3;
   RequestMeta reqMeta= 4;
 }
 
@@ -316,6 +331,7 @@ service AuthService {
   rpc GetTeamMember(GetTeamMemberRequest) returns (GetTeamMemberResponse);
   rpc DeleteTeamMember(DeleteTeamMemberRequest) returns (DeleteProjectMemberResponse);
   rpc AcceptTeamInvitation(AcceptInvitationRequest) returns (GetTeamMemberResponse);
+  rpc TransferTeamOwnership(TransferTeamOwnershipRequest) returns (google.protobuf.Empty);
   
   // Project Members
   rpc CreateProjectMemberInvitation(CreateProjectMemberInvitationRequest) returns (CreateProjectMemberInvitationResponse);
@@ -323,7 +339,8 @@ service AuthService {
   rpc DeleteProjectMember(DeleteProjectMemberRequest) returns (DeleteProjectMemberResponse);
   rpc AcceptProjectInvitation(AcceptInvitationRequest) returns (GetProjectMemberResponse);
   rpc GetAllUserProjectIds (BodyLessRequest) returns (GetAllUserProjectIdsResponse);
-  
+  rpc TransferProjectOwnership(TransferProjectOwnershipRequest) returns (google.protobuf.Empty);
+
   rpc HasPermissions(HasPermissionsRequest) returns (HasPermissionsResponse);
   // Future: partial decentralized RBAC
   // rpc UpdateTeamMember(UpdateTeamMemberRequest) returns (UpdateTeamMemberResponse);

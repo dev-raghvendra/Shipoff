@@ -1,7 +1,7 @@
 import { sendUnaryData, ServerUnaryCall, status } from "@grpc/grpc-js";
-import { AcceptInvitationRequest, BulkResourceRequest, CreateTeamMemberInvitationRequest, CreateTeamMemberInvitationResponse, CreateTeamMemberInvitationResponseData, CreateTeamRequest, CreateTeamResponse, DeleteTeamMemberRequest, DeleteTeamMemberResponse, DeleteTeamMemberResponseData, DeleteTeamRequest, DeleteTeamResponse, GetAllUserTeamsResponse, GetTeamMemberRequest, GetTeamMemberResponse, GetTeamMemberResponseData, GetTeamRequest, GetTeamResponse, Team } from "@shipoff/proto";
+import { AcceptInvitationRequest, BulkResourceRequest, CreateTeamMemberInvitationRequest, CreateTeamMemberInvitationResponse, CreateTeamMemberInvitationResponseData, CreateTeamRequest, CreateTeamResponse, DeleteTeamMemberRequest, DeleteTeamMemberResponse, DeleteTeamMemberResponseData, DeleteTeamRequest, DeleteTeamResponse, GetAllUserTeamsResponse, GetTeamMemberRequest, GetTeamMemberResponse, GetTeamMemberResponseData, GetTeamRequest, GetTeamResponse, google, Team, TransferTeamOwnershipRequest } from "@shipoff/proto";
 import TeamService from "@/services/team.service";
-import { CreateTeamRequestBodyType, DeleteTeamMemberRequestBodyType, DeleteTeamRequestBodyType, GetTeamMemberRequestBodyType, GetTeamRequestBodyType, TeamMemberInvitationRequestBodyType } from "@/types/team";
+import { CreateTeamRequestBodyType, DeleteTeamMemberRequestBodyType, DeleteTeamRequestBodyType, GetTeamMemberRequestBodyType, GetTeamRequestBodyType, TeamMemberInvitationRequestBodyType, TransferTeamOwnershipRequestBodyType } from "@/types/team";
 import { AcceptMemberInviteRequestBodyType } from "@/types/utility";
 import { BulkResourceRequestBodyType } from "@shipoff/types";
 
@@ -122,6 +122,20 @@ class TeamHandlers {
               }) 
       }
     }
+
+      async handleTransferTeamOwnership(call:ServerUnaryCall<TransferTeamOwnershipRequest & {body:TransferTeamOwnershipRequestBodyType},google.protobuf.Empty>,callback:sendUnaryData<google.protobuf.Empty>){
+         try {
+            const {code,message} = await this._teamService.transferTeamOwnership(call.request.body);
+            if(code!==status.OK) return callback({code,message})
+            const response = google.protobuf.Empty.fromObject({})
+            return callback(null,response)
+         } catch (e) {
+            return callback({
+               code:status.INTERNAL,
+               message:"Internal server error"
+            }) 
+         }
+      }
 }
 
 export default TeamHandlers

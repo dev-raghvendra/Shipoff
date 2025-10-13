@@ -1,4 +1,4 @@
-import { GitBranch, User, GitCommit, ArrowUpFromLine } from "lucide-react";
+import { GitBranch, User, GitCommit, ArrowUpFromLine, List, ListEnd, CircleX } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "../ui/spinner";
@@ -19,15 +19,15 @@ type Deployment = {
 function statusBadge(status: Deployment["status"]) {
   switch (status) {
     case "PRODUCTION":
-      return <Badge className="bg-[var(--label-bg-success)] text-[var(--label-fg-success)]"><ArrowUpFromLine></ArrowUpFromLine>PRODUCTION</Badge>
+      return <Badge className="bg-[var(--label-bg-success)] text-[var(--label-fg-success)]"><ArrowUpFromLine />PRODUCTION</Badge>
     case "BUILDING":
       return <Badge className="bg-[var(--label-bg-alert)] text-[var(--label-fg-alert)]"><Spinner />BUILDING</Badge>
     case "PROVISIONING":
       return <Badge className="bg-[var(--label-bg-warning)] text-[var(--label-fg-warning)]"><Spinner />PROVISIONING</Badge>
     case "FAILED":
-      return <Badge className="bg-[var(--label-bg-destructive)] text-[var(--label-fg-destructive)]">FAILED</Badge>
+      return <Badge className="bg-[var(--label-bg-destructive)] text-[var(--label-fg-destructive)]"><CircleX />FAILED</Badge>
     case "QUEUED":
-      return <Badge className="bg-[var(--label-bg-quiet)] text-[var(--label-fg-quiet)]">QUEUED</Badge>
+      return <Badge className="bg-[var(--label-bg-quiet)] text-[var(--label-fg-quiet)]"><ListEnd />QUEUED</Badge>
   }
 }
 

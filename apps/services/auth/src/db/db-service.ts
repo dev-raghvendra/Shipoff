@@ -1,8 +1,8 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import passHashMiddleware from "./middleware";
 import {  OAuthRequestDBBodyType, SigninRequestDBBodyType } from "@/types/user";
-import { CreateTeamRequestDBBodyType, DeleteTeamRequestDBBodyType, TeamMemberDBBodyType, TeamMemberInvitationRequestDBBodyType } from "@/types/team";
-import { ProjectMemberDBBodyType, ProjectMemberInvitationRequestDBBodyType } from "@/types/project";
+import { CreateTeamRequestDBBodyType, DeleteTeamRequestDBBodyType, TeamMemberDBBodyType, TeamMemberInvitationRequestDBBodyType, TransferTeamOwnershipRequestDBBodyType } from "@/types/team";
+import { ProjectMemberDBBodyType, ProjectMemberInvitationRequestDBBodyType, TransferProjectOwnershipRequestDBBodyType } from "@/types/project";
 import { generateId, GrpcAppError } from "@shipoff/services-commons";
 import { DefaultArgs } from "@prisma/runtime/library";
 import { status } from "@grpc/grpc-js";
@@ -314,6 +314,70 @@ export class Database {
             if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
                 throw new GrpcAppError(status.NOT_FOUND,"Project member not found",null);
             }
+            throw new GrpcAppError(status.INTERNAL,"Unexpected error occurred",null);
+        }
+    }
+
+    async transferTeamOwnership({teamId,newOwnerId,currentOwnerId}: TransferTeamOwnershipRequestDBBodyType){
+        try {
+            const res = await this._client.$transaction([
+                this._client.teamMember.update({
+                    where:{
+                        userId_teamId:{
+                            teamId,
+                            userId:currentOwnerId
+                        }
+                    },
+                    data:{
+                        role:"TEAM_OWNER"
+                    }
+                }),
+                this._client.teamMember.update({
+                    where:{
+                        userId_teamId:{
+                            teamId,
+                            userId:newOwnerId
+                        }
+                    },
+                    data:{
+                        role:"TEAM_ADMIN"
+                    }
+                })
+            ])
+            return res;
+        } catch (e:any) {
+            throw new GrpcAppError(status.INTERNAL,"Unexpected error occurred",null);
+        }
+    }
+
+    async transferProjectOwnership({projectId,newOwnerId,currentOwnerId}: TransferProjectOwnershipRequestDBBodyType){
+        try {
+            const res = await this._client.$transaction([
+                this._client.projectMember.update({
+                    where:{
+                        userId_projectId:{
+                            projectId,
+                            userId:currentOwnerId
+                        }
+                    },
+                    data:{
+                        role:"PROJECT_OWNER"
+                    }
+                }),
+                this._client.projectMember.update({
+                    where:{
+                        userId_projectId:{
+                            projectId,
+                            userId:newOwnerId
+                        }
+                    },
+                    data:{
+                        role:"PROJECT_ADMIN"
+                    }
+                })
+            ])
+            return res;
+        } catch (e:any) {
             throw new GrpcAppError(status.INTERNAL,"Unexpected error occurred",null);
         }
     }

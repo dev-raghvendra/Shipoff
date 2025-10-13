@@ -444,4 +444,16 @@ export class Permission{
         return result;
     }
 
+    async canTransferOwnership(userId:string,scope:"PROJECT"|"TEAM",resourceId:string,targetUserId:string){
+        if(targetUserId === userId) throw new GrpcAppError(status.FAILED_PRECONDITION,"You can't transfer ownership to self");
+        const result = await this._permissions.canAccess({
+            userId,
+            scope,
+            permission:["TRANSFER_OWNERSHIP"],
+            resourceId
+        })
+        if (!result) throw new GrpcAppError(status.PERMISSION_DENIED, "You do not have permission to transfer ownership");
+        return result
+    }
+
 }

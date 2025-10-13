@@ -1,8 +1,8 @@
 import { sendUnaryData, ServerUnaryCall, status } from "@grpc/grpc-js";
-import { CreateProjectMemberInvitationResponse, CreateProjectMemberInvitationRequest, CreateProjectMemberInvitationResponseData, AcceptInvitationRequest, GetProjectMemberResponse, GetProjectMemberResponseData, GetProjectMemberRequest, DeleteProjectMemberRequest, DeleteProjectMemberResponse, DeleteProjectMemberResponseData, BodyLessRequest, GetAllUserProjectIdsResponse} from "@shipoff/proto";
+import { CreateProjectMemberInvitationResponse, CreateProjectMemberInvitationRequest, CreateProjectMemberInvitationResponseData, AcceptInvitationRequest, GetProjectMemberResponse, GetProjectMemberResponseData, GetProjectMemberRequest, DeleteProjectMemberRequest, DeleteProjectMemberResponse, DeleteProjectMemberResponseData, BodyLessRequest, GetAllUserProjectIdsResponse, TransferProjectOwnershipRequest, google} from "@shipoff/proto";
 import { BodyLessRequestBodyType } from "@shipoff/types";
 import ProjectService from "@/services/project.service";
-import { DeleteProjectMemberRequestBodyType, GetProjectMemberRequestBodyType, ProjectMemberInvitationRequestBodyType } from "@/types/project";
+import { DeleteProjectMemberRequestBodyType, GetProjectMemberRequestBodyType, ProjectMemberInvitationRequestBodyType, TransferProjectOwnershipRequestBodyType } from "@/types/project";
 import { AcceptMemberInviteRequestBodyType } from "@/types/utility";
 
 class ProjectHandlers {
@@ -80,6 +80,20 @@ class ProjectHandlers {
             }) 
          }
     }
+
+      async handleTransferProjectOwnership(call:ServerUnaryCall<TransferProjectOwnershipRequest & {body:TransferProjectOwnershipRequestBodyType},google.protobuf.Empty>,callback:sendUnaryData<google.protobuf.Empty>){
+         try {
+            const {code,message} = await this._projectService.tansferProjectOwnership(call.request.body);
+            if(code!==status.OK) return callback({code,message})
+            const response = google.protobuf.Empty.fromObject({})
+            return callback(null,response)
+         } catch (e) {
+            return callback({
+               code:status.INTERNAL,
+               message:"Internal server error"
+            }) 
+         }
+      }
 }
 
 export default ProjectHandlers

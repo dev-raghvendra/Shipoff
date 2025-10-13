@@ -1,6 +1,6 @@
 import { BodyLessRequestBodyType } from "@shipoff/types";
 import  { Database, dbService } from "@/db/db-service";
-import { CreateTeamLinkRequestBodyType, DeleteProjectMemberRequestBodyType, GetProjectMemberRequestBodyType, ProjectMemberInvitationRequestBodyType } from "@/types/project";
+import { CreateTeamLinkRequestBodyType, DeleteProjectMemberRequestBodyType, GetProjectMemberRequestBodyType, ProjectMemberInvitationRequestBodyType, TransferProjectOwnershipRequestBodyType } from "@/types/project";
 import { AcceptMemberInviteRequestBodyType } from "@/types/utility";
 import { Permission } from "@/utils/rbac-utils";
 import { createGrpcErrorHandler, GrpcAppError, GrpcResponse } from "@shipoff/services-commons";
@@ -123,6 +123,28 @@ class ProjectService {
             return this._errorHandler(e,"GET-ALL-USER-PROJECT-IDS",reqMeta.requestId);
         }
     }
+
+    async tansferProjectOwnership({projectId,newOwnerId,authUserData:{userId},reqMeta}:TransferProjectOwnershipRequestBodyType){
+        try {
+            await this._permissions.canTransferOwnership(
+                userId,
+                "PROJECT",
+                projectId,
+                newOwnerId
+            );
+            await this._dbService.transferProjectOwnership(
+                {
+                    projectId,
+                    newOwnerId,
+                    currentOwnerId: userId
+                }
+            )
+            return GrpcResponse.OK(null,"Ownership transferred");
+        } catch (e:any) {
+            return this._errorHandler(e,"TRANSFER-PROJECT-OWNERSHIP",reqMeta.requestId);
+        }
+    }
+
 }
 
 export default ProjectService

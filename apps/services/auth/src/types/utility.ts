@@ -22,6 +22,13 @@ export const HasPermissionsRequestSchema = z.object({
 }).strict()
 
 
+export const TransferOwnershipBase = z.object({
+    newOwnerId: z.string().min(4),
+    authUserData:UserSchema,
+    reqMeta:RequestMetaSchema 
+}).strict()
+
+
 
 export type HasPermissionsRequestBodyType = z.infer<typeof HasPermissionsRequestSchema>
 

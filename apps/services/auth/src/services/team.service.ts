@@ -1,7 +1,7 @@
 import { status } from "@grpc/grpc-js";
 import { createGrpcErrorHandler, GrpcAppError, GrpcResponse } from "@shipoff/services-commons";
 import   { Database, dbService } from "@/db/db-service";
-import { CreateTeamRequestBodyType, DeleteTeamMemberRequestBodyType, DeleteTeamRequestBodyType, GetTeamMemberRequestBodyType, GetTeamRequestBodyType, TeamMemberInvitationRequestBodyType } from "@/types/team";
+import { CreateTeamRequestBodyType, DeleteTeamMemberRequestBodyType, DeleteTeamRequestBodyType, GetTeamMemberRequestBodyType, GetTeamRequestBodyType, TeamMemberInvitationRequestBodyType, TransferTeamOwnershipRequestBodyType } from "@/types/team";
 import { AcceptMemberInviteRequestBodyType } from "@/types/utility";
 import { Permission } from "@/utils/rbac-utils";
 import { BulkResourceRequestBodyType } from "@shipoff/types";
@@ -127,6 +127,20 @@ class TeamService {
         }
     }
 
+    async transferTeamOwnership({teamId,newOwnerId,authUserData:{userId},reqMeta}:TransferTeamOwnershipRequestBodyType){
+        try {
+            await this._permissions.canTransferOwnership(userId,"TEAM",teamId,newOwnerId);
+            await this._dbService.transferTeamOwnership({
+                teamId,
+                currentOwnerId: userId,
+                newOwnerId
+            });
+            return GrpcResponse.OK(null,"Team ownership transferred");
+        } catch (e:any) {
+            return this._errorHandler(e,"TRANSFER-TEAM-OWNERSHIP",reqMeta.requestId);
+        }
+    }
+        
 }
 
 export default TeamService
