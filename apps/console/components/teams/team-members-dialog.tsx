@@ -10,22 +10,11 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { UserPlus, Folder, Crown, MoreVertical, LogOut, Trash2, LogOutIcon } from "lucide-react"
+import { UserPlus, Folder, Crown, MoreVertical, Trash2, LogOutIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge" // role badge styling
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { Team } from "@/app/dashboard/teams/page"
 import { Button } from "@/components/ui/button"
-import {
-  AlertDialog,
-  AlertDialogTrigger,
-  AlertDialogContent,
-  AlertDialogHeader as AlertHeader,
-  AlertDialogTitle as AlertTitle,
-  AlertDialogDescription as AlertDescription,
-  AlertDialogFooter as AlertFooter,
-  AlertDialogAction,
-  AlertDialogCancel,
-} from "@/components/ui/alert-dialog"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
 
 export function TeamMembersDialog({

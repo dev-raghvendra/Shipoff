@@ -86,6 +86,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const isProjectView = Boolean(params.projectId) && !Boolean(params.deploymentId)
   const isDeploymentView = Boolean(params.projectId) && Boolean(params.deploymentId)
 
+  console.log("Is Project View:", isProjectView)
+  console.log("Is Deployment View:", isDeploymentView)
+
   let nav = isDeploymentView
     ? getDeploymentNav(params.projectId as string, params.deploymentId as string)
     : isProjectView
@@ -112,7 +115,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <SidebarContent>
           {/* Back Navigation */}
           {backLink && (
-            <div className="px-3 py-2">
+            <div>
               <Button 
                 asChild 
                 variant="ghost" 
@@ -135,11 +138,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <SidebarMenu>
                     {group.items.map((item) => {
                       const Icon = item.icon
-                      const isActive =
-                        item.href === "/dashboard"
-                          ? pathname === "/dashboard" || pathname === "/dashboard/overview"
-                          : pathname === item.href || 
-                            (pathname.startsWith(item.href + '/') && item.href !== "/dashboard")
+                      const isActive = pathname.endsWith(item.label.toLocaleLowerCase())
                       return (
                         <SidebarMenuItem key={item.href}>
                           <SidebarMenuButton asChild isActive={isActive}>

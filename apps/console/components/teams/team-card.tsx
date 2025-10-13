@@ -11,10 +11,14 @@ export function TeamCard({
   team,
   onClick,
   className,
+  layout="detailed",
+  children
 }: {
   team: Team
   onClick?: () => void
-  className?: string
+  className?: string,
+  layout:"minimal" | "detailed"
+  children?: React.ReactNode
 }) {
   const count = team.members.length
   const initials = team.name
@@ -25,19 +29,20 @@ export function TeamCard({
     .toUpperCase()
 
   return (
-    <button type="button" onClick={onClick} className="text-left" aria-label={`Open team ${team.name}`}>
-      <Card className="p-4 gap-4 cursor-pointer  hover:bg-muted~">
-        <div className="flex items-start gap-3">
+      <Card  onClick={onClick}  aria-label={`Open team ${team.name}`} className={`p-4 gap-6 cursor-pointer  hover:bg-muted ${className}`}>
+        {/* <div className="flex items-center justify-between"> */}
+          <div className="flex items-start gap-3">
           <Avatar className="size-8">
             <AvatarImage alt={team.name} />
             <AvatarFallback className="text-xs">{initials}</AvatarFallback>
           </Avatar>
           <div className="space-y-1">
             <div className="text-sm font-medium leading-none">{team.name}</div>
-            {team.description ? <div className="text-xs text-muted-foreground whitespace-wrap line-clamp-2 h-12">{team.description}</div> : null}
+            {team.description ? <div className="text-xs text-muted-foreground whitespace-wrap line-clamp-2 h-8">{team.description}</div> : null}
           </div>
+          {children}
         </div>
-        <div className="flex items-start w-full gap-3">
+        {layout==="detailed" && <div className="flex items-start w-full gap-3">
           <div className="text-xs text-muted-foreground flex items-center gap-1">
             <Users className="size-3.5" aria-hidden />
             {count} member{count === 1 ? "" : "s"}
@@ -45,8 +50,9 @@ export function TeamCard({
           <Badge variant="outline" className="text-xs">
             View members
           </Badge>
-        </div>
+        </div>}
+        
+        {/* </div> */}
       </Card>
-    </button>
   )
 }

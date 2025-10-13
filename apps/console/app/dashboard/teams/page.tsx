@@ -110,7 +110,7 @@ export default function TeamsPage() {
       {/* Teams grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {teams.map((team) => (
-          <TeamCard key={team.id} team={team} onClick={() => handleOpenTeam(team)} />
+          <TeamCard layout="detailed" key={team.id} team={team} onClick={() => handleOpenTeam(team)} />
         ))}
       </div>
 

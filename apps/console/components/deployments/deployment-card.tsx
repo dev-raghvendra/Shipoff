@@ -3,7 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "../ui/spinner";
 
-type Deployment = {
+export type Deployment = {
   id: string
   project: string
   env: "production" | "preview" | "staging"
