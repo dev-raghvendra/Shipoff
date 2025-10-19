@@ -3,6 +3,65 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Prevent scrollbars from appearing on hover */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+/* Only show scrollbars when needed */
+.overflow-auto::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.overflow-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-auto::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 3px;
+}
+
+.overflow-auto::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
+}
+
+/* Prevent layout shifts from hover animations */
+.hover\:scale-105:hover {
+  transform: scale(1.05);
+  transform-origin: center;
+}
+
+.hover\:scale-110:hover {
+  transform: scale(1.1);
+  transform-origin: center;
+}
+
+/* Ensure smooth animations without layout shifts */
+* {
+  box-sizing: border-box;
+}
+
+/* Prevent scrollbars from appearing during animations */
+.animate-in {
+  overflow: hidden;
+}
+
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.1450 0 0);
@@ -21,6 +80,8 @@
   --accent-foreground: #3c8707;
   --destructive: oklch(0.5770 0.2450 27.3250);
   --destructive-foreground: oklch(1 0 0);
+  --warning: oklch(0.7400 0.1900 91.0000);
+  --warning-foreground: oklch(0.1450 0 0);
   --border: oklch(0.9220 0 0);
   --input: oklch(0.9220 0 0);
   --ring: oklch(0.7080 0 0);
@@ -74,6 +135,9 @@
   --accent-foreground: #73f70a;
   --destructive: oklch(54.132% 0.21532 28.198);
   --destructive-foreground: oklch(0.9850 0 0);
+  --destructive-foreground: oklch(0.9850 0 0);
+  --warning: oklch(50.129% 0.09894 89.394);
+  --warning-foreground: oklch(98.519% 0.01904 90.541);
   --border: oklch(0.2750 0 0);
   --input: oklch(0.3250 0 0);
   --ring: oklch(0.5560 0 0);

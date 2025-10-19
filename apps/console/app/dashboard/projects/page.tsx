@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { ProjectsGrid } from "@/components/projects/projects-grid"
 import { Plus } from "lucide-react"
+import Link from "next/link"
 
 type Project = {
   projectId: string
@@ -83,9 +84,11 @@ export default function ProjectsPage() {
           <h1 className="text-2xl font-semibold tracking-tight text-balance">Projects</h1>
           <p className="text-sm text-muted-foreground">Manage your applications, frameworks, and deployments</p>
         </div>
-        <Button className="gap-2">
-          <Plus className="size-4" aria-hidden="true" />
-          Create Project
+        <Button asChild className="gap-2">
+          <Link href="/dashboard/projects/new">
+            <Plus className="size-4" />
+            Create Project
+          </Link>
         </Button>
       </header>
 

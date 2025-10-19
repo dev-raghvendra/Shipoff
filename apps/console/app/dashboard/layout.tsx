@@ -22,7 +22,10 @@ import {
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { LayoutDashboard, Boxes, Rocket, Settings, User, ChevronLeft, Users2 } from "lucide-react"
+import { UserProfileDropdown } from "@/components/ui/user-profile-dropdown"
+import { LayoutDashboard, Boxes, Rocket, Settings, User, ChevronLeft, Users2, BugIcon } from "lucide-react"
+import { SessionProvider } from "next-auth/react"
+
 
 const getDashboardNav = () => [
   {group:"General",items:[
@@ -30,7 +33,10 @@ const getDashboardNav = () => [
     { label: "Projects", href: "/dashboard/projects", icon: Boxes },
     { label: "Teams", href: "/dashboard/teams", icon: Users2 },
     { label: "Account", href: "/dashboard/account", icon: User },
-  ]}
+  ]},{group:"Community", items:[
+    { label: "Report bug", href: "/dashboard/report-bug", icon: BugIcon },
+  ]},
+
 ]
 
 const getProjectNav = (projectId:string) => [
@@ -38,13 +44,19 @@ const getProjectNav = (projectId:string) => [
     { label: "Overview", href: `/dashboard/projects/${projectId}`, icon: LayoutDashboard },
     { label: "Deployments", href: `/dashboard/projects/${projectId}/deployments`, icon: Rocket },
     { label: "Settings", href: `/dashboard/projects/${projectId}/settings`, icon: Settings },
+    
+  ]},{group:"Community", items:[
+    { label: "Report bug", href: `/dashboard/projects/${projectId}/report-bug`, icon: BugIcon },
   ]}
 ]
 
 const getDeploymentNav = (projectId:string,deploymentId:string) => [
   {group:"General", items:[
-    { label: "Overview", href: `/dashboard/projects/${projectId}/deployments/${deploymentId}`, icon: LayoutDashboard },
-    { label: "Settings", href: `/dashboard/projects/${projectId}/deployments/${deploymentId}/settings`, icon: Settings },
+    { label: "Overview", href: `/dashboard/projects/${projectId}/deployments/${deploymentId}/overview`, icon: LayoutDashboard },
+    ,
+  ]},
+  {group:"Community", items:[
+    { label: "Report bug", href: `/dashboard/projects/${projectId}/deployments/${deploymentId}/report-bug`, icon: BugIcon },
   ]}
 ]
 
@@ -103,8 +115,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       : null
 
   return (
-    <SidebarProvider defaultOpen>
-      <Sidebar variant="inset" collapsible="icon">
+     <SessionProvider>
+      <SidebarProvider defaultOpen>
+      <Sidebar variant="inset" collapsible="icon" className="sticky max-h-screen overflow-y-auto">
         <SidebarHeader>
           <Link href="/dashboard" className="flex items-center gap-2 px-2">
             <div className="size-6 rounded-md bg-primary" />
@@ -137,14 +150,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <SidebarGroupContent>
                   <SidebarMenu>
                     {group.items.map((item) => {
-                      const Icon = item.icon
-                      const isActive = pathname.endsWith(item.label.toLocaleLowerCase())
+                      const Icon = item!.icon
+                      const isActive = pathname.endsWith(item!.label.toLocaleLowerCase().replace(" ","-"))
                       return (
-                        <SidebarMenuItem key={item.href}>
+                        <SidebarMenuItem key={item!.href}>
                           <SidebarMenuButton asChild isActive={isActive}>
-                            <Link href={item.href} className="flex items-center gap-2">
+                            <Link href={item!.href} className="flex items-center gap-2">
                               <Icon className="size-4" />
-                              <span>{item.label}</span>
+                              <span>{item!.label}</span>
                             </Link>
                           </SidebarMenuButton>
                         </SidebarMenuItem>
@@ -174,27 +187,32 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <SidebarRail />
       </Sidebar>
 
-      <SidebarInset className="min-h-svh">
-        <header className="border-b bg-background">
-          <div className="flex h-14 items-center gap-2 px-3 md:px-4">
-            <SidebarTrigger />
+      <SidebarInset className="min-h-svh" style={{marginTop:
+        "0px"
+      }}>
+        <header className="border-b bg-background sticky top-0 z-10">
+          <div className="flex h-14 items-center justify-between gap-2 px-3 md:px-4">
             <div className="flex items-center gap-2">
-              {breadcrumbs.map((crumb, idx) => (
-                <React.Fragment key={crumb.href}>
-                  {idx > 0 && <span className="text-muted-foreground">/</span>}
-                  {idx === breadcrumbs.length - 1 ? (
-                    <h1 className="text-sm font-medium">{crumb.label}</h1>
-                  ) : (
-                    <Link 
-                      href={crumb.href} 
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {crumb.label}
-                    </Link>
-                  )}
-                </React.Fragment>
-              ))}
+              <SidebarTrigger />
+              <div className="flex items-center gap-2">
+                {breadcrumbs.map((crumb, idx) => (
+                  <React.Fragment key={crumb.href}>
+                    {idx > 0 && <span className="text-muted-foreground">/</span>}
+                    {idx === breadcrumbs.length - 1 ? (
+                      <h1 className="text-sm font-medium">{crumb.label}</h1>
+                    ) : (
+                      <Link 
+                        href={crumb.href} 
+                        className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {crumb.label}
+                      </Link>
+                    )}
+                  </React.Fragment>
+                ))}
+              </div>
             </div>
+            <UserProfileDropdown />
           </div>
         </header>
 
@@ -203,5 +221,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </main>
       </SidebarInset>
     </SidebarProvider>
+    </SessionProvider>
   )
 }

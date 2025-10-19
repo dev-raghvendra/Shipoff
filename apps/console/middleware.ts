@@ -11,8 +11,7 @@ export default withAuth(
         const isAuthPage = AUTH_PAGES.includes(pathname);
         const isAuthenticated = token && !token.error;
 
-
-        if (!isAuthenticated) {
+        if (isAuthenticated) {
             if (isAuthPage) {
                 return NextResponse.next();
             }

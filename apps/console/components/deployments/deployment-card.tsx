@@ -16,14 +16,14 @@ export type Deployment = {
   branch: string
 }
 
-function statusBadge(status: Deployment["status"]) {
+export function statusBadge(status: Deployment["status"]) {
   switch (status) {
     case "PRODUCTION":
       return <Badge className="bg-[var(--label-bg-success)] text-[var(--label-fg-success)]"><ArrowUpFromLine />PRODUCTION</Badge>
     case "BUILDING":
-      return <Badge className="bg-[var(--label-bg-alert)] text-[var(--label-fg-alert)]"><Spinner />BUILDING</Badge>
+      return <Badge className="bg-[var(--label-bg-alert)] text-[var(--label-fg-alert)]"><Spinner className="animate-spin" />BUILDING</Badge>
     case "PROVISIONING":
-      return <Badge className="bg-[var(--label-bg-warning)] text-[var(--label-fg-warning)]"><Spinner />PROVISIONING</Badge>
+      return <Badge className="bg-[var(--label-bg-warning)] text-[var(--label-fg-warning)]"><Spinner className="animate-spin" />PROVISIONING</Badge>
     case "FAILED":
       return <Badge className="bg-[var(--label-bg-destructive)] text-[var(--label-fg-destructive)]"><CircleX />FAILED</Badge>
     case "QUEUED":
@@ -33,7 +33,7 @@ function statusBadge(status: Deployment["status"]) {
 
 export default function DeploymentCard({ d }: { d: Deployment }) {
   return (
-    <Card className="group transition-colors hover:bg-muted/50">
+    <Card className="group hover:bg-muted/50 transition-colors hover:shadow-md">
       <CardHeader className="pb-1">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">

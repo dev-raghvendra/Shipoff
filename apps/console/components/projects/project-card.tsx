@@ -40,7 +40,7 @@ export default function ProjectCard({ item }: { item: ProjectItem }) {
       </div>
 
       {/* Description (optional) */}
-      {item.description ? <p className="text-sm text-muted-foreground h-14 line-clamp-3 ">{item.description}</p> : null}
+      {item.description ? <p className="text-sm text-muted-foreground h-14 line-clamp-3">{item.description}</p> : null}
 
       {/* Footer: Framework + Runtime on the left, Updated time on the right */}
       <div className="mt-2 flex items-center justify-between gap-3">

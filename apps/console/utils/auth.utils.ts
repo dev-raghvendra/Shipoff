@@ -12,7 +12,8 @@ export interface UserData {
     email: string,
     emailVerified: boolean,
     avatarUri: string,
-    provider: "GOOGLE" | "GITHUB" | "EMAIL"
+    provider: "GOOGLE" | "GITHUB" | "EMAIL",
+    preferredTheme: "dark" | "light" | "system"
 }
 
 export type ParamsType = {
@@ -104,6 +105,7 @@ export function returnErrorFromOAuth({name}:{name:string}):User{
         accessToken:"accessToken",
         refreshToken:"refreshToken",
         refreshTokenExpiresAt:0,
+        preferredTheme:"system",
         error:name
     }
 }
