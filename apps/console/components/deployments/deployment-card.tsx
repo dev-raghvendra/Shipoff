@@ -2,19 +2,10 @@ import { GitBranch, User, GitCommit, ArrowUpFromLine, List, ListEnd, CircleX } f
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "../ui/spinner";
+import { InferResponse } from "@/types/response";
+import { DeploymentResponse } from "@shipoff/proto";
 
-export type Deployment = {
-  id: string
-  project: string
-  env: "production" | "preview" | "staging"
-  status: "PRODUCTION" | "BUILDING" | "FAILED" | "QUEUED" | "PROVISIONING"
-  duration: string
-  createdAt: string
-  commitMessage: string
-  commitAuthor: string
-  commitHash: string
-  branch: string
-}
+export type Deployment = InferResponse<DeploymentResponse>["res"]
 
 export function statusBadge(status: Deployment["status"]) {
   switch (status) {
@@ -37,15 +28,15 @@ export default function DeploymentCard({ d }: { d: Deployment }) {
       <CardHeader className="pb-1">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <CardTitle className="text-base">{d.project}</CardTitle>
+            <CardTitle className="text-base">{d.projectId}</CardTitle>
             <Badge variant="secondary" className="flex items-center gap-1">
               <GitBranch aria-hidden="true" className="h-3.5 w-3.5" />
-              <span className="leading-none">{d.branch}</span>
+              <span className="leading-none">{d.repository.branch}</span>
             </Badge>
           </div>
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
             <User aria-hidden="true" className="h-4 w-4" />
-            <span className="font-medium text-foreground">{d.commitAuthor}</span>
+            <span className="font-medium text-foreground">{d.author}</span>
           </div>
         </div>
       </CardHeader>
@@ -65,7 +56,7 @@ export default function DeploymentCard({ d }: { d: Deployment }) {
         <div className="mt-2 flex items-center justify-between">
           <div className="flex items-center gap-2">{statusBadge(d.status)}</div>
           <div className="text-xs text-muted-foreground">
-            {d.duration} • {d.createdAt}
+          {d.completedAt} • {d.lastDeployedAt}
           </div>
         </div>
       </CardContent>

@@ -5,6 +5,7 @@ import axios from "axios"
 import { decode } from "jsonwebtoken"
 import { createErrHandler } from "./error.utils"
 import { User } from "next-auth"
+import { SubscriptionType } from "@shipoff/types"
 
 export interface UserData {
     userId: string,
@@ -13,7 +14,8 @@ export interface UserData {
     emailVerified: boolean,
     avatarUri: string,
     provider: "GOOGLE" | "GITHUB" | "EMAIL",
-    preferredTheme: "dark" | "light" | "system"
+    preferredTheme: "dark" | "light" | "system",
+    subscriptions: SubscriptionType[],
 }
 
 export type ParamsType = {
@@ -106,6 +108,7 @@ export function returnErrorFromOAuth({name}:{name:string}):User{
         refreshToken:"refreshToken",
         refreshTokenExpiresAt:0,
         preferredTheme:"system",
+        subscriptions:[],
         error:name
     }
 }

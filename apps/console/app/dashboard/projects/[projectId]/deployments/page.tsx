@@ -6,103 +6,19 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Filter } from "lucide-react"
 import DeploymentCard from "@/components/deployments/deployment-card"
+import { useInfiniteDeployments } from "@/hooks/use-deployment"
 
-type Deployment = {
-  id: string
-  project: string
-  env: "production" | "preview" | "staging"
-  status: "PRODUCTION" | "BUILDING" | "FAILED" | "QUEUED" | "PROVISIONING"
-  duration: string
-  createdAt: string
-  commitMessage: string
-  commitAuthor: string
-  commitHash: string
-  branch: string
-}
-
-const MOCK_DEPLOYMENTS: Deployment[] = [
-  {
-    id: "d1",
-    project: "dashboard",
-    env: "production",
-    status: "PRODUCTION",
-    duration: "1m 24s",
-    createdAt: "2h ago",
-    commitMessage: "Refactor auth flow and fix session hydration",
-    commitAuthor: "Ananya Sharma",
-    commitHash: "a1b2c3d",
-    branch: "main",
-  },
-  {
-    id: "d2",
-    project: "dashboard",
-    env: "staging",
-    status: "BUILDING",
-    duration: "—",
-    createdAt: "3h ago",
-    commitMessage: "Add rate limiting to POST /v1/ingest",
-    commitAuthor: "Liam Chen",
-    commitHash: "4e5f6a7",
-    branch: "feat/rate-limit",
-  },
-  {
-    id: "d3",
-    project: "dashboard",
-    env: "preview",
-    status: "FAILED",
-    duration: "38s",
-    createdAt: "5h ago",
-    commitMessage: "Fix broken link checks in CI",
-    commitAuthor: "Sara Kim",
-    commitHash: "8b9c0de",
-    branch: "chore/ci",
-  },
-  {
-    id: "d4",
-    project: "dashboard",
-    env: "production",
-    status: "PRODUCTION",
-    duration: "51s",
-    createdAt: "1d ago",
-    commitMessage: "Batch job enqueue optimization",
-    commitAuthor: "Diego Perez",
-    commitHash: "11223aa",
-    branch: "main",
-  },
-  {
-    id: "d5",
-    project: "dashboard",
-    env: "staging",
-    status: "PRODUCTION",
-    duration: "2m 15s",
-    createdAt: "2d ago",
-    commitMessage: "Update dependencies and security patches",
-    commitAuthor: "Ananya Sharma",
-    commitHash: "bb4455cc",
-    branch: "main",
-  },
-  {
-    id: "d6",
-    project: "dashboard",
-    env: "production",
-    status: "QUEUED",
-    duration: "—",
-    createdAt: "3d ago",
-    commitMessage: "Add new dashboard widgets",
-    commitAuthor: "Liam Chen",
-    commitHash: "dd6677ee",
-    branch: "feat/widgets",
-  },
-]
 
 
 export default function DeploymentsPage({ params }: { params: { projectId: string } }) {
+
+  const {data:deployments} = useInfiniteDeployments({projectId:params.projectId})
+
   const [filterStatus, setFilterStatus] = useState<string | null>(null)
 //   const [filterEnv, setFilterEnv] = useState<string | null>(null)
 
-  const filteredDeployments = MOCK_DEPLOYMENTS.filter((d) => {
+  const filteredDeployments = deployments.filter((d) => {
     if (filterStatus && d.status !== filterStatus) return false
-    // if (filterEnv && d.env !== filterEnv) return false
     return true
   })
 
@@ -193,7 +109,7 @@ export default function DeploymentsPage({ params }: { params: { projectId: strin
       <div className="flex flex-col gap-3">
         {filteredDeployments.length > 0 ? (
           filteredDeployments.map((d) => (
-            <Link key={d.id} href={`/dashboard/projects/${params.projectId}/deployments/${d.id}`}>
+            <Link key={d.deploymentId} href={`/dashboard/projects/${params.projectId}/deployments/${d.deploymentId}`}>
               <DeploymentCard d={d} />
             </Link>
           ))

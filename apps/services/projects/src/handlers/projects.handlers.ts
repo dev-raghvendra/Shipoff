@@ -53,6 +53,20 @@ export class ProjectsHandlers {
         }
     }
 
+    async handleGetLatestProjects(call:ServerUnaryCall<BulkResourceRequest & {body:BulkResourceRequestBodyType}, AllProjectsResponse>,callback:sendUnaryData<AllProjectsResponse>) {
+        try {
+            const {code,res,message} = await this._projectsService.getLatestUserProjects(call.request.body);
+            if(code !== status.OK) return callback({code,message});
+            const response = AllProjectsResponse.fromObject({code,message,res})
+            return callback(null,response);
+        } catch (e:any) {
+            return callback({
+                code:status.INTERNAL,
+                message:"Internal server error"
+            })
+        }
+    }
+
     async handleUpdateProject(call:ServerUnaryCall<UpdateProjectRequest & {body:UpdateProjectRequestBodyType}, ProjectResponse>,callback:sendUnaryData<ProjectResponse>) {
         try {
             const {code,res,message} = await this._projectsService.updateProject(call.request.body);

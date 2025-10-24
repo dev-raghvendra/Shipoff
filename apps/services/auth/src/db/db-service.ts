@@ -6,12 +6,14 @@ import { ProjectMemberDBBodyType, ProjectMemberInvitationRequestDBBodyType, Tran
 import { generateId, GrpcAppError } from "@shipoff/services-commons";
 import { DefaultArgs } from "@prisma/runtime/library";
 import { status } from "@grpc/grpc-js";
+import SECRETS from "@/config/secrets";
 
 const MODEL_MAP = {
     User: "user",
     Team: "team",
     TeamMemberInvitation: "team-invite",
     ProjectMemberInvitation: "prj-invite",
+    Subscription:"sub"
 } as const;
 
 export class Database {
@@ -37,10 +39,10 @@ export class Database {
         throw new GrpcAppError(status.NOT_FOUND,"No users found",null);
     }
 
-    async findUniqueUserById(userId: string, select?: Prisma.UserSelect) {
-        const res = await this._client.user.findUnique({ where: { userId }, select });
-       
-        if(res) return res;
+    async findUniqueUserById<T extends Prisma.UserSelect>(userId: string, select?: Prisma.UserSelect) {
+        const res = await this._client.user.findUnique({ where: { userId },select});
+        
+        if(res) return res as Prisma.UserGetPayload<{select:T}>;
         throw new GrpcAppError(status.NOT_FOUND,"User not found",null);
     }
 
@@ -68,9 +70,9 @@ export class Database {
         throw new GrpcAppError(status.NOT_FOUND,"Team member not found",null);
     }
 
-    async findTeamMembers(where: Prisma.TeamMemberWhereInput, select?: Prisma.TeamMemberSelect){
-        const res = await this._client.teamMember.findMany({where,select});
-        if(res) return res;
+    async findTeamMembers<T extends Prisma.TeamMemberFindManyArgs>(args:T){
+        const res = await this._client.teamMember.findMany(args);
+        if(res) return res as Prisma.TeamMemberGetPayload<T>;
         throw new GrpcAppError(status.NOT_FOUND,"No team members found",null);
     }
 
@@ -109,9 +111,16 @@ export class Database {
         try {
             const res = await this._client.user.create({
                 data: {
-                    userId: generateId("User",MODEL_MAP),
+                    userId:generateId("User",MODEL_MAP),
                     emailVerified:true,
                     ...body,
+                    subscriptions:{
+                        create:{
+                            subscriptionId:generateId("Subscription",MODEL_MAP),
+                            freePerksId:SECRETS.FREE_SUBSCRIPTION_PERKS_ID,
+                            type:"FREE"
+                        }
+                    }
                 },
                 select: {
                     userId:true,
@@ -135,6 +144,8 @@ export class Database {
 
     async createEmailUser(body:SigninRequestDBBodyType){
         try {
+            const userId = generateId("User",MODEL_MAP)
+            const subscriptionId = generateId("Subscription",MODEL_MAP)
             const res = await this._client.user.create({
                 data: {
                     userId: generateId("User",MODEL_MAP),
@@ -385,6 +396,10 @@ export class Database {
     // OTHER METHODS
     startTransaction(fn:(tx: Omit<PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends">)=>Promise<any>){
         return this._client.$transaction(fn)
+    }
+
+    get getClient(){
+        return this._client
     }
 }
 

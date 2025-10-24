@@ -29,6 +29,7 @@ message GetUserResponse {
   GetUserResponseData res = 3;
 }
 
+
 message GetCurrentUserResponseData {
   string fullName = 1;
   string email = 2;
@@ -38,8 +39,9 @@ message GetCurrentUserResponseData {
   string password = 6;
   bool emailVerified = 7;
   string userId = 8;
-  repeated GetTeamMemberResponseData teamMembers = 9;
-  repeated GetProjectMemberResponseData  projectMembers = 10;
+  repeated SubscriptionData subscriptions = 9;
+  repeated GetTeamMemberResponseData teamMembers = 10;
+  repeated GetProjectMemberResponseData  projectMembers = 11;
 }
 
 
@@ -309,6 +311,26 @@ message GetAllUserProjectIdsResponse {
   repeated string res = 3;
 }
 
+message GetTeamsLinkedToProjectRequest {
+  User authUserData = 1;
+  string projectId = 2;
+  RequestMeta reqMeta= 3;
+}
+
+
+message GetTeamMembersRequest {
+  User authUserData = 1;
+  string teamId = 2;
+  int32 limit = 3;
+  int32 skip = 4;
+  RequestMeta reqMeta= 5;
+}
+
+message GetTeamMembersResponse {
+  int32 code = 1;
+  string message = 2;
+  repeated GetTeamMemberResponseData res = 3;
+}
 
 // AuthService definition
 service AuthService {
@@ -323,12 +345,15 @@ service AuthService {
   // Team Management
   rpc CreateTeam(CreateTeamRequest) returns (CreateTeamResponse);
   rpc GetTeam(GetTeamRequest) returns (GetTeamResponse);
+  rpc GetTeamsLinkedToProject(GetTeamsLinkedToProjectRequest) returns (GetAllUserTeamsResponse);
   rpc DeleteTeam(DeleteTeamRequest) returns (DeleteTeamResponse);
   rpc GetAllUserTeams(BulkResourceRequest) returns (GetAllUserTeamsResponse);
+
   
   // Team Members
   rpc CreateTeamMemberInvitation(CreateTeamMemberInvitationRequest) returns (CreateTeamMemberInvitationResponse);
   rpc GetTeamMember(GetTeamMemberRequest) returns (GetTeamMemberResponse);
+  rpc GetTeamMembers(GetTeamMembersRequest) returns (GetTeamMembersResponse);
   rpc DeleteTeamMember(DeleteTeamMemberRequest) returns (DeleteProjectMemberResponse);
   rpc AcceptTeamInvitation(AcceptInvitationRequest) returns (GetTeamMemberResponse);
   rpc TransferTeamOwnership(TransferTeamOwnershipRequest) returns (google.protobuf.Empty);
@@ -342,6 +367,7 @@ service AuthService {
   rpc TransferProjectOwnership(TransferProjectOwnershipRequest) returns (google.protobuf.Empty);
 
   rpc HasPermissions(HasPermissionsRequest) returns (HasPermissionsResponse);
+
   // Future: partial decentralized RBAC
   // rpc UpdateTeamMember(UpdateTeamMemberRequest) returns (UpdateTeamMemberResponse);
   // rpc UpdateProjectMember(UpdateProjectMemberRequest) returns (UpdateProjectMemberResponse);

@@ -18,6 +18,7 @@ model User {
   createdAt      DateTime?        @default(now())
   updatedAt      DateTime?        @updatedAt
 
+  subscriptions   Subscription[]   
   teamMembers    TeamMember[]
   provider       ProviderType
   projectMembers ProjectMember[]
@@ -86,6 +87,36 @@ model TeamLink {
   @@id([teamId, projectId])
 }
 
+model Subscription {
+  subscriptionId   String @id @default(uuid())
+  userId           String
+  type             SubscriptionType
+  freePerksId      String
+  proPerksId       String?
+  startedAt        DateTime? @default(now())
+  endedAt          DateTime?
+
+  freePerks        FreeSubscriptionPerks @relation(fields: [freePerksId], references: [perkId],onDelete: Cascade)
+  proPerks         ProSubscriptionPerks?  @relation(fields: [proPerksId], references: [perkId], onDelete: Cascade)
+  user             User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
+}
+
+model FreeSubscriptionPerks {
+  perkId           String @id @default(uuid())
+  staticProjects   Int    @default(4)
+  dynamicProjects  Int    @default(1)
+
+  subscriptions   Subscription[]
+}
+
+model ProSubscriptionPerks {
+  perkId           String @id @default(uuid())
+  staticProjects   Int    @default(20)
+  dynamicProjects  Int    @default(10)
+
+  subscriptions   Subscription[]
+}
+
 enum PermissionType {
   READ
   UPDATE
@@ -123,6 +154,12 @@ enum ScopeType {
   TEAM_MEMBER
   PROJECT_MEMBER
   TEAM_LINK
+}
+
+enum SubscriptionType {
+  FREE
+  PRO
+  ENTERPRISE
 }
 
 // model ProjectMemberPermissionOverride {

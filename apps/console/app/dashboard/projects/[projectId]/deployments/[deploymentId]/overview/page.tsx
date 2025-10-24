@@ -1,34 +1,26 @@
 "use client"
 
 import { useState } from "react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { statusBadge } from "@/components/deployments/deployment-card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
 import { Input } from "@/components/ui/input"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
-  Loader2, 
-  ExternalLink, 
-  GitBranch, 
-  User, 
+import {
+  CheckCircle,
+  XCircle,
+  Clock,
+  Loader2, GitBranch,
+  User,
   Calendar,
   Globe,
   Code,
-  Terminal,
-  Bug,
-  ChevronDown,
-  ChevronRight,
-  Info,
-  AlertTriangle,
-  Download
+  Terminal, ChevronDown,
+  ChevronRight, AlertTriangle
 } from "lucide-react"
+import { useDeployment } from "@/hooks/use-deployment"
 
 interface DeploymentDetailPageProps {
   params: {
@@ -37,46 +29,6 @@ interface DeploymentDetailPageProps {
   }
 }
 
-// Mock deployment data
-const MOCK_DEPLOYMENT = {
-  id: "deploy_123",
-  status: "PRODUCTION" as const,
-  domain: "my-paas-app.on.shipoff.in",
-  repo: "example/my-paas-app",
-  branch: "main",
-  framework: "Next.js",
-  commitHash: "a1b2c3d4e5f6",
-  commitAuthor: "John Doe",
-  projectName: "my-paas-app",
-  deployedAt: "2024-01-15T10:30:00Z",
-  isDynamic: true,
-  buildId: "build_abc123",
-  buildLogs: [
-    { level: "info", type: "build", time: "2024-01-15T10:30:15Z", message: "Installing dependencies..." },
-    { level: "info", type: "build", time: "2024-01-15T10:30:45Z", message: "Running build command: next build" },
-    { level: "success", type: "build", time: "2024-01-15T10:32:10Z", message: "✓ Build completed successfully" },
-    { level: "info", type: "build", time: "2024-01-15T10:32:15Z", message: "Generating static files..." },
-    { level: "success", type: "build", time: "2024-01-15T10:32:30Z", message: "✓ Deployment ready" }
-  ],
-  runtimeLogs: [
-    { level: "info", type: "runtime", time: "2024-01-15T10:33:00Z", message: "Server started on port 3000" },
-    { level: "info", type: "runtime", time: "2024-01-15T10:33:05Z", message: "Database connection established" },
-    { level: "success", type: "runtime", time: "2024-01-15T10:33:10Z", message: "✓ Application is running" },
-    { level: "info", type: "runtime", time: "2024-01-15T10:33:15Z", message: "Health check passed" },
-    { level: "info", type: "runtime", time: "2024-01-15T10:33:20Z", message: "Server started on port 3000" },
-    { level: "info", type: "runtime", time: "2024-01-15T10:33:25Z", message: "Database connection established" },
-    { level: "success", type: "runtime", time: "2024-01-15T10:33:30Z", message: "✓ Application is running" },
-    { level: "info", type: "runtime", time: "2024-01-15T10:33:35Z", message: "Health check passed" },
-    { level: "info", type: "runtime", time: "2024-01-15T10:33:40Z", message: "Server started on port 3000" },
-    { level: "info", type: "runtime", time: "2024-01-15T10:33:45Z", message: "Database connection established" },
-    { level: "success", type: "runtime", time: "2024-01-15T10:33:50Z", message: "✓ Application is running" },
-    { level: "info", type: "runtime", time: "2024-01-15T10:33:55Z", message: "Health check passed" },
-    { level: "info", type: "runtime", time: "2024-01-15T10:34:00Z", message: "Server started on port 3000" },
-    { level: "info", type: "runtime", time: "2024-01-15T10:34:05Z", message: "Database connection established" },
-    { level: "success", type: "runtime", time: "2024-01-15T10:34:10Z", message: "✓ Application is running" },
-    { level: "info", type: "runtime", time: "2024-01-15T10:34:15Z", message: "Health check passed" }
-  ]
-}
 
 const getStatusIcon = (status: string) => {
   switch (status) {
@@ -112,43 +64,44 @@ export default function DeploymentDetailPage({ params }: DeploymentDetailPagePro
   const [buildSearchQuery, setBuildSearchQuery] = useState("")
   const [runtimeSearchQuery, setRuntimeSearchQuery] = useState("")
   const [isExporting, setIsExporting] = useState(false)
-  const deployment = MOCK_DEPLOYMENT
+  const {data:deployment} = useDeployment({projectId:params.projectId,deploymentId:params.deploymentId})
+
 
   const handleExportLogs = async () => {
     setIsExporting(true)
-    try {
-      const response = await fetch(`/api/deployments/${params.deploymentId}/export-logs`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          projectId: params.projectId,
-          deploymentId: params.deploymentId,
-          buildLogs: deployment.buildLogs,
-          runtimeLogs: deployment.runtimeLogs
-        })
-      })
+    // try {
+    //   const response = await fetch(`/api/deployments/${params.deploymentId}/export-logs`, {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify({
+    //       projectId: params.projectId,
+    //       deploymentId: params.deploymentId,
+    //       buildLogs: deployment.buildLogs,
+    //       runtimeLogs: deployment.runtimeLogs
+    //     })
+    //   })
       
-      if (response.ok) {
-        const blob = await response.blob()
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `deployment-${params.deploymentId}-logs.zip`
-        document.body.appendChild(a)
-        a.click()
-        window.URL.revokeObjectURL(url)
-        document.body.removeChild(a)
-      } else {
-        throw new Error('Export failed')
-      }
-    } catch (error) {
-      console.error('Export failed:', error)
-      // Handle error - could show a toast notification
-    } finally {
-      setIsExporting(false)
-    }
+    //   if (response.ok) {
+    //     const blob = await response.blob()
+    //     const url = window.URL.createObjectURL(blob)
+    //     const a = document.createElement('a')
+    //     a.href = url
+    //     a.download = `deployment-${params.deploymentId}-logs.zip`
+    //     document.body.appendChild(a)
+    //     a.click()
+    //     window.URL.revokeObjectURL(url)
+    //     document.body.removeChild(a)
+    //   } else {
+    //     throw new Error('Export failed')
+    //   }
+    // } catch (error) {
+    //   console.error('Export failed:', error)
+    //   // Handle error - could show a toast notification
+    // } finally {
+    //   setIsExporting(false)
+    // }
   }
 
   return (
@@ -174,7 +127,7 @@ export default function DeploymentDetailPage({ params }: DeploymentDetailPagePro
                     <Globe className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="text-sm font-medium">Domain</p>
-                      <p className="text-sm text-muted-foreground">{deployment.domain}</p>
+                    <p className="text-sm text-muted-foreground">{deployment.project.domain}</p>
                     </div>
                   </div>
                   
@@ -182,7 +135,7 @@ export default function DeploymentDetailPage({ params }: DeploymentDetailPagePro
                     <Code className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="text-sm font-medium">Repository</p>
-                      <p className="text-sm text-muted-foreground">{deployment.repo}</p>
+                      <p className="text-sm text-muted-foreground">{deployment.repository.githubRepoFullName}</p>
                     </div>
                   </div>
 
@@ -190,7 +143,7 @@ export default function DeploymentDetailPage({ params }: DeploymentDetailPagePro
                     <GitBranch className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="text-sm font-medium">Branch</p>
-                      <p className="text-sm text-muted-foreground">{deployment.branch}</p>
+                      <p className="text-sm text-muted-foreground">{deployment.repository.branch}</p>
                     </div>
                   </div>
                 </div>
@@ -198,9 +151,12 @@ export default function DeploymentDetailPage({ params }: DeploymentDetailPagePro
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <Terminal className="h-4 w-4 text-muted-foreground" />
-                    <div>
+                    <div className="flex items-center gap-2">
                       <p className="text-sm font-medium">Framework</p>
-                      <p className="text-sm text-muted-foreground">{deployment.framework}</p>
+                      <div>
+                        <img src={deployment.project.framework.icon} alt="Framework Icon" className="inline-block h-4 w-4" />
+                      <p className="text-sm text-muted-foreground">{deployment.project.framework.displayName}</p>
+                      </div>
                     </div>
                   </div>
 
@@ -216,7 +172,7 @@ export default function DeploymentDetailPage({ params }: DeploymentDetailPagePro
                     <User className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="text-sm font-medium">Commit Author</p>
-                      <p className="text-sm text-muted-foreground">{deployment.commitAuthor}</p>
+                      <p className="text-sm text-muted-foreground">{deployment.author}</p>
                     </div>
                   </div>
                 </div>
@@ -228,7 +184,7 @@ export default function DeploymentDetailPage({ params }: DeploymentDetailPagePro
                   <div>
                     <p className="text-sm font-medium">Deployed At</p>
                     <p className="text-sm text-muted-foreground">
-                      {new Date(deployment.deployedAt).toLocaleString()}
+                      {new Date(deployment.lastDeployedAt).toLocaleString()}
                     </p>
                   </div>
                 </div>
@@ -255,7 +211,7 @@ export default function DeploymentDetailPage({ params }: DeploymentDetailPagePro
                         <div>
                           <h3 className="text-sm font-medium text-foreground">Build Logs</h3>
                           <p className="text-xs text-muted-foreground">
-                            Build ID: <code className="bg-muted text-foreground px-1 rounded text-xs">{deployment.buildId}</code>
+                            Build ID: <code className="bg-muted text-foreground px-1 rounded text-xs">{deployment.buildEnvironment[0].buildId}</code>
                           </p>
                         </div>
                       </div>

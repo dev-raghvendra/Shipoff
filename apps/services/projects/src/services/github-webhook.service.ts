@@ -55,7 +55,8 @@ export class GithubWebhookService {
                         status:"QUEUED"
                     },
                     data:{
-                        status:"INACTIVE"
+                        status:"INACTIVE",
+                        completedAt:new Date()
                     }
                 })
                 return tx.deployment.create({

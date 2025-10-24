@@ -95,6 +95,12 @@ class AuthService {
                 createdAt:true,
                 updatedAt:true,
                 password:true,
+                subscriptions:{
+                    include:{
+                        proPerks:true,
+                        freePerks:true
+                    }
+                },
                 teamMembers:true,
                 projectMembers:true
             })

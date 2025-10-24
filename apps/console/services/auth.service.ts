@@ -1,34 +1,25 @@
 import { AUTH_API_ROUTES, MAIN_BACKEND_API } from "@/config/service-route-config";
-import { serviceReqInterceptor, serviceResIntercepter } from "@/utils/service.utils";
-import { createErrHandler } from "@/utils/error.utils";
-import axios, { AxiosInstance } from "axios";
-import {GetAllUserTeamsResponse} from "@shipoff/proto"
+import { GetCurrentUserResponse } from "@shipoff/proto";
+import { InferResponse } from "@/types/response";
+import { BaseService } from "./base.service";
 
-export class AuthService {
-   _axiosInstance : AxiosInstance
-   _isFetching = false
-   _authToken: string | null = null
-   _sessionExpired = false
-   private handleError : ReturnType<typeof createErrHandler>
 
+export class AuthService extends BaseService{
    constructor(){
-      this._axiosInstance = axios.create({
-           baseURL:`${MAIN_BACKEND_API.AUTH_API}`,
+      super({
+        baseURL:MAIN_BACKEND_API.AUTH_API,
+        serviceName:"AUTH"
       })
-      this._axiosInstance.interceptors.request.use(serviceReqInterceptor.apply(this))
-      this._axiosInstance.interceptors.response.use((res)=>res,serviceResIntercepter.apply(this))
-      this.handleError = createErrHandler({serviceName:"AUTH"})
    }
   
-   async getAllTeams(){
+   async getMe(){
         try {
-            const res = await this._axiosInstance.get(AUTH_API_ROUTES.GET_TEAMS())
-            return res.data as Required<ReturnType<GetAllUserTeamsResponse["toObject"]>>
+            const res = await this._axiosInstance.get<InferResponse<GetCurrentUserResponse>>(AUTH_API_ROUTES.ME())
+            return res.data
         } catch (e:any) {
-            return this.handleError(e)
+            return this.handleError(e,undefined,true)
         }
    }
-
 } 
 
 export const authService = new AuthService()

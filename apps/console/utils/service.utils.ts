@@ -1,8 +1,10 @@
 import { AuthService } from "@/services/auth.service"
+import { BaseService } from "@/services/base.service"
+import { TeamsService } from "@/services/teams.service"
 import { InternalAxiosRequestConfig, AxiosResponse, AxiosError } from "axios"
 import { getSession } from "next-auth/react"
 
-export function serviceReqInterceptor(this:AuthService){
+export function serviceReqInterceptor(this:BaseService){
     return async(config:InternalAxiosRequestConfig)=>{
         await getAccessToken.apply(this)
         config.headers.setAuthorization(`Bearer ${this._authToken}`)
@@ -10,7 +12,7 @@ export function serviceReqInterceptor(this:AuthService){
     }
 }
 
-export function serviceResIntercepter(this:AuthService){
+export function serviceResIntercepter(this:BaseService){
     return async(res:AxiosResponse)=>{
        if(res.status===401){
            await getAccessToken.apply(this)
@@ -20,7 +22,7 @@ export function serviceResIntercepter(this:AuthService){
     }
 }
 
-export async function getAccessToken(this:AuthService){
+export async function getAccessToken(this:BaseService){
    if(this._isFetching) await new Promise((res)=>setTimeout(res,600));
    if(this._sessionExpired) throw new AxiosError("Session expired","401");
    if(!this._authToken){

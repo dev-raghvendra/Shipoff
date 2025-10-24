@@ -1,4 +1,4 @@
-import {AcceptInvitationRequest, AuthServiceClient, BodyLessRequest, BulkResourceRequest, CreateProjectMemberInvitationRequest, CreateTeamMemberInvitationRequest, CreateTeamRequest, DeleteProjectMemberRequest, DeleteTeamMemberRequest, DeleteTeamRequest, GetProjectMemberRequest, GetTeamMemberRequest, GetTeamRequest, GetUserRequest, LoginRequest, OAuthRequest, SigninRequest} from "@shipoff/proto";
+import {AcceptInvitationRequest, AuthServiceClient, BodyLessRequest, BulkResourceRequest, CreateProjectMemberInvitationRequest, CreateTeamMemberInvitationRequest, CreateTeamRequest, DeleteProjectMemberRequest, DeleteTeamMemberRequest, DeleteTeamRequest, GetProjectMemberRequest, GetTeamMemberRequest, GetTeamRequest, GetTeamsLinkedToProjectRequest, GetUserRequest, LoginRequest, OAuthRequest, SigninRequest, TransferTeamOwnershipRequest} from "@shipoff/proto";
 import {GetAuthClient} from "@shipoff/grpc-clients";
 import {promisifyGrpcCall} from "@shipoff/services-commons"
 
@@ -101,6 +101,16 @@ export class AuthService {
         }
     }
 
+    async getTeamsLinkedToProject(data:any){
+        try {
+            const req =  GetTeamsLinkedToProjectRequest.fromObject(data);
+            const response = await promisifyGrpcCall(this._authService.GetTeamsLinkedToProject.bind(this._authService), req);
+            return response;
+        } catch (e:any) {
+            return e;
+        }
+    }
+
     async deleteTeam(data:any){
         try {
             const req =  DeleteTeamRequest.fromObject(data);
@@ -148,6 +158,16 @@ export class AuthService {
             return response;
         } catch (e:any) {
             return e;
+        }
+    }
+
+    async transferTeamOwnership(data:any){
+        try {
+            const req = TransferTeamOwnershipRequest.fromObject(data);
+            const response = await promisifyGrpcCall(this._authService.TransferTeamOwnership.bind(this._authService),req)
+            return response
+        } catch (e:any) {
+            return e
         }
     }
 

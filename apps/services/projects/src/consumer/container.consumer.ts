@@ -63,7 +63,8 @@ export class ContainerConsumer {
                 },
                 data:{
                     status:eventStatus,
-                    lastDeployedAt:new Date()
+                    ...(eventStatus === "PRODUCTION" ? { completedAt:new Date() } : {}),
+                    ...(eventStatus === "FAILED" ? { completedAt:new Date() } : {})
                 }
               })
               if(["INACTIVE","FAILED"].includes(eventStatus)) return;
@@ -74,7 +75,8 @@ export class ContainerConsumer {
                     status:eventStatus
                  },
                  data:{
-                    status:DeploymentStatus.INACTIVE
+                    status:DeploymentStatus.INACTIVE,
+                    completedAt:new Date()
                  }
               })
            })

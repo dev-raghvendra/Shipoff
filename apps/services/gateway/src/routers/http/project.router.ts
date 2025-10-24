@@ -1,15 +1,17 @@
-import { createOrUpdateEnvironmentVariableController, createProjectController, createRepositoryController, deleteDeploymentController, deleteEnvironmentVariableController, deleteProjectController, deleteRepositoryController, getAllDeploymentsController, getAllUserProjectsController, getDeploymentController, getEnvironmentVariablesController, getFrameworksController, getProjectController, getRepositoryController, redeployController, updateProjectController } from "@/contollers/http/project.controller";
+import { createOrUpdateEnvironmentVariableController, createProjectController, createRepositoryController, deleteDeploymentController, deleteEnvironmentVariableController, deleteProjectController, deleteRepositoryController, getAllDeploymentsController, getAllUserProjectsController, getDeploymentController, getEnvironmentVariablesController, getFrameworksController, getLatestDeploymentsController, getLatestProjectsController, getProjectController, getRepositoryController, redeployController, updateProjectController } from "@/contollers/http/project.controller";
 import { authorizationMiddleware } from "@/middlewares/http/authorization.middleware";
 import { Router } from "express";
 const projectRouter = Router();
 
 projectRouter.post("/",authorizationMiddleware,createProjectController);
 projectRouter.get("/", authorizationMiddleware, getAllUserProjectsController);
+projectRouter.get("/latest", authorizationMiddleware, getLatestProjectsController);
 projectRouter.get("/frameworks",authorizationMiddleware,getFrameworksController);
 projectRouter.get("/:projectId", authorizationMiddleware, getProjectController);
 projectRouter.patch("/:projectId",authorizationMiddleware,updateProjectController)
 projectRouter.delete("/:projectId",authorizationMiddleware,deleteProjectController);
 projectRouter.get("/:projectId/deployments",authorizationMiddleware, getAllDeploymentsController);
+projectRouter.get("/:projectId/deployments/latest",authorizationMiddleware, getLatestDeploymentsController);
 projectRouter.get("/:projectId/deployments/:deploymentId",authorizationMiddleware, getDeploymentController);
 projectRouter.delete("/:projectId/deployments/:deploymentId",authorizationMiddleware, deleteDeploymentController);
 projectRouter.post("/:projectId/deployments/:deploymentId/redeploy",authorizationMiddleware, redeployController);

@@ -62,6 +62,13 @@ export async function getTeamController(req:RequestWithMeta,res:Response){
     grpcToHttpResponse.call(res, code, message, data);
 }
 
+export async function getTeamsLinkedToProjectController(req:RequestWithMeta,res:Response){
+    const {projectId} = req.params;
+    const body = {...req.body, projectId, reqMeta:req.meta};
+    const {code, message, res:data} = await authService.getTeamsLinkedToProject(body);
+    grpcToHttpResponse.call(res, code, message, data);
+}
+
 export async function deleteTeamController(req:RequestWithMeta,res:Response){
     const {teamId} = req.params;
     const body = {...req.body, teamId, reqMeta:req.meta};
@@ -77,10 +84,18 @@ export async function createTeamMemberInviteController(req:RequestWithMeta,res:R
 }
 
 export async function acceptTeamInvitationController(req:RequestWithMeta,res:Response){
-    const {teamId, inviteId} = req.params;
-    const body = {...req.body, teamId, inviteId, reqMeta:req.meta};
+    const {inviteId} = req.params;
+    const body = {...req.body, inviteId, reqMeta:req.meta};
     const {code, message, res:data} = await authService.acceptTeamInvitation(body);
     grpcToHttpResponse.call(res, code, message, data);
+}
+
+export async function transferTeamOwnershipController(req:RequestWithMeta,res:Response){
+    const {teamId,newOwnerId} = req.params;
+    const body = {...req.body,teamId,newOwnerId,reqMeta:req.meta}
+    const {code,message} = await authService.transferTeamOwnership(body)
+    if(code) return grpcToHttpResponse.call(res,code,message);
+    res.status(204).end();
 }
 
 export async function getTeamMemberController(req:RequestWithMeta,res:Response){

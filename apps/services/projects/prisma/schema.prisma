@@ -16,6 +16,7 @@ enum ProjectType {
 model Project {
   projectId              String      @id @default(uuid())
   name                   String  
+  description            String?     @default("No description provided")
   domain                 String      @unique
   prodCommand            String?     @default("N/A")
   buildCommand           String      
@@ -45,6 +46,7 @@ model Framework {
   icon              String
   name              String   @unique
   displayName       String   @unique
+  keywordName       String   @unique
   applicationType   ProjectType
   defaultBuildCommand   String
   defaultProdCommand    String?  @default("N/A")
@@ -80,6 +82,7 @@ model Deployment {
   commitHash      String           @unique
   status          DeploymentStatus @default(QUEUED)
   createdAt       DateTime         @default(now())
+  completedAt     DateTime?
   updatedAt       DateTime         @updatedAt
   commitMessage   String
   author          String

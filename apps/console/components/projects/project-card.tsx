@@ -1,35 +1,29 @@
 "use client"
 
 import { Card } from "@/components/ui/card"
+import { InferResponse } from "@/types/response"
+import {  ProjectResponse } from "@shipoff/proto"
 import { ChevronRight } from "lucide-react"
 import { useTheme } from "next-themes"
 
-export type ProjectItem = {
-  projectId: string
-  name: string
-  frameworkName: string
-  frameworkWordmarkName:string,
-  updatedAt: string
-  description: string
-  applicationType:"Static" | "Dynamic"
-}
+export type ProjectItem = InferResponse<ProjectResponse>["res"]
 
 export default function ProjectCard({ item }: { item: ProjectItem }) {
   const runtimeVariant =
-    item.applicationType === "Static"
-      ? "bg-y4ellow-600/10 text-yellow-700 dark:text-yellow-400"
+    item.framework.applicationType === "STATIC"
+      ? "bg-yellow-600/10 text-yellow-700 dark:text-yellow-400"
       : "bg-blue-600/10 text-blue-700 dark:text-blue-400"
 
   const theme = useTheme()
 
- function getIcon(frameworkWordmarkName:string){
+ function getIcon(frameworkKeyword:string){
     return theme.resolvedTheme === "dark" 
-    ? `/framework/${frameworkWordmarkName}-dark.svg`
-    : `/framework/${frameworkWordmarkName}-light.svg`
+    ? `/framework/${frameworkKeyword}-dark.svg`
+    : `/framework/${frameworkKeyword}-light.svg`
 }
 
- function fallbackIcon(wordmarkName:string){
-  return `/framework/${wordmarkName}.svg`
+ function fallbackIcon(keywordName:string){
+  return `/framework/${keywordName}.svg`
 }
   return (
     <Card className="group relative flex flex-col gap-3 p-4 hover:shadow-sm transition-shadow">
@@ -46,13 +40,13 @@ export default function ProjectCard({ item }: { item: ProjectItem }) {
       <div className="mt-2 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <div className="h-4 overflow-hidden flex items-center">
-            <img src={getIcon(item.frameworkWordmarkName)} onError={(e) => { e.currentTarget.src = fallbackIcon(item.frameworkWordmarkName) }} alt={item.frameworkName} className="h-4 mr-1 inline" />
+            <img src={getIcon(item.framework.keywordName)} onError={(e) => { e.currentTarget.src = fallbackIcon(item.framework.keywordName) }} alt={item.framework.name} className="h-4 mr-1 inline" />
           </div>
           <span
             className={`inline-flex items-center rounded border px-2 py-0.5 text-xs ${runtimeVariant}`}
-            aria-label={`Runtime ${item.applicationType}`}
+            aria-label={`Runtime ${item.framework.runtime}`}
           >
-            {item.applicationType}
+            {item.framework.runtime}
           </span>
         </div>
         <span className="text-xs text-muted-foreground">{item.updatedAt}</span>

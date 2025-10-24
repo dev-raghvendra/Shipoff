@@ -1,19 +1,21 @@
 import { status } from "@grpc/grpc-js";
 import { createGrpcErrorHandler, GrpcAppError, GrpcResponse } from "@shipoff/services-commons";
 import   { Database, dbService } from "@/db/db-service";
-import { CreateTeamRequestBodyType, DeleteTeamMemberRequestBodyType, DeleteTeamRequestBodyType, GetTeamMemberRequestBodyType, GetTeamRequestBodyType, TeamMemberInvitationRequestBodyType, TransferTeamOwnershipRequestBodyType } from "@/types/team";
+import { CreateTeamRequestBodyType, DeleteTeamMemberRequestBodyType, DeleteTeamRequestBodyType, GetTeamMemberRequestBodyType, GetTeamMembersRequestBodyType, GetTeamRequestBodyType, GetTeamsLinkedToProjectRequestBodyType, TeamMemberInvitationRequestBodyType, TransferTeamOwnershipRequestBodyType } from "@/types/team";
 import { AcceptMemberInviteRequestBodyType } from "@/types/utility";
-import { Permission } from "@/utils/rbac-utils";
+import { Permission, PermissionBase } from "@/utils/rbac-utils";
 import { BulkResourceRequestBodyType } from "@shipoff/types";
 import {logger} from "@/libs/winston";
 
 class TeamService {
    
     private _permissions : Permission
+    private _permissionsBase : PermissionBase
     private _dbService : Database;
     private _errorHandler : ReturnType<typeof createGrpcErrorHandler>
     constructor(){
       this._permissions = new Permission()
+      this._permissionsBase = new PermissionBase()
       this._dbService = dbService;
       this._errorHandler = createGrpcErrorHandler({subServiceName:"AUTH_SERVICE",logger});
     }
@@ -48,6 +50,7 @@ class TeamService {
         }
     }
 
+
     async deleteTeam({teamId,authUserData:{userId},reqMeta}:DeleteTeamRequestBodyType){
 
        try {
@@ -69,11 +72,35 @@ class TeamService {
        }
     }
 
+    async getTeamsLinkedToProject({projectId,authUserData:{userId},reqMeta}:GetTeamsLinkedToProjectRequestBodyType){
+        try {
+            const can = await this._permissionsBase.canAccess({
+                userId,
+                permission:["READ"],
+                scope:"TEAM",
+                resourceId:projectId,
+            })
+            if(!can) throw new GrpcAppError(status.PERMISSION_DENIED,"You do not have permission to access teams linked to this project");
+            const teams = await this._dbService.findTeams({
+                where:{
+                    teamLink:{
+                        some:{
+                            projectId
+                        }
+                    }
+                }
+            })
+            return GrpcResponse.OK(teams,"Teams linked to project found");
+        } catch (e:any) {
+            return this._errorHandler(e,"GET-TEAMS-LINKED-TO-PROJECT",reqMeta.requestId);
+        }
+    }
+
     async acceptInvitation({inviteId,authUserData:{userId},reqMeta}:AcceptMemberInviteRequestBodyType){
        try {
             const {expiresAt,teamId,role} = await this._dbService.findTeamInviteById(inviteId);
             if(expiresAt?.getMilliseconds() as number >= Date.now()){
-                            throw new GrpcAppError(status.INVALID_ARGUMENT,"Invite expired",null);
+              throw new GrpcAppError(status.INVALID_ARGUMENT,"Invite expired",null);
             }
             const member = await this._dbService.createTeamMember({
                 userId,
@@ -96,6 +123,22 @@ class TeamService {
      } catch (e:any) {
         return this._errorHandler(e,"GET-TEAM-MEMBER",reqMeta.requestId);
      }
+    }
+
+    async getTeamMembers({teamId,authUserData:{userId},skip,limit,reqMeta}:GetTeamMembersRequestBodyType){
+        try {
+            await this._permissions.canReadTeamMember(userId,teamId);
+            const members = await this._dbService.findTeamMembers({
+                where:{
+                    teamId
+                },
+                skip,
+                take:limit
+            })
+            return GrpcResponse.OK(members,"Team members found");
+        } catch (e:any) {
+            return this._errorHandler(e,"GET-TEAM-MEMBERS",reqMeta.requestId);
+        }
     }
 
     async deleteTeamMember({authUserData:{userId},targetUserId,teamId,reqMeta}:DeleteTeamMemberRequestBodyType){

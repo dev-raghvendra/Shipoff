@@ -1,4 +1,4 @@
-import { RequestMetaSchema, UserSchema } from "@shipoff/types";
+import { RequestMetaSchema, UserSchema, BulkResourceRequestSchema } from "@shipoff/types";
 import z from "zod";
 import { TransferOwnershipBase } from "./utility";
 
@@ -28,6 +28,16 @@ export const GetTeamRequestSchema = z.object({
   teamId: z.string(),
   authUserData: UserSchema,
   reqMeta: RequestMetaSchema
+}).strict();
+
+export const GetTeamsLinkedToProjectRequestSchema = z.object({
+  projectId: z.string().min(4),
+  authUserData: UserSchema,
+  reqMeta: RequestMetaSchema
+}).strict();
+
+export const GetTeamMembersRequestSchema = BulkResourceRequestSchema.extend({
+  teamId: z.string().min(4)
 }).strict();
 
 export const DeleteTeamRequestSchema = z.object({
@@ -68,6 +78,12 @@ export type CreateTeamRequestDBBodyType = Omit<CreateTeamRequestBodyType, "authU
 
 export type GetTeamRequestBodyType = z.infer<typeof GetTeamRequestSchema>;
 export type GetTeamRequestDBBodyType = Omit<GetTeamRequestBodyType, "authUserData" | "reqMeta">;
+
+export type GetTeamMembersRequestBodyType = z.infer<typeof GetTeamMembersRequestSchema>;
+export type GetTeamMembersRequestDBBodyType = Omit<GetTeamMembersRequestBodyType, "authUserData" | "reqMeta">;
+
+export type GetTeamsLinkedToProjectRequestBodyType = z.infer<typeof GetTeamsLinkedToProjectRequestSchema>;
+export type GetTeamsLinkedToProjectRequestDBBodyType = Omit<GetTeamsLinkedToProjectRequestBodyType, "authUserData" | "reqMeta">;
 
 export type DeleteTeamRequestBodyType = z.infer<typeof DeleteTeamRequestSchema>;
 export type DeleteTeamRequestDBBodyType = Omit<DeleteTeamRequestBodyType, "authUserData" | "reqMeta">;

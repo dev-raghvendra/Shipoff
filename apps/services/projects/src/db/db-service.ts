@@ -76,7 +76,13 @@ export class Database {
     }
 
     async findUniqueProject<T extends Prisma.ProjectFindUniqueArgs>(args:T): Promise<Prisma.ProjectGetPayload<T>>{
-        const res = await this._client.project.findUnique(args);
+        const res = await this._client.project.findUnique({
+            where: args.where,
+            include:{
+                ...args.include,
+                t
+            }
+        });
         if(res)return res as Prisma.ProjectGetPayload<T>; 
         throw new GrpcAppError(status.NOT_FOUND, "Project not found", {
             projectId: args.where.projectId
@@ -85,8 +91,7 @@ export class Database {
 
     async findManyProjects(arg:Prisma.ProjectFindManyArgs){
         const res = await this._client.project.findMany(arg);
-        if(res.length)return res;
-        throw new GrpcAppError(status.NOT_FOUND, "User does not have any projects");
+        return res;
     }
 
     async updateProjectById({projectId,framework,...rest}:UpdateProjectRequestDBBodyType){
@@ -188,18 +193,16 @@ export class Database {
                         select:{
                             projectId:true,
                             domain:true,
-                            framework:{
-                                select:{
-                                  applicationType:true
-                                }
-                            }
+                            framework:true
                         }
                     },
                     repository:{
                         select:{
                             githubRepoFullName:true,
                             githubRepoId:true,
-                            branch:true
+                            branch:true,
+                            repositoryId:true,
+                            githubRepoURI:true
                         }
                     },
                     commitHash:true,
@@ -208,6 +211,8 @@ export class Database {
                     author:true,
                     createdAt:true,
                     status:true,
+                    lastDeployedAt:true,
+                    completedAt:true,
                     buildEnvironment:{orderBy:{startedAt:"desc"},take:1,select:{ buildId:true, startedAt:true }},
                     runtimeEnvironment:{orderBy:{startedAt:"desc"},take:1,select:{ runtimeId:true, startedAt:true }}
             }
@@ -310,6 +315,7 @@ export class Database {
                     },
                     repository:{
                         select:{
+                            repositoryId:true,
                             githubRepoFullName:true,
                             githubRepoId:true,
                             branch:true

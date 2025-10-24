@@ -29,6 +29,26 @@ export class ProjectService {
         }
     }
 
+    async getLatestProjects(data: any) {
+        try {
+            const req = BulkResourceRequest.fromObject(data);
+            const response = await promisifyGrpcCall(this._projectService.GetLatestProjects.bind(this._projectService), req);
+            return response;
+        } catch (e:any) {
+            return e;
+        }
+    }
+
+    async getLatestDeployments(data: any) {
+        try {
+            const req = BulkResourceRequest.fromObject(data);
+            const response = await promisifyGrpcCall(this._projectService.GetLatestDeployments.bind(this._projectService), req);
+            return response;
+        } catch (e:any) {
+            return e;
+        }
+    }
+
     async getProject(data: any) {
         try {
             const req = GetProjectRequest.fromObject(data);

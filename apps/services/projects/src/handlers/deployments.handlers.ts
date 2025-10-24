@@ -38,6 +38,20 @@ export class DeploymentsHandlers {
         }
     }
 
+    async handleGetLatestDeployments(call: ServerUnaryCall<GetAllDeploymentsRequest & { body: GetAllDeploymentsRequestBodyType }, AllDeploymentsResponse>, callback: sendUnaryData<AllDeploymentsResponse>) {
+        try {
+            const { code, res, message } = await this._deploymentsService.getLatestDeployments(call.request.body);
+            if (code !== 0) return callback({ code, message });
+            const response = AllDeploymentsResponse.fromObject({ code, message, res });
+            return callback(null, response);
+        } catch (e: any) {
+            return callback({
+                code: status.INTERNAL,
+                message: "Internal server error"
+            });
+        }
+    }
+
     async handleDeleteDeployment(call: ServerUnaryCall<DeleteDeploymentRequest & { body: DeleteDeploymentRequestBodyType }, DeploymentResponse>, callback: sendUnaryData<DeploymentResponse>) {
         try {
             const { code, res, message } = await this._deploymentsService.deleteDeployment(call.request.body);

@@ -5,9 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import {
-  CalendarClock, GitBranch,
-  GitCommit,
-  Globe,
+  CalendarClock, GitBranch, Globe,
   LinkIcon,
   ServerCog,
   Users,
@@ -16,38 +14,18 @@ import {
   Users2,
   Link2,
   Github,
-  Unlink,
-  Crown
+  Unlink
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import DeploymentCard, { Deployment } from "../deployments/deployment-card"
+import DeploymentCard from "../deployments/deployment-card"
 import { TeamCard } from "../teams/team-card"
 import { Team } from "@/app/dashboard/teams/page"
 import React from "react"
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader, DialogFooter } from "@/components/ui/dialog"
+import { InferResponse } from "@/types/response"
+import { ProjectResponse } from "@shipoff/proto"
 
-export type ProjectOverviewData = {
-  id: string
-  name: string
-  framework:{
-    applicationType:"STATIC" | "DYNAMIC",
-    frameworkName:string,
-    frameworkWordmarkName:string,
-    frameworkIcon:string
-  }
-  branch?: string
-  repoUrl?: string
-  team:Team[]
-  createdAt?: string
-  updatedAt?: string
-  defaultDomain?: string
-  domains?: string[]
-  recentDeployments?: Array<Deployment>
-  description?: string
-  outDir?: string
-  buildCommand?: string
-  prodCommand?: string
-}
+export type ProjectOverviewData = InferResponse<ProjectResponse>["res"]
 
 function RuntimeBadge({ value, className }: { value: ProjectOverviewData["framework"]["applicationType"]; className?: string }) {
   
@@ -71,9 +49,9 @@ function RuntimeBadge({ value, className }: { value: ProjectOverviewData["framew
 
 export function ProjectOverview({ data }: { data: ProjectOverviewData }) {
   const repoName =
-    data.repoUrl && data.repoUrl.includes("://")
-      ? data.repoUrl.split("://")[1]?.split("/").slice(1).join("/")
-      : data.repoUrl
+    data.repository.githubRepoURI && data.repository.githubRepoURI.includes("://")
+      ? data.repository.githubRepoURI.split("://")[1]?.split("/").slice(1).join("/")
+      : data.repository.githubRepoURI
 
   const [isUnlinkDialogOpen, setIsUnlinkDialogOpen] = React.useState(false)
   const handleUnlinkTeam = async()=>{
@@ -114,14 +92,14 @@ export function ProjectOverview({ data }: { data: ProjectOverviewData }) {
             <div className="mt-1 flex flex-wrap items-center gap-2">
               <Badge variant="secondary" className="flex items-center gap-1">
                 <span className="sr-only">Framework:</span>
-                <img src={data.framework.frameworkIcon} alt="" className="h-4 w-4" />
-                {data.framework.frameworkName}
+                <img src={data.framework.icon} alt="" className="h-4 w-4" />
+                {data.framework.displayName}
               </Badge>
               <RuntimeBadge value={data.framework.applicationType} />
-              {data.branch ? (
+              {data.repository.branch ? (
                 <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                   <GitBranch className="h-3 w-3" aria-hidden="true" />
-                  {data.branch}
+                  {data.repository.branch}
                 </span>
               ) : null}
             </div>
@@ -129,9 +107,9 @@ export function ProjectOverview({ data }: { data: ProjectOverviewData }) {
         </div>
 
         <div className="flex items-center gap-2">
-          {data.repoUrl ? (
+          {data.repository.githubRepoURI ? (
             <Button asChild size="sm" variant="outline">
-              <Link href={data.repoUrl} target="_blank" rel="noopener noreferrer">
+              <Link href={data.repository.githubRepoURI} target="_blank" rel="noopener noreferrer">
                 <Github className="mr-2 h-4 w-4" aria-hidden="true" />
                 Open repo
               </Link>
@@ -190,17 +168,17 @@ export function ProjectOverview({ data }: { data: ProjectOverviewData }) {
           </CardHeader>
           <CardContent className="text-sm">
             <div className="space-y-3">
-              {data.defaultDomain ? (
+              {data.domain ? (
                 <div className="flex items-center justify-between">
                   <span className="inline-flex items-center gap-2">
                     <Globe className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                    <span>{data.defaultDomain}</span>
+                    <span>{data.domain}</span>
                   </span>
                   <Badge variant="outline">Primary</Badge>
                 </div>
               ) : null}
 
-              {(data.domains || []).map((d) => (
+              {(Array.isArray(data.domain) ? data.domain : []).map((d) => (
                 <div key={d} className="flex items-center justify-between">
                   <span className="inline-flex items-center gap-2">
                     <LinkIcon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
@@ -217,16 +195,16 @@ export function ProjectOverview({ data }: { data: ProjectOverviewData }) {
                   <GitBranch className="h-4 w-4" aria-hidden="true" />
                   Branch
                 </span>
-                <span>{data.branch || "—"}</span>
+                <span>{data.repository.branch || "—"}</span>
               </li>
               <li className="flex items-center mt-2 justify-between sm:col-span-2">
                 <span className="text-muted-foreground inline-flex items-center gap-2">
                   <Github className="h-4 w-4" aria-hidden="true" />
                   Repo
                 </span>
-                {data.repoUrl ? (
+                {data.repository.githubRepoFullName ? (
                   <Link
-                    href={data.repoUrl}
+                    href={data.repository.githubRepoURI}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="truncate text-right underline underline-offset-4"
@@ -256,7 +234,7 @@ export function ProjectOverview({ data }: { data: ProjectOverviewData }) {
                 </span>
                 <span className="inline-flex items-center gap-2">
                   <Badge variant="secondary">
-                  <img src={data.framework.frameworkIcon} alt="" className="h-4 w-4" />{data.framework.frameworkName}</Badge>
+                  <img src={data.framework.icon} alt="" className="h-4 w-4" />{data.framework.displayName}</Badge>
                   <RuntimeBadge value={data.framework.applicationType} />
                 </span>
               </li>
@@ -284,21 +262,7 @@ export function ProjectOverview({ data }: { data: ProjectOverviewData }) {
             </ul>
           </CardContent>
         </Card>
-        <Card className="md:col-span-2 gap-0">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Teams Linked</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm">
-            {data.team.map((team) => (
-              <TeamCard key={team.id} team={team} layout="minimal" className="hover:bg-card self-start">
-                <Button onClick={() => setIsUnlinkDialogOpen(true)} variant="outline" size="sm" className="ml-auto my-auto text-destructive hover:bg-destructive/10 hover:text-destructive">
-                  <Unlink className="h-4 w-4" />
-                  Unlink
-                </Button>
-              </TeamCard>
-            ))}
-          </CardContent>
-        </Card>
+        
        
         
         
@@ -309,7 +273,7 @@ export function ProjectOverview({ data }: { data: ProjectOverviewData }) {
           </CardHeader>
           <CardContent className="text-sm space-y-3">
             {(() => {
-              const latest = (data.recentDeployments || [])[0]
+              const latest = (data.deployments || [])[0]
               if (!latest) {
                 return <p className="text-muted-foreground">No deployments yet.</p>
               }
@@ -328,4 +292,26 @@ export function ProjectOverview({ data }: { data: ProjectOverviewData }) {
 
     </div>
   )
+}
+
+function TeamLinkCard({projectId}:{projectId:string}) {
+  
+
+ return (
+  <Card className="md:col-span-2 gap-0">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Teams Linked</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm">
+            {data.team.map((team) => (
+              <TeamCard key={team.id} team={team} layout="minimal" className="hover:bg-card self-start">
+                <Button onClick={() => setIsUnlinkDialogOpen(true)} variant="outline" size="sm" className="ml-auto my-auto text-destructive hover:bg-destructive/10 hover:text-destructive">
+                  <Unlink className="h-4 w-4" />
+                  Unlink
+                </Button>
+              </TeamCard>
+            ))}
+          </CardContent>
+        </Card>
+ )
 }

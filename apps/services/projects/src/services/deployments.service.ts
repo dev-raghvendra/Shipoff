@@ -5,6 +5,7 @@ import { DeleteDeploymentRequestBodyType, GetAllDeploymentsRequestBodyType, GetD
 import { DeploymentEventProducerService } from "@/producer/deployment.producer";
 import { logger } from "@/libs/winston";
 import { status } from "@grpc/grpc-js";
+import { BulkResourceRequestBodyType } from "@shipoff/types";
 
 
 export class DeploymentsService {
@@ -64,6 +65,7 @@ export class DeploymentsService {
                       select:{
                       domain:true,
                       name:true,
+                      framework:true
                 }
                 },
                     repository:true,
@@ -92,6 +94,54 @@ export class DeploymentsService {
             return GrpcResponse.OK(deployments, "Deployments found");
         } catch (e:any) {
             return this._errHandler(e, "GET-ALL-DEPLOYMENTS",reqMeta.requestId);
+        }
+    }
+
+    async getLatestDeployments({authUserData, reqMeta, limit}:BulkResourceRequestBodyType){
+        try {
+            const projectIds = await this._authService.getUserProjectIds(authUserData,reqMeta);
+            const deployments = await this._dbService.findManyDeployments({
+                where:{
+                    projectId:{in:projectIds}
+                },
+                take: limit,
+                orderBy: {
+                    createdAt: "desc"
+                },
+                include:{
+                    project:{
+                      select:{
+                      domain:true,
+                      name:true,
+                      framework:true
+                }
+                },
+                    repository:true,
+                    buildEnvironment:{
+                        take:1,
+                        orderBy:{
+                           startedAt:"desc",
+                        },
+                        select:{
+                            buildId:true,
+                            startedAt:true
+                        }
+                    },
+                    runtimeEnvironment:{
+                        take:1,
+                        orderBy:{
+                           startedAt:"desc"
+                        },
+                        select:{
+                            runtimeId:true,
+                            startedAt:true
+                        }
+                    }
+                }
+            });
+            return GrpcResponse.OK(deployments, "Latest Deployments found");
+        } catch (e:any) {
+            return this._errHandler(e, "GET-LATEST-DEPLOYMENTS",reqMeta.requestId);
         }
     }
 

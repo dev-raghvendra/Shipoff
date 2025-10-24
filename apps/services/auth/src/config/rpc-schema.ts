@@ -1,5 +1,5 @@
 import { ProjectMemberInvitationRequestSchema } from "@/types/project"
-import { CreateTeamRequestSchema, DeleteTeamMemberRequestSchema, DeleteTeamRequestSchema, GetTeamMemberRequestSchema, GetTeamRequestSchema, TeamMemberInvitationRequestSchema } from "@/types/team"
+import { CreateTeamRequestSchema, DeleteTeamMemberRequestSchema, DeleteTeamRequestSchema, GetTeamMemberRequestSchema, GetTeamRequestSchema, GetTeamsLinkedToProjectRequestSchema, TeamMemberInvitationRequestSchema } from "@/types/team"
 import { EmailPassLoginRequestSchema, SigninRequestSchema, GetUserRequestSchema, OAuthRequestSchema } from "@/types/user"
 import { AcceptMemberInviteRequestSchema, HasPermissionsRequestSchema } from "@/types/utility"
 import { createRPCEntry, RPC_SCHEMA_T } from "@shipoff/services-commons";
@@ -19,6 +19,7 @@ export const RPC_SCHEMA: RPC_SCHEMA_T<RPCs> = {
     RefreshToken: createRPCEntry(BodyLessRequestSchema),
     CreateTeam: createRPCEntry(CreateTeamRequestSchema),
     GetTeam: createRPCEntry(GetTeamRequestSchema),
+    GetTeamsLinkedToProject: createRPCEntry(GetTeamsLinkedToProjectRequestSchema),
     DeleteTeam: createRPCEntry(DeleteTeamRequestSchema),
     CreateTeamMemberInvitation: createRPCEntry(TeamMemberInvitationRequestSchema),
     GetTeamMember: createRPCEntry(GetTeamMemberRequestSchema),

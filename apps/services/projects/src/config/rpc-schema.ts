@@ -36,5 +36,7 @@ export const RPC_SCHEMA: RPC_SCHEMA_T<RPCs> = {
     IGetProject: createRPCEntry(IGetProjectRequestSchema),
     UpdateRepository: createRPCEntry(UpdateRepositoryRequestSchema),
     IGetStaleEnvironmentIds: createRPCEntry(InternalEmptyRequestSchema),
+    GetLatestDeployments: createRPCEntry(BulkResourceRequestSchema),
+    GetLatestProjects: createRPCEntry(BulkResourceRequestSchema),
 } as const;
 

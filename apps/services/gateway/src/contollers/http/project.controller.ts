@@ -21,6 +21,27 @@ export async function getAllUserProjectsController(req:RequestWithMeta, res: Res
     grpcToHttpResponse.call(res, code, message, data);
 }
 
+export async function getLatestProjectsController(req:RequestWithMeta, res: Response) {
+    const body = {
+        ...req.body,
+        ...(req.query.skip && { skip: req.query.skip }),
+        ...(req.query.limit && { limit: req.query.limit }),
+        reqMeta:req.meta
+    }
+    const { code, message, res: data } = await projectService.getLatestProjects(body);
+    grpcToHttpResponse.call(res, code, message, data);
+}
+export async function getLatestDeploymentsController(req:RequestWithMeta, res: Response) {
+    const body = {
+        ...req.body,
+        ...(req.query.skip && { skip: req.query.skip }),
+        ...(req.query.limit && { limit: req.query.limit }),
+        reqMeta:req.meta
+    }
+    const { code, message, res: data } = await projectService.getLatestDeployments(body);
+    grpcToHttpResponse.call(res, code, message, data);
+}
+
 export async function getProjectController(req:RequestWithMeta, res: Response) {
     const { projectId } = req.params;
     const body = { ...req.body, projectId, reqMeta:req.meta };

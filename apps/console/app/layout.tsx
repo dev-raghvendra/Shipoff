@@ -15,8 +15,15 @@ const _geist = Geist({ subsets: ['latin'], weight: ["100","200","300","400","500
 const _poppins = Poppins({ subsets: ['latin'], weight: ["100","200","300","400","500","600","700","800","900"] })
 
 export const metadata: Metadata = {
-  title: 'Shipoff',
-  description: 'One-stop solution for your web applications'
+  title: 'Shipoff - Ship Your Apps Lightning Fast',
+  description: 'Deploy your web applications in seconds. One-stop solution for deploying from Git to production with zero configuration. Support for Next.js, React, Vue, and more.',
+  keywords: ['deployment', 'hosting', 'web apps', 'git integration', 'cloud platform', 'vercel alternative', 'netlify alternative'],
+  authors: [{ name: 'Shipoff' }],
+  openGraph: {
+    title: 'Shipoff - Ship Your Apps Lightning Fast',
+    description: 'Deploy your web applications in seconds with our optimized build pipeline and global CDN.',
+    type: 'website',
+  },
 }
 
 export default async function RootLayout({

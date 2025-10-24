@@ -12,12 +12,13 @@ import "google/protobuf/empty.proto";
 message Framework {
     string frameworkId = 1;
     string icon = 2;
-    string displayName = 3; 
-    string defaultBuildCommand = 4;
-    string defaultProdCommand = 5;
-    string runtime = 6;
-    string name = 7;
-    string applicationType = 8;
+    string displayName = 3;
+    string keywordName = 4;
+    string defaultBuildCommand = 5;
+    string defaultProdCommand = 6;
+    string runtime = 7;
+    string name = 8;
+    string applicationType = 9;
 }
 
 message Repository {
@@ -32,6 +33,12 @@ message Repository {
     string branch = 9;
 }
 
+message DeploymentProjectData {
+    string name = 1;
+    string domain = 2;
+    Framework framework = 3;
+}
+
 message Deployment {
     string deploymentId = 1;
     string commitHash = 2;
@@ -42,9 +49,14 @@ message Deployment {
     string repositoryId = 7;
     string createdAt = 8;
     string lastDeployedAt = 9;
-    repeated BuildEnvironment buildEnvironment = 10;
-    repeated RuntimeEnvironment runtimeEnvironment = 11;
+    string completedAt = 10;
+    Repository repository = 11;
+    repeated BuildEnvironment buildEnvironment = 12;
+    repeated RuntimeEnvironment runtimeEnvironment = 13;
+    DeploymentProjectData project = 14;
 }
+
+
 
 message BuildEnvironment {
     string buildId = 1;
@@ -59,16 +71,17 @@ message RuntimeEnvironment {
 message Project {
     string projectId = 1;
     string name = 2;
-    Framework framework = 3;
-    string domain = 4;
-    string buildCommand = 5;
-    string prodCommand = 6;
-    string createdAt = 7;
-    string updatedAt = 8;
-    Repository repository = 9;
-    string outDir = 10;
-    repeated EnvironmentVariablesKeyValue environmentVariables = 11;
-    repeated Deployment deployments = 12;
+    string description = 3;
+    Framework framework = 4;
+    string domain = 5;
+    string buildCommand = 6;
+    string prodCommand = 7;
+    string createdAt = 8;
+    string updatedAt = 9;
+    Repository repository = 10;
+    string outDir = 11;
+    repeated EnvironmentVariablesKeyValue environmentVariables = 12;
+    repeated Deployment deployments = 13;
 }
 
 message EnvironmentVariables {
@@ -369,12 +382,14 @@ service ProjectsService {
     rpc CreateProject (CreateProjectRequest) returns (ProjectResponse);
     rpc GetProject (GetProjectRequest) returns (ProjectResponse);
     rpc GetAllUserProjects (GetAllUserProjectsRequest) returns (AllProjectsResponse);
+    rpc GetLatestProjects (BulkResourceRequest) returns (AllProjectsResponse);
     rpc UpdateProject (UpdateProjectRequest) returns (ProjectResponse);
     rpc DeleteProject (DeleteProjectRequest) returns (ProjectResponse);
 
     // Deployment
     rpc GetDeployment (GetDeploymentRequest) returns (DeploymentResponse);
     rpc GetAllDeployments (GetAllDeploymentsRequest) returns (AllDeploymentsResponse);
+    rpc GetLatestDeployments (BulkResourceRequest) returns (AllDeploymentsResponse);
     rpc DeleteDeployment (DeleteDeploymentRequest) returns (DeploymentResponse);
     rpc Redeploy (RedeployRequest) returns (DeploymentResponse);
 

@@ -87,12 +87,14 @@ export class ProjectsService {
         }
     }
 
-    async getAllUserProjects({authUserData,reqMeta}:BodyLessRequestBodyType){
+    async getAllUserProjects({authUserData,reqMeta,limit,skip}:BulkResourceRequestBodyType){
         try {
             const projectIds = await this._authService.getUserProjectIds(authUserData,reqMeta);
             const projects = await this._dbService.findManyProjects({where:{
                 projectId:{in:projectIds}
             },
+            take:limit,
+            skip,
             include:{
                 framework:true,
                 environmentVariables:this._selectProjectFeilds.environmentVariables,
@@ -101,6 +103,27 @@ export class ProjectsService {
             return GrpcResponse.OK(projects, "Projects found");
         } catch (e:any) {
             return this._errHandler(e,"GET-ALL-USER-PROJECTS",reqMeta.requestId);
+        }
+    }
+
+    async getLatestUserProjects({authUserData,reqMeta,limit}:BulkResourceRequestBodyType){
+        try {
+            const projectIds = await this._authService.getUserProjectIds(authUserData,reqMeta);
+            const projects =  await this._dbService.findManyProjects({where:{
+                projectId:{in:projectIds}
+            },
+            take:limit,
+            orderBy:{
+                createdAt:"desc"
+            },
+            include:{
+                framework:true,
+                environmentVariables:this._selectProjectFeilds.environmentVariables,
+                repository:true 
+            }})
+            return GrpcResponse.OK(projects, "Projects found");
+        } catch (e:any) {
+            return this._errHandler(e,"GET-LATEST-USER-PROJECTS",reqMeta.requestId);
         }
     }
 

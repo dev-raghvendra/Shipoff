@@ -27,6 +27,7 @@ server.addService(UnimplementedProjectsServiceService.definition, {
     GetProject: validateRPCBody("GetProject", projectsHandlers.handleGetProject.bind(projectsHandlers)),
     DeleteProject: validateRPCBody("DeleteProject", projectsHandlers.handleDeleteProject.bind(projectsHandlers)),
     GetAllUserProjects: validateRPCBody("GetAllUserProjects", projectsHandlers.handleGetAllUserProjects.bind(projectsHandlers)),
+    GetLatestProjects: validateRPCBody("GetLatestProjects", projectsHandlers.handleGetLatestProjects.bind(projectsHandlers)),
     UpdateProject: validateRPCBody("UpdateProject", projectsHandlers.handleUpdateProject.bind(projectsHandlers)),
 
     GetRepository: validateRPCBody("GetRepository", repositoriesHandlers.handleGetRepository.bind(repositoriesHandlers)),
@@ -38,6 +39,7 @@ server.addService(UnimplementedProjectsServiceService.definition, {
 
     GetDeployment: validateRPCBody("GetDeployment", deploymentsHandlers.handleGetDeployment.bind(deploymentsHandlers)),
     GetAllDeployments: validateRPCBody("GetAllDeployments", deploymentsHandlers.handleGetAllDeployments.bind(deploymentsHandlers)),
+    GetLatestDeployments: validateRPCBody("GetLatestDeployments", deploymentsHandlers.handleGetLatestDeployments.bind(deploymentsHandlers)),
     DeleteDeployment: validateRPCBody("DeleteDeployment", deploymentsHandlers.handleDeleteDeployment.bind(deploymentsHandlers)),
     Redeploy: validateRPCBody("Redeploy", deploymentsHandlers.handleRedeploy.bind(deploymentsHandlers)),
 
