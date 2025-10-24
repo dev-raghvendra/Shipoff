@@ -1,9 +1,8 @@
 {
-  "name": "my-v0-project",
+  "name": "console-1.0.0",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
     "start": "next start"
