@@ -10,12 +10,13 @@ import { ridMiddleware } from '@/middlewares/http/rid.middleware';
 import logRouter from '@/routers/http/log.router';
 import { createSyncErrHandler } from '@shipoff/services-commons';
 import { RequestWithMeta } from './types/request';
+import { CONFIG } from './config';
 
 const app = express();
 const errHandler = createSyncErrHandler({ subServiceName: "EXPRESS_GATEWAY", logger });
 
 const corsOptions : CorsOptions = {
-    origin:"*",
+    origin:CONFIG.FRONTEND_URL,
     methods:"GET,HEAD,PUT,PATCH,POST,DELETE",
     allowedHeaders: ["Content-Type", "Authorization","X-Api-Key"]
 }

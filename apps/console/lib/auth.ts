@@ -85,7 +85,7 @@ export const authOptions: NextAuthOptions = {
                         error:undefined
                     };
                 } catch (e:any) {
-                    errHandler(e,"GOOGLE_OAUTH_CALLBACK",false,false);
+                    errHandler(e,"GOOGLE_OAUTH_CALLBACK",false,true);
                     return returnErrorFromOAuth ({name:"InternalError"});
                 }
             }
@@ -114,7 +114,8 @@ export const authOptions: NextAuthOptions = {
                         accessTokenExpiresAt: Math.floor(Date.now() / 1000) + 24 * 60 * 60
                     };
                 } catch (e:any) {
-                    return returnErrorFromOAuth ({name:"InternalError"});
+                     errHandler(e,"GITHUB_OAUTH_CALLBACK",false,true);
+                     return returnErrorFromOAuth ({name:"InternalError"});
                 }
             }
         })
