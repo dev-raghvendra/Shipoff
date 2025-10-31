@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: logs
-          image: shipoff/platform-services:logs-1.0.0
+          image: shipoff/platform-services:logs-2.0.0
           ports:
             - containerPort: 50053
           envFrom:

@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: gateway
-          image: shipoff/platform-services:gateway-1.0.1
+          image: shipoff/platform-services:gateway-2.0.0
           ports:
             - containerPort: 8000
           envFrom:

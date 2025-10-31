@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: projects
-          image: shipoff/platform-services:projects-1.0.4
+          image: shipoff/platform-services:projects-2.0.0
           ports:
             - containerPort: 50051
           envFrom:
