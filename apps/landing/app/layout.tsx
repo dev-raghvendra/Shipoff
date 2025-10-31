@@ -13,16 +13,72 @@ const _geist = Geist({ subsets: ['latin'], weight: ["100","200","300","400","500
 const _poppins = Poppins({ subsets: ['latin'], weight: ["100","200","300","400","500","600","700","800","900"] })
 
 export const metadata: Metadata = {
-  title: 'Shipoff - Ship Your Apps Lightning Fast',
-  description: 'Deploy your web applications in seconds. One-stop solution for deploying from Git to production with zero configuration. Support for Next.js, React, Vue, and more.',
-  keywords: ['deployment', 'hosting', 'web apps', 'git integration', 'cloud platform', 'vercel alternative', 'netlify alternative'],
-  authors: [{ name: 'Shipoff' }],
+  title: 'Shipoff – From Code to Cloud in Seconds',
+  description:
+    'Deploy your web apps directly from Git to a global cloud in seconds. Shipoff makes deployment effortless with zero configuration, optimized builds, and a lightning-fast CDN.',
+  keywords: [
+    'deployment platform',
+    'web hosting',
+    'cloud hosting',
+    'CI/CD',
+    'Git deployments',
+    'Next.js hosting',
+    'React hosting',
+    'Vercel alternative',
+    'Netlify alternative',
+    'Shipoff',
+    'deploy apps fast',
+  ],
+  authors: [{ name: 'Shipoff', url: 'https://shipoff.in' }],
+  creator: 'Shipoff Team',
+  publisher: 'Shipoff',
   openGraph: {
-    title: 'Shipoff - Ship Your Apps Lightning Fast',
-    description: 'Deploy your web applications in seconds with our optimized build pipeline and global CDN.',
+    title: 'Shipoff – From Code to Cloud in Seconds',
+    description:
+      'Deploy your applications from Git to the cloud instantly. Zero config, global CDN, and optimized builds.',
+    url: 'https://shipoff.in',
+    siteName: 'Shipoff',
     type: 'website',
+    locale: 'en_US',
+    images: [
+      {
+        url: 'https://shipoff.in/og-image.webp',
+        width: 1200,
+        height: 630,
+        alt: 'Shipoff – From Code to Cloud in Seconds',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Shipoff – From Code to Cloud in Seconds',
+    description:
+      'Deploy your web apps directly from Git to a global CDN in seconds. Zero setup, infinite scalability.',
+    creator: '@shipoff',
+    images: ['https://shipoff.in/og-image.webp'],
+  },
+  icons: {
+    icon: '/meta/favicon.ico',
+    shortcut: '/meta/favicon-16x16.png',
+    apple: '/meta/apple-touch-icon.png',
+  },
+  manifest: '/meta/site.webmanifest',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  alternates: {
+    canonical: 'https://shipoff.in',
   },
 }
+
 
 export default async function RootLayout({
   children,

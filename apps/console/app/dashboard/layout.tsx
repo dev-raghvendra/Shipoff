@@ -27,6 +27,7 @@ import { LayoutDashboard, Boxes, Rocket, Settings, User, ChevronLeft, Users2, Bu
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { SessionProvider as NextAuthSessionProvider } from "next-auth/react"
 import { SessionProvider } from "@/context/session.context"
+import { Logo } from "@/components/ui/logo"
 
 const getDashboardNav = () => [
   {group:"General",items:[
@@ -130,9 +131,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <SidebarProvider defaultOpen>
       <Sidebar variant="inset" collapsible="icon" className="sticky max-h-screen overflow-y-auto">
         <SidebarHeader>
-          <Link href="/dashboard" className="flex items-center gap-2 px-2">
-            <div className="size-6 rounded-md bg-primary" />
-            <span className="font-medium text-sm">Your PaaS</span>
+          <Link href="/dashboard/overview" className="flex items-center gap-2 px-2">
+            <Logo />
           </Link>
         </SidebarHeader>
 

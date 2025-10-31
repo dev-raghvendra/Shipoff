@@ -32,10 +32,16 @@ export default withAuth(
 
 
         if (isAuthPage) {
-            return NextResponse.redirect(new URL("/", req.url));
+            return NextResponse.redirect(new URL("/dashboard/overview", req.url));
         }
-
-        return NextResponse.next();
+        const headers = new Headers(req.headers);
+        const url = new URL(req.url);
+        headers.set('x-req-path', url.pathname);
+        return NextResponse.next({
+            request:{
+                headers
+            }
+        });
     },
     {
         callbacks: {
