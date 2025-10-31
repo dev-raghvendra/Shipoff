@@ -2,12 +2,11 @@
 
 import { useState, useMemo, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Book, Rocket, GitBranch, Code2, Globe, Settings, Users, Zap, Shield, Terminal, Database, AlertCircle, CheckCircle, Search, Menu, X, ChevronRight, Lock, Play, Circle } from 'lucide-react'
+import { ArrowLeft, Book, Rocket, Code2, Settings, Users, Zap, Database, AlertCircle, Search, Menu, X, ChevronRight, Lock, Circle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Logo } from '@/components/ui/logo'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { CONFIG } from '../config/config'
 import { CONFIG } from '../config/config'
 const frameworks = [
   { name: 'Next.js', type: 'Static/Dynamic', runtime: 'Node.js', build: 'npm run build', outDir: '.next' },
@@ -24,56 +23,6 @@ const frameworks = [
   { name: 'Symfony', type: 'Dynamic', runtime: 'PHP', build: 'composer install', outDir: 'public' },
 ]
 
-const deploymentStates = [
-  {
-    status: 'QUEUED',
-    color: 'bg-blue-500',
-    description: 'Deployment is waiting in the queue to start',
-    canDelete: false,
-    canRedeploy: false,
-    transitions: ['BUILDING']
-  },
-  {
-    status: 'BUILDING',
-    color: 'bg-yellow-500',
-    description: 'Build process is currently running',
-    canDelete: false,
-    canRedeploy: false,
-    transitions: ['PROVISIONING', 'FAILED']
-  },
-  {
-    status: 'PROVISIONING',
-    color: 'bg-purple-500',
-    description: 'Runtime environment is being set up',
-    canDelete: false,
-    canRedeploy: false,
-    transitions: ['PRODUCTION', 'FAILED']
-  },
-  {
-    status: 'PRODUCTION',
-    color: 'bg-green-500',
-    description: 'Deployment is live and serving traffic',
-    canDelete: false,
-    canRedeploy: false,
-    note: 'Only one PRODUCTION deployment per project. Cannot be deleted.'
-  },
-  {
-    status: 'INACTIVE',
-    color: 'bg-gray-500',
-    description: 'Deployment completed but is no longer active',
-    canDelete: true,
-    canRedeploy: true,
-    note: 'Stable state - can be deleted or redeployed'
-  },
-  {
-    status: 'FAILED',
-    color: 'bg-red-500',
-    description: 'Deployment encountered an error',
-    canDelete: true,
-    canRedeploy: true,
-    note: 'Stable state - can be deleted or redeployed'
-  },
-]
 
 const sections = [
   { id: 'getting-started', title: 'Getting Started', icon: Zap },

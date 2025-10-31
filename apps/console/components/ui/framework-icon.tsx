@@ -19,7 +19,7 @@ export function FrameworkIcon({
 
   return (
     <Image 
-      src={resolvedTheme === "dark" ? `/framework/${src}-dark.svg` : `/framework/${src}-light.svg`}
+    src={resolvedTheme === "dark" ? `/framework/${src}-dark.svg` : `/framework/${src}-light.svg`}
       alt={alt}
       className={cn("object-contain", className)}
       onError={(e) => {
