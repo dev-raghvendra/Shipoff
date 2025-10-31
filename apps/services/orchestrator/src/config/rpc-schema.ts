@@ -1,4 +1,4 @@
-import { GetCloneURIRequestSchema, IDeploymentIngressedRequestSchema, OrchestratorWebhookRequestSchema, StartK8DeploymentRequestSchema } from "@/types/orchestrator";
+import { GetCloneURIRequestSchema, IDeploymentIngressedRequestSchema, OrchestratorWebhookRequestSchema } from "@/types/orchestrator";
 import { UnimplementedOrchestratorServiceService } from "@shipoff/proto";
 import { createRPCEntry, RPC_SCHEMA_T } from "@shipoff/services-commons";
 

@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Logo } from '@/components/ui/logo'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { CONFIG } from '../config/config'
+import { CONFIG } from '../config/config'
 const frameworks = [
   { name: 'Next.js', type: 'Static/Dynamic', runtime: 'Node.js', build: 'npm run build', outDir: '.next' },
   { name: 'React', type: 'Static', runtime: 'Node.js', build: 'npm run build', outDir: 'build' },
@@ -1249,7 +1251,7 @@ export default function DocsPage() {
                   <CardContent>
                     <p className="text-sm text-muted-foreground">
                       If you're still experiencing issues, reach out to our support team at{' '}
-                      <Link href="teamshipoff@gmail.com" className="text-primary hover:underline">teamshipoff@gmail.com</Link> 
+                      <Link href={`mailto:${CONFIG.EMAIL_SUPPORT}`} className="text-primary hover:underline">{CONFIG.EMAIL_SUPPORT}</Link>
                       {' '}or use the "Report Bug" feature in your dashboard.
                     </p>
                   </CardContent>

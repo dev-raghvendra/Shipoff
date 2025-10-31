@@ -15,11 +15,11 @@ export function FrameworkIcon({
   className = "h-6 w-6"
 }: FrameworkIconProps) {
 
-  const {theme} = useTheme()
+  const {resolvedTheme} = useTheme()
 
   return (
     <Image 
-      src={theme === "dark" ? `/framework/${src}-dark.svg` : `/framework/${src}-light.svg`}
+      src={resolvedTheme === "dark" ? `/framework/${src}-dark.svg` : `/framework/${src}-light.svg`}
       alt={alt}
       className={cn("object-contain", className)}
       onError={(e) => {

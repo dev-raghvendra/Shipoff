@@ -1,7 +1,7 @@
 import { OrchestratorService } from "@/services/orchestrator.service";
-import { GetCloneURIRequestBodyType, IDeploymentIngressedRequestType, StartK8DeploymentRequestBodyType } from "@/types/orchestrator";
+import { GetCloneURIRequestBodyType, IDeploymentIngressedRequestType } from "@/types/orchestrator";
 import { sendUnaryData, ServerUnaryCall, status } from "@grpc/grpc-js";
-import { CloneURIResponse, google, IDeploymentIngressedRequest, IGetCloneURIRequest, IStartK8DeploymentRequest, IStartK8DeploymentResponse } from "@shipoff/proto";
+import { CloneURIResponse, google, IDeploymentIngressedRequest, IGetCloneURIRequest } from "@shipoff/proto";
 
 export class OrchestratorHandler {
     private orchestratorService : OrchestratorService

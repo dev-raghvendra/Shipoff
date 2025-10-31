@@ -29,21 +29,11 @@ message OrchestratorWebhookRequest {
     RequestMeta reqMeta = 3;
 }
 
-message IStartK8DeploymentRequest {
-    string projectId = 1;
-    RequestMeta reqMeta = 2;
-}
-
-message IStartK8DeploymentResponse {
-    int32 code = 1;
-    string message = 2;
-}
 
 
 service OrchestratorService {
     rpc IGetCloneURI (IGetCloneURIRequest) returns (CloneURIResponse);
     rpc IOrchestratorWebhook (OrchestratorWebhookRequest) returns (google.protobuf.Empty);
     rpc IDeploymentIngressed (IDeploymentIngressedRequest) returns (google.protobuf.Empty);
-    rpc IStartK8Deployment (IStartK8DeploymentRequest) returns (IStartK8DeploymentResponse);
 }
 

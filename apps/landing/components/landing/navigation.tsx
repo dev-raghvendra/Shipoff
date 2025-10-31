@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Logo } from '@/components/ui/logo'
+import { CONFIG } from '@/app/config/config'
 
 export function Navigation() {
   return (
@@ -25,15 +26,15 @@ export function Navigation() {
             <Link href="/docs" className="text-sm hover:text-primary transition-colors">
               Docs
             </Link>
-            <Link href="https://console.shipoff.in/dashboard/overview">
+            <Link href={CONFIG.DASHBOARD_URL}>
               <Button variant="ghost" size="sm">Dashboard</Button>
-            </Link>
-            <Link href="https://console.shipoff.in">
+              </Link>
+              <Link href={CONFIG.LOGIN_URL}>
               <Button size="sm">Sign In</Button>
             </Link>
           </div>
           <div className="md:hidden">
-            <Link href="/login">
+            <Link href={CONFIG.LOGIN_URL}>
               <Button size="sm">Sign In</Button>
             </Link>
           </div>

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Logo } from '@/components/ui/logo'
+import { CONFIG } from '../config/config'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy | Shipoff',
@@ -182,8 +183,8 @@ export default function PrivacyPolicyPage() {
                 If you have any questions about this Privacy Policy, please contact us:
               </p>
               <ul className="list-none space-y-2 text-muted-foreground mt-4">
-                <li><strong>Email:</strong> privacy@shipoff.in</li>
-                <li><strong>Support:</strong> support@shipoff.in</li>
+                <li><strong>Email:</strong> {CONFIG.EMAIL_SUPPORT}</li>
+                <li><strong>Support:</strong> {CONFIG.EMAIL_SUPPORT}</li>
               </ul>
             </section>
           </div>

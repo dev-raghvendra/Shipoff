@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Logo } from '@/components/ui/logo'
+import { CONFIG } from '../config/config'
 
 export const metadata: Metadata = {
   title: 'Terms of Service | Shipoff',
@@ -199,8 +200,8 @@ export default function TermsOfServicePage() {
                 If you have any questions about these Terms of Service, please contact us:
               </p>
               <ul className="list-none space-y-2 text-muted-foreground">
-                <li><strong>Email:</strong> legal@shipoff.in</li>
-                <li><strong>Support:</strong> support@shipoff.in</li>
+                <li><strong>Email:</strong> {CONFIG.EMAIL_SUPPORT}</li>
+                <li><strong>Support:</strong> {CONFIG.EMAIL_SUPPORT}</li>
               </ul>
             </section>
           </div>

@@ -53,13 +53,6 @@ export const DeleteTeamRequestSchema = z.object({
   reqMeta: RequestMetaSchema
 }).strict();
 
-export const GetTeamMemberRequestSchema = z.object({
-  targetUserId: z.string(),
-  teamId: z.string(),
-  authUserData: UserSchema,
-  reqMeta: RequestMetaSchema
-}).strict();
-
 export const DeleteTeamMemberRequestSchema = z.object({
   targetUserId: z.string(),
   teamId: z.string(),
@@ -108,9 +101,6 @@ export type GetTeamsLinkedToProjectRequestDBBodyType = Omit<GetTeamsLinkedToProj
 
 export type DeleteTeamRequestBodyType = z.infer<typeof DeleteTeamRequestSchema>;
 export type DeleteTeamRequestDBBodyType = Omit<DeleteTeamRequestBodyType, "authUserData" | "reqMeta">;
-
-export type GetTeamMemberRequestBodyType = z.infer<typeof GetTeamMemberRequestSchema>;
-export type GetTeamMemberRequestDBBodyType = Omit<GetTeamMemberRequestBodyType, "authUserData" | "reqMeta">;
 
 export type DeleteTeamMemberRequestBodyType = z.infer<typeof DeleteTeamMemberRequestSchema>;
 export type DeleteTeamMemberRequestDBBodyType = Omit<DeleteTeamMemberRequestBodyType, "authUserData" | "reqMeta">;
