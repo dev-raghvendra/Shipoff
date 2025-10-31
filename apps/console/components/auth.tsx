@@ -10,6 +10,7 @@ import { signIn } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import {toast} from "sonner"
 import { Loader } from "lucide-react"
+import { Logo } from "./ui/logo"
 
 
 export default function Auth({isSignin}:{isSignin:boolean}) {
@@ -115,7 +116,7 @@ useEffect(()=>{
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
-              <span className="text-2xl font-bold text-foreground font-serif">Shipoff</span>
+              <Logo className="h-10" />
             </div>
           </Link>
           <h1 className="text-3xl font-bold text-foreground mb-2 text-balance">{heading}</h1>
