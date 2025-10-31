@@ -133,6 +133,7 @@ export class Database {
             );
             return res as Prisma.UserGetPayload<{select:T}>;
         } catch (error) {
+            console.log("Create OAuth User Error:", error);
             if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
                 throw new GrpcAppError(status.ALREADY_EXISTS,"User already exists",null);
             }

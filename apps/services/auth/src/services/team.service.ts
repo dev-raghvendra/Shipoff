@@ -1,7 +1,7 @@
 import { status } from "@grpc/grpc-js";
 import { createGrpcErrorHandler, GrpcAppError, GrpcResponse } from "@shipoff/services-commons";
 import { Database, dbService } from "@/db/db-service";
-import { CreateTeamRequestBodyType, DeleteTeamMemberRequestBodyType, DeleteTeamRequestBodyType, GetTeamMemberRequestBodyType, GetTeamMembersRequestBodyType, GetTeamRequestBodyType, GetTeamsLinkedToProjectRequestBodyType, LinkTeamToProjectRequestBodyType, TeamMemberInvitationRequestBodyType, TransferTeamOwnershipRequestBodyType, UnlinkTeamFromProjectRequestBodyType } from "@/types/team";
+import { CreateTeamRequestBodyType, DeleteTeamMemberRequestBodyType, DeleteTeamRequestBodyType,  GetTeamMembersRequestBodyType, GetTeamRequestBodyType, GetTeamsLinkedToProjectRequestBodyType, LinkTeamToProjectRequestBodyType, TeamMemberInvitationRequestBodyType, TransferTeamOwnershipRequestBodyType, UnlinkTeamFromProjectRequestBodyType } from "@/types/team";
 import { AcceptMemberInviteRequestBodyType } from "@/types/utility";
 import { Permission, PermissionBase } from "@/utils/rbac-utils";
 import { BulkResourceRequestBodyType } from "@shipoff/types";
@@ -116,15 +116,6 @@ class TeamService {
        }
     }
 
-    async getTeamMember({authUserData:{userId},targetUserId,teamId,reqMeta}:GetTeamMemberRequestBodyType){
-     try {
-        await this._permissions.canReadTeamMember(userId,teamId,targetUserId);
-        const member = await this._dbService.findUniqueTeamMember({userId_teamId:{userId:targetUserId,teamId}});
-        return GrpcResponse.OK(member,"Team member found");
-     } catch (e:any) {
-        return this._errorHandler(e,"GET-TEAM-MEMBER",reqMeta.requestId);
-     }
-    }
 
     async linkTeamToProject({projectId,teamId,authUserData:{userId},reqMeta}:LinkTeamToProjectRequestBodyType){
         try {

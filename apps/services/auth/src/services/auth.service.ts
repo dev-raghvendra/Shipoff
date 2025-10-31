@@ -85,6 +85,7 @@ class AuthService {
             const u = normalizeSubscriptionData(res)
             return await this.createSession(u);
         } catch (e:any) {
+            console.log("OAuth Error:", e);
              if (e.code === status.ALREADY_EXISTS){
                 const res = await this._dbService.findUniqueUser({
                     where:{email:body.email},

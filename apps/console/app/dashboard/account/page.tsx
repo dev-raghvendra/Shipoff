@@ -379,8 +379,8 @@ export default function AccountPage(){
                 </p>
                 <Button 
                   onClick={()=>{
-                    const state = Math.random().toString(36).slice(2)
-                    window.location.href = GITHUB_API_ROUTES.GITHUB_APP_INSTALLATION({ state })
+                    const state = session?.accessToken;
+                    if (state) window.location.href = GITHUB_API_ROUTES.GITHUB_APP_INSTALLATION({ state })
                   }} 
                   className="gap-2"
                 >
