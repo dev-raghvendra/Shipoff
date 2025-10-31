@@ -1,6 +1,8 @@
 import {v7 as uuid} from "uuid"
+import { nanoid } from "nanoid";
 
-export function generateId<t,k extends keyof t>(model:k,map:t) {
+export function generateId<t,k extends keyof t>(model:k,map:t,byteLength?:number) {
+        if(byteLength) return `${map[model]}-${nanoid(byteLength)}`;
         return `${map[model]}-${uuid()}`;
 }
 

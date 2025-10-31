@@ -1,325 +1,319 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Combobox, ComboboxOption } from "@/components/ui/combobox"
-import { Loader2, Github, Lock, Globe } from "lucide-react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { toast } from "sonner"
+import { useFrameworks } from "@/hooks/use-project"
+import { useGithubRepos } from "@/hooks/use-github-repos"
+import { githubService } from "@/services/github.service"
+import projectService from "@/services/projects.service"
+import { ProjectInfoStep } from "./components/project-info-step"
+import { FrameworkStep } from "./components/framework-step"
+import { RepositoryStep } from "./components/repository-step"
+import { DomainStep } from "./components/domain-step"
+import { EnvironmentStep, type EnvVar } from "./components/environment-step"
+import { WizardProgress, WizardActions } from "./components/wizard-navigation"
+
+const WIZARD_STEPS = [
+  { key: "info", label: "Info" },
+  { key: "framework", label: "Framework" },
+  { key: "repository", label: "Repository" },
+  { key: "domain", label: "Domain" },
+  { key: "env", label: "Env Vars" },
+]
 
 export default function NewProjectWizardPage() {
+  // Hooks
+  const { data: frameworks, isLoading: isLoadingFrameworks } = useFrameworks({ fetchNow: true })
+  const { data: repos, isLoading: isLoadingRepos, isFetchingNextPage, hasNextPage, fetchNextPage } = useGithubRepos({ enabled: true })
+  
+  // Refs
+  const repoContainerRef = useRef<HTMLDivElement>(null)
+  
+  // Wizard state
   const [step, setStep] = useState(0)
-  const [valid, setValid] = useState({ info: false, framework: false, repository: false, domain: false, env: true })
+  const [valid, setValid] = useState({ 
+    info: false, 
+    framework: false, 
+    repository: false, 
+    domain: false, 
+    env: true 
+  })
+  const [createInProgress, setCreateInProgress] = useState(false)
+  const [invalidAttempt, setInvalidAttempt] = useState<{ step: number } | null>(null)
 
-  // Local create-form state (decoupled from settings components)
+  // Project Info state
   const [name, setName] = useState("my-paas-app")
   const [description, setDescription] = useState("Web app for managing deployments and environments.")
 
+  // Framework state
   const [framework, setFramework] = useState<string | null>(null)
-  const [buildCommand, setBuildCommand] = useState("next build")
-  const [prodCommand, setProdCommand] = useState("next start -p 3000")
-  const [outDir, setOutDir] = useState(".next")
+  const [buildCommand, setBuildCommand] = useState("")
+  const [prodCommand, setProdCommand] = useState("")
+  const [outDir, setOutDir] = useState("")
 
-  // Repository step state
-  const [githubInstalled, setGithubInstalled] = useState(false)
+  // Repository state
   const [checkingGithub, setCheckingGithub] = useState(true)
-  const [invalidAttempt, setInvalidAttempt] = useState<{
-    step: number
-  } | null>(null)
-  const [availableRepos, setAvailableRepos] = useState<Array<{id:string; name:string; url:string; private?: boolean}>>([])
-  const [selectedRepo, setSelectedRepo] = useState<{id:string; name:string; url:string; private?: boolean} | null>(null)
+  const [githubInstalled, setGithubInstalled] = useState(false)
+  const [selectedRepo, setSelectedRepo] = useState<typeof repos[0] | null>(null)
   const [branch, setBranch] = useState("main")
   const [rootDir, setRootDir] = useState("/")
 
+  // Domain state
   const [domainPrefix, setDomainPrefix] = useState("my-paas-app")
+  const [domainAvailable, setDomainAvailable] = useState<boolean | null>(null)
 
-  type EnvVar = { id: string; key: string; value: string }
+  // Environment variables state
   const [envVars, setEnvVars] = useState<EnvVar[]>([])
 
-  // Framework options for combobox
-  const frameworkOptions: ComboboxOption[] = [
-    { value: "nextjs", label: "Next.js" },
-    { value: "vite", label: "Vite" },
-    { value: "react", label: "React" },
-    { value: "vue", label: "Vue" },
-    { value: "svelte", label: "Svelte" },
-  ]
-
-  // Framework presets
-  const applyFrameworkPreset = (fw: string) => {
-    setFramework(fw)
-    if (fw === "nextjs") {
-      setBuildCommand("next build"); setProdCommand("next start -p 3000"); setOutDir(".next")
-    } else if (fw === "vite") {
-      setBuildCommand("vite build"); setProdCommand("vite preview"); setOutDir("dist")
-    } else if (fw === "react") {
-      setBuildCommand("npm run build"); setProdCommand("npm start"); setOutDir("build")
-    } else if (fw === "vue") {
-      setBuildCommand("npm run build"); setProdCommand("npm run preview"); setOutDir("dist")
-    } else if (fw === "svelte") {
-      setBuildCommand("npm run build"); setProdCommand("npm run preview"); setOutDir("build")
-    }
-  }
-
-  // Env var helpers
-  const addEnv = () => setEnvVars(v => [...v, { id: Date.now().toString(), key: "", value: "" }])
-  const updateEnv = (id: string, field: "key"|"value", val: string) => setEnvVars(v => v.map(e => e.id === id ? { ...e, [field]: val } : e))
-  const removeEnv = (id: string) => setEnvVars(v => v.filter(e => e.id !== id))
-  const steps = [
-    { key: "info", label: "Info" },
-    { key: "framework", label: "Framework" },
-    { key: "repository", label: "Repository" },
-    { key: "domain", label: "Domain" },
-    { key: "env", label: "Env Vars" },
-  ]
-  const isFirst = step === 0
-  const isLast = step === steps.length - 1
-  const percent = Math.round(((step + 1) / steps.length) * 100)
-
-  // Per-step validity (derived + synced)
+  // Validation logic
   const infoValid = useMemo(() => name.trim().length > 0, [name])
-  const frameworkValid = useMemo(() => !!(buildCommand.trim() && prodCommand.trim() && outDir.trim()), [buildCommand, prodCommand, outDir])
+  const frameworkValid = useMemo(() => 
+    !!(framework && buildCommand.trim() && prodCommand.trim() && outDir.trim()), 
+    [framework, buildCommand, prodCommand, outDir]
+  )
   const repositoryValid = useMemo(() => Boolean(selectedRepo), [selectedRepo])
-  const domainValid = useMemo(() => domainPrefix.trim().length > 0, [domainPrefix])
+  const domainValid = useMemo(() => 
+    domainPrefix.trim().length > 0 && domainAvailable === true, 
+    [domainPrefix, domainAvailable]
+  )
   const envValid = useMemo(() => {
-    if (!envVars.length) return true
-    const allKeys = envVars.every(v => v.key.trim().length > 0)
-    const unique = new Set(envVars.map(v => v.key.trim())).size === envVars.length
-    return allKeys && unique
-  }, [envVars])
+    // Check if selected framework is dynamic
+    const selectedFramework = frameworks.find(f => f.frameworkId === framework)
+    const isDynamic = selectedFramework?.applicationType === "DYNAMIC"
+    
+    // For dynamic projects, PORT environment variable is required
+    if (isDynamic) {
+      const hasPort = envVars.some(v => v.name.trim().toUpperCase() === "PORT" && v.value.trim().length > 0)
+      if (!hasPort) return false
+    }
+    
+    // If there are env vars, validate them
+    if (envVars.length > 0) {
+      const allKeys = envVars.every(v => v.name.trim().length > 0)
+      const allValues = envVars.every(v => v.value.trim().length > 0)
+      const unique = new Set(envVars.map(v => v.name.trim())).size === envVars.length
+      return allKeys && allValues && unique
+    }
+    
+    return true
+  }, [envVars, framework, frameworks])
 
+  // Sync validation state
   useEffect(() => setValid(v => ({ ...v, info: infoValid })), [infoValid])
   useEffect(() => setValid(v => ({ ...v, framework: frameworkValid })), [frameworkValid])
   useEffect(() => setValid(v => ({ ...v, repository: repositoryValid })), [repositoryValid])
   useEffect(() => setValid(v => ({ ...v, domain: domainValid })), [domainValid])
   useEffect(() => setValid(v => ({ ...v, env: envValid })), [envValid])
-  useEffect(()=>{
-    if(!invalidAttempt) return
-    toast.error(`Please complete the ${steps[step].label} configuration before moving to ${steps[invalidAttempt?.step || 0].label} configuration`)
-  },[invalidAttempt])
 
-  // Github installation and repos fetch (mock-friendly)
+  // Show validation error toast
   useEffect(() => {
-    const run = async () => {
+    if (!invalidAttempt) return
+    
+    // Only show error if trying to move forward
+    if (invalidAttempt.step > step) {
+      // Find the first incomplete step between current and target
+      const firstIncompleteStep = WIZARD_STEPS.findIndex((s, idx) => {
+        if (idx >= step && idx < invalidAttempt.step) {
+          const key = s.key as keyof typeof valid
+          return !valid[key]
+        }
+        return false
+      })
+      
+      if (firstIncompleteStep >= 0) {
+        toast.error(
+          `Please complete the "${WIZARD_STEPS[firstIncompleteStep].label}" step before proceeding to "${WIZARD_STEPS[invalidAttempt.step].label}".`
+        )
+      }
+    }
+    
+    // Clear the invalid attempt after showing the toast
+    setInvalidAttempt(null)
+  }, [invalidAttempt, step, valid])
+
+  // Check GitHub installation
+  useEffect(() => {
+    const checkGithubInstallation = async () => {
       try {
         setCheckingGithub(true)
-        const res = await fetch("/api/github/check-installation")
-        const data = await res.json().catch(() => ({}))
-        const installed = Boolean(true)
-        setGithubInstalled(installed)
-        if (installed) {
-          try {
-            const r = await fetch("/api/github/repos")
-            const repos = await r.json().catch(() => [])
-            if (Array.isArray(repos) && repos.length) {
-              setAvailableRepos(repos)
-            } else {
-              setAvailableRepos([
-                { id: "repo_1", name: "my-paas-app", url: "https://github.com/example/my-paas-app", private: false },
-                { id: "repo_2", name: "another-project", url: "https://github.com/example/another-project", private: true },
-                { id: "repo_3", name: "web-app", url: "https://github.com/example/web-app", private: false },
-              ])
-            }
-          } catch {
-            setAvailableRepos([
-              { id: "repo_1", name: "my-paas-app", url: "https://github.com/example/my-paas-app", private: false },
-              { id: "repo_2", name: "another-project", url: "https://github.com/example/another-project", private: true },
-              { id: "repo_3", name: "web-app", url: "https://github.com/example/web-app", private: false },
-            ])
-          }
+        await githubService.getGithubInstallation()
+        setGithubInstalled(true)
+      } catch (error: any) {
+        if (error.code !== 404) {
+          toast.error(error.message || "Failed to verify GitHub installation.")
         }
-      } catch {
         setGithubInstalled(false)
       } finally {
         setCheckingGithub(false)
       }
     }
-    run()
+    checkGithubInstallation()
   }, [])
 
-  const handleCreate = async () => {
-    console.log("[v0] Create project submitted from wizard page")
+  // Update branch when repo is selected
+  useEffect(() => {
+    if (selectedRepo) {
+      // Set to default branch or first available branch
+      if (selectedRepo.githubRepoDefaultBranch) {
+        setBranch(selectedRepo.githubRepoDefaultBranch)
+      } else if (selectedRepo.branches.length > 0) {
+        setBranch(selectedRepo.branches[0])
+      }
+    }
+  }, [selectedRepo])
+
+  // Handlers
+  const applyFrameworkPreset = (frameworkId: string) => {
+    setFramework(frameworkId)
+    const selected = frameworks.find(f => f.frameworkId === frameworkId)
+    if (selected) {
+      setBuildCommand(selected.defaultBuildCommand)
+      setProdCommand(selected.defaultProdCommand)
+      setOutDir(selected.defaultOutDir)
+    }
   }
+
+  const addEnvVar = () => {
+    setEnvVars(v => [...v, { id: Date.now().toString(), name: "", value: "" }])
+  }
+
+  const updateEnvVar = (id: string, field: "name" | "value", val: string) => {
+    setEnvVars(v => v.map(e => e.id === id ? { ...e, [field]: val } : e))
+  }
+
+  const removeEnvVar = (id: string) => {
+    setEnvVars(v => v.filter(e => e.id !== id))
+  }
+
+  const handleCreate = async () => {
+    if (createInProgress) return
+    if (!Object.values(valid).every(Boolean)) {
+      toast.error("Please complete all steps before creating the project.")
+      return
+    }
+
+    try {
+      setCreateInProgress(true)
+      const res = await projectService.createProject({
+        name,
+        description,
+        frameworkId: framework!,
+        buildCommand,
+        prodCommand,
+        outDir,
+        githubRepoId: selectedRepo!.githubRepoId,
+        branch,
+        rootDir,
+        domain: `${domainPrefix}.on.shipoff.in`,
+        environmentVars: envVars.map(ev => ({ name: ev.name, value: ev.value })),
+        githubRepoFullName: selectedRepo!.githubRepoFullName,
+        githubRepoURI: selectedRepo!.githubRepoURI
+      })
+      window.location.href = `/dashboard/projects/${res.res.projectId}/overview`
+    } catch (error: any) {
+      setCreateInProgress(false)
+      toast.error(error.message || "Failed to create project.")
+    }
+  }
+
+  const handleStepChange = (newStep: number) => setStep(newStep)
+  const handleBack = () => setStep(s => Math.max(0, s - 1))
+  const handleNext = () => setStep(s => Math.min(WIZARD_STEPS.length - 1, s + 1))
+  const handleInvalidStep = (targetStep: number) => setInvalidAttempt({ step: targetStep })
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-6 space-y-6">
+      {/* Header */}
       <header className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">Create project</h1>
-        <p className="text-sm text-muted-foreground">Configure your project before the first deployment</p>
+        <p className="text-sm text-muted-foreground">
+          Configure your project before the first deployment
+        </p>
       </header>
 
-      <nav className="flex items-center gap-2 overflow-x-auto">
-        {steps.map((s, idx) => (
-          <div key={s.key} className="flex items-center shrink-0">
-            <button
-              className={`text-xs flex cursor-pointer justify-center items-center gap-2 sm:text-sm ${idx === step ? "text-foreground font-medium" : "text-muted-foreground"}`}
-              onClick={() => {
-                // Only allow clicking to a step if all previous are valid
-                const canGo = idx <= step || (idx > step && Array.from({length: idx}).every((_,i)=>{
-                  const key = steps[i].key as keyof typeof valid
-                  return valid[key]
-                }))
-                if (canGo) setStep(idx)
-                else setInvalidAttempt({ step: idx}) 
-                }}
-            >
-                <div className={`h-2 w-2 rounded-full ${idx <= step ? "bg-primary" : "bg-muted-foreground/30"}`} />
-              {s.label}
-            </button>
-            {idx < steps.length - 1 && <div className={`mx-2 h-px w-6 ${idx <= step ? "bg-primary" : "bg-muted-foreground/30"}`} />}
-          </div>
-        ))}
-      </nav>
+      {/* Wizard Progress Bar (Top) */}
+      <WizardProgress
+        steps={WIZARD_STEPS}
+        currentStep={step}
+        valid={valid}
+        onStepChange={handleStepChange}
+        onInvalidStep={handleInvalidStep}
+      />
 
+      {/* Step Content */}
       <section className="space-y-6">
         {step === 0 && (
-          <div className="space-y-3">
-            <div>
-              <label className="text-xs text-muted-foreground">Project name</label>
-              <Input className="mt-1" value={name} onChange={(e)=>setName(e.target.value)} />
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground">Description</label>
-              <Textarea className="mt-1" rows={3} value={description} onChange={(e)=>setDescription(e.target.value)} />
-            </div>
-          </div>
+          <ProjectInfoStep
+            name={name}
+            description={description}
+            onNameChange={setName}
+            onDescriptionChange={setDescription}
+          />
         )}
 
         {step === 1 && (
-          <div className="space-y-3">
-            <div>
-              <label className="text-xs text-muted-foreground">Framework</label>
-              <Combobox
-                options={frameworkOptions}
-                value={framework || undefined}
-                onValueChange={applyFrameworkPreset}
-                placeholder="Select framework..."
-                searchPlaceholder="Search frameworks..."
-                emptyText="No framework found."
-                className="mt-1 w-44 ml-2"
-              />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label className="text-xs text-muted-foreground">Build command</label>
-                <Input className="mt-1 font-mono text-xs" value={buildCommand} onChange={(e)=>setBuildCommand(e.target.value)} />
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground">Production command</label>
-                <Input className="mt-1 font-mono text-xs" value={prodCommand} onChange={(e)=>setProdCommand(e.target.value)} />
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground">Output dir</label>
-                <Input className="mt-1 font-mono text-xs" value={outDir} onChange={(e)=>setOutDir(e.target.value)} />
-              </div>
-            </div>
-          </div>
+          <FrameworkStep
+            frameworks={frameworks}
+            isLoadingFrameworks={isLoadingFrameworks}
+            framework={framework}
+            buildCommand={buildCommand}
+            prodCommand={prodCommand}
+            outDir={outDir}
+            onFrameworkChange={applyFrameworkPreset}
+            onBuildCommandChange={setBuildCommand}
+            onProdCommandChange={setProdCommand}
+            onOutDirChange={setOutDir}
+        />
         )}
 
         {step === 2 && (
-          <div className="space-y-4">
-            {checkingGithub ? (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" /> Checking GitHub connection...
-              </div>
-            ) : !githubInstalled ? (
-              <Alert>
-                <AlertDescription>
-                  <p className="font-medium mb-2">GitHub account not linked</p>
-                  <p className="text-sm mb-3">Link your GitHub account to select a repository for automatic deployments.</p>
-                  <Button size="sm" variant="outline" onClick={()=>{ window.location.href = "/api/auth/github" }}>Link GitHub account</Button>
-                </AlertDescription>
-              </Alert>
-            ) : (
-              <>
-                <div>
-                  <label className="text-xs text-muted-foreground">Select repository</label>
-                  <div className="mt-2 space-y-2">
-                    {availableRepos.map((repo) => (
-                      <button
-                        key={repo.id}
-                        onClick={()=>setSelectedRepo(repo)}
-                        className={`w-full text-left p-3 rounded-lg border transition-colors flex items-center justify-between ${selectedRepo?.id===repo.id ? "border-primary bg-primary/5" : "hover:bg-muted"}`}
-                      >
-                        <div>
-                          <p className="font-medium text-sm flex items-center gap-2"><Github size={14} /> {repo.name}</p>
-                          <p className="text-xs text-muted-foreground">{repo.url}</p>
-                        </div>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          {repo.private ? <Lock className="h-3 w-3" /> : <Globe className="h-3 w-3" />}
-                          <span>{repo.private ? "Private" : "Public"}</span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div>
-                    <label className="text-xs text-muted-foreground">Branch</label>
-                    <Select value={branch} onValueChange={setBranch}>
-                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {['main','develop','staging','production'].map(b => (
-                          <SelectItem key={b} value={b}>{b}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="text-xs text-muted-foreground">Root directory</label>
-                    <Input className="mt-1 font-mono text-xs" value={rootDir} onChange={(e)=>setRootDir(e.target.value)} />
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
+          <RepositoryStep
+            checkingGithub={checkingGithub}
+            githubInstalled={githubInstalled}
+            isLoadingRepos={isLoadingRepos}
+            isFetchingNextPage={isFetchingNextPage}
+            hasNextPage={hasNextPage}
+            availableRepos={repos}
+            selectedRepo={selectedRepo}
+            branch={branch}
+            rootDir={rootDir}
+            repoContainerRef={repoContainerRef}
+            onSelectRepo={setSelectedRepo}
+            onBranchChange={setBranch}
+            onRootDirChange={setRootDir}
+            onLoadMore={() => fetchNextPage()}
+          />
         )}
 
         {step === 3 && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
-            <div className="sm:col-span-2">
-              <label className="text-xs text-muted-foreground">Domain prefix</label>
-              <Input className="mt-1 font-mono text-xs" value={domainPrefix} onChange={(e)=>setDomainPrefix(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))} />
-            </div>
-            <div className="text-xs text-muted-foreground">
-              <div>Preview</div>
-              <div className="mt-1 font-mono text-foreground">{domainPrefix}.on.shipoff.in</div>
-            </div>
-          </div>
+          <DomainStep
+            domainPrefix={domainPrefix}
+            onDomainPrefixChange={setDomainPrefix}
+            onAvailabilityChange={setDomainAvailable}
+          />
         )}
 
         {step === 4 && (
-          <div className="space-y-2">
-            {envVars.map((env) => (
-              <div key={env.id} className="grid grid-cols-1 sm:grid-cols-6 gap-2">
-                <Input className="sm:col-span-2 font-mono text-xs" placeholder="KEY" value={env.key} onChange={(e)=>updateEnv(env.id, 'key', e.target.value)} />
-                <Input className="sm:col-span-3 font-mono text-xs" placeholder="VALUE" value={env.value} onChange={(e)=>updateEnv(env.id, 'value', e.target.value)} />
-                <Button type="button" variant="outline" className="sm:col-span-1" onClick={()=>removeEnv(env.id)}>Remove</Button>
-              </div>
-            ))}
-            <Button type="button" variant="outline" onClick={addEnv}>Add variable</Button>
-          </div>
+          <EnvironmentStep
+            envVars={envVars}
+            onAddEnvVar={addEnvVar}
+            onUpdateEnvVar={updateEnvVar}
+            onRemoveEnvVar={removeEnvVar}
+            isDynamic={frameworks.find(f => f.frameworkId === framework)?.applicationType === "DYNAMIC"}
+          />
         )}
       </section>
 
-      <footer className="flex justify-between gap-2 border-t pt-3">
-        <div className="text-xs text-muted-foreground self-center">Step {step + 1} of {steps.length}</div>
-        <div className="flex gap-2">
-          {!isFirst && (
-            <Button variant="outline" onClick={() => setStep((s) => Math.max(0, s - 1))}>Back</Button>
-          )}
-          {!isLast && (
-            <Button onClick={() => setStep((s) => Math.min(steps.length - 1, s + 1))} disabled={(()=>{ const key=steps[step].key as keyof typeof valid; return !valid[key] })()}>Next</Button>
-          )}
-          {isLast && (
-            <Button onClick={handleCreate} disabled={!Object.values(valid).every(Boolean)}>Create project</Button>
-          )}
-        </div>
-      </footer>
+      {/* Wizard Actions (Bottom) */}
+      <WizardActions
+        steps={WIZARD_STEPS}
+        currentStep={step}
+        valid={valid}
+        isCreating={createInProgress}
+        onBack={handleBack}
+        onNext={handleNext}
+        onCreate={handleCreate}
+      />
     </main>
   )
 }

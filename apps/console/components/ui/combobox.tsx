@@ -22,6 +22,7 @@ import {
 export interface ComboboxOption {
   value: string
   label: string
+  icon?: React.ReactNode
 }
 
 interface ComboboxProps {
@@ -33,6 +34,7 @@ interface ComboboxProps {
   emptyText?: string
   className?: string
   disabled?: boolean
+  isLoading?: boolean
 }
 
 export function Combobox({
@@ -44,18 +46,26 @@ export function Combobox({
   emptyText = "No option found.",
   className,
   disabled = false,
+  isLoading = false,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
-  const [triggerWidth, setTriggerWidth] = React.useState<number | undefined>(undefined)
+  const [triggerWidth, setTriggerWidth] = React.useState<number>(300)
   const triggerRef = React.useRef<HTMLButtonElement>(null)
 
   const selectedOption = options.find((option) => option.value === value)
 
   React.useEffect(() => {
-    if (triggerRef.current) {
-      setTriggerWidth(triggerRef.current.offsetWidth)
+    if (triggerRef.current && open) {
+      const width = triggerRef.current.offsetWidth
+      // Only update if width has actually changed to prevent unnecessary re-renders
+      setTriggerWidth(prev => prev !== width ? width : prev)
     }
   }, [open])
+
+  // Don't render if loading
+  if (isLoading) {
+    return null
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -65,17 +75,24 @@ export function Combobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn("w-full justify-between", className)}
+          className={cn("w-full justify-between gap-2", className)}
           disabled={disabled}
         >
-          {selectedOption ? selectedOption.label : placeholder}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <span className="flex items-center gap-2 truncate">
+            {selectedOption?.icon && selectedOption.icon}
+            <span className="truncate">
+              {selectedOption ? selectedOption.label : placeholder}
+            </span>
+          </span>
+          <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent 
         className="p-0" 
         align="start"
-        style={{ width: triggerWidth ? `${triggerWidth}px` : undefined }}
+        style={{ 
+          width: `${triggerWidth}px`
+        }}
       >
         <Command>
           <CommandInput placeholder={searchPlaceholder} />
@@ -85,19 +102,24 @@ export function Combobox({
               {options.map((option) => (
                 <CommandItem
                   key={option.value}
-                  value={option.value}
-                  onSelect={(currentValue) => {
-                    onValueChange?.(currentValue === value ? "" : currentValue)
+                  value={option.label}
+                  keywords={[option.label, option.value]}
+                  onSelect={() => {
+                    onValueChange?.(option.value)
                     setOpen(false)
                   }}
+                  className="gap-2.5"
                 >
+                  <div className="flex items-center justify-start">
                   <Check
                     className={cn(
-                      "mr-2 h-4 w-4",
+                      "h-4 w-4 shrink-0",
                       value === option.value ? "opacity-100" : "opacity-0"
                     )}
                   />
-                  {option.label}
+                  {option.icon && <span className="shrink-0 ml-2">{option.icon}</span>}
+                  </div>
+                  <span className="truncate ml-1">{option.label}</span>
                 </CommandItem>
               ))}
             </CommandGroup>

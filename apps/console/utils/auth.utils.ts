@@ -9,13 +9,13 @@ import { SubscriptionType } from "@shipoff/types"
 
 export interface UserData {
     userId: string,
-    fullname: string,
+    fullName: string,
     email: string,
     emailVerified: boolean,
     avatarUri: string,
     provider: "GOOGLE" | "GITHUB" | "EMAIL",
     preferredTheme: "dark" | "light" | "system",
-    subscriptions: SubscriptionType[],
+    subscription: SubscriptionType,
 }
 
 export type ParamsType = {
@@ -29,7 +29,7 @@ export type ParamsType = {
     provider: "GOOGLE" | "GITHUB",
     data: {
         email: string,
-        fullname: string,
+        fullName: string,
         avatarUri: string,
     }
 }
@@ -44,6 +44,7 @@ export interface DecodedToken {
 
 
 export async function syncWithBackend({ provider, data }: ParamsType) {
+    console.log("syncWithBackend", provider, data);
     const route = provider === "EMAIL"
         ? data.isSignup ? AUTH_API_ROUTES.SIGNIN() : AUTH_API_ROUTES.LOGIN()
         : AUTH_API_ROUTES.OAUTH()
@@ -60,11 +61,11 @@ export async function syncWithBackend({ provider, data }: ParamsType) {
         email: data.email,
         provider: provider,
         avatarUri: data.avatarUri,
-        fullName: data.fullname,
+        fullName: data.fullName,
         password: `${data.email}${provider}SECRET-${Date.now()}`
     }
 
-    const res = await axios.post<BackendAuthResponse>(`${MAIN_BACKEND_API.AUTH_API}${route}`, body, {
+    const res = await axios.post<BackendAuthResponse>(`${MAIN_BACKEND_API.AUTH_API}/${route}`, body, {
         headers: {
             "X-Api-Key": NEXT_AUTH_SECRETS.MAIN_BACKEND_API_KEY
         }
@@ -80,7 +81,7 @@ export async function syncWithBackend({ provider, data }: ParamsType) {
 export async function refreshAccessToken(token: string) {
     try {
         const res = await axios.get<BackendAuthResponse>(
-            `${MAIN_BACKEND_API.AUTH_API}${AUTH_API_ROUTES.REFRESH()}`,
+            `${MAIN_BACKEND_API.AUTH_API}/${AUTH_API_ROUTES.REFRESH()}`,
             {
                 headers: {
                     "Authorization": `Bearer ${token}` 
@@ -96,10 +97,11 @@ export async function refreshAccessToken(token: string) {
 
 
 export function returnErrorFromOAuth({name}:{name:string}):User{
+    console.error("Error during OAuth:", name);
     return {
         id:"115793986297043625405",
         userId:"115793986297043625405",
-        fullname:"name",
+        fullName:"name",
         email:"email@example.com",
         emailVerified:true,
         avatarUri:"https://example.com",
@@ -108,7 +110,16 @@ export function returnErrorFromOAuth({name}:{name:string}):User{
         refreshToken:"refreshToken",
         refreshTokenExpiresAt:0,
         preferredTheme:"system",
-        subscriptions:[],
+        subscription:{
+            subscriptionId:"FREE_SUBSCRIPTION",
+            type:"FREE",
+            perks:{
+                perkId:"FREE_PERKS",
+                staticProjects:2,
+                dynamicProjects:1
+            },
+            startedAt:"2024-01-01T00:00:00.000Z"
+        },
         error:name
     }
 }

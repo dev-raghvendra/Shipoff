@@ -18,7 +18,7 @@ model User {
   createdAt      DateTime?        @default(now())
   updatedAt      DateTime?        @updatedAt
 
-  subscriptions   Subscription[]   
+  subscription   Subscription?   
   teamMembers    TeamMember[]
   provider       ProviderType
   projectMembers ProjectMember[]
@@ -27,7 +27,7 @@ model User {
 model Team {
   teamId           String                 @id @default(uuid())
   teamName         String
-  description      String?
+  description      String?                @default("Team description was not provided")
   planType         String                 @default("free")
   createdAt        DateTime?              @default(now())
   updatedAt        DateTime?              @updatedAt
@@ -40,6 +40,8 @@ model TeamMember {
   userId   String
   teamId   String
   role     TeamRoleType
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt()
 
   @@id([userId, teamId])
   team     Team     @relation(fields: [teamId], references: [teamId], onDelete: Cascade)
@@ -89,33 +91,36 @@ model TeamLink {
 
 model Subscription {
   subscriptionId   String @id @default(uuid())
-  userId           String
+  userId           String @unique
   type             SubscriptionType
-  freePerksId      String
+  freePerksId      String?
   proPerksId       String?
   startedAt        DateTime? @default(now())
   endedAt          DateTime?
 
-  freePerks        FreeSubscriptionPerks @relation(fields: [freePerksId], references: [perkId],onDelete: Cascade)
-  proPerks         ProSubscriptionPerks?  @relation(fields: [proPerksId], references: [perkId], onDelete: Cascade)
+  freePerks        FreePerks?  @relation(fields: [freePerksId], references: [perkId])
+  proPerks         ProPerks?   @relation(fields: [proPerksId], references: [perkId])
   user             User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }
 
-model FreeSubscriptionPerks {
+model FreePerks {
   perkId           String @id @default(uuid())
   staticProjects   Int    @default(4)
   dynamicProjects  Int    @default(1)
 
-  subscriptions   Subscription[]
+  subscription           Subscription[]
 }
 
-model ProSubscriptionPerks {
+model ProPerks {
   perkId           String @id @default(uuid())
   staticProjects   Int    @default(20)
   dynamicProjects  Int    @default(10)
 
-  subscriptions   Subscription[]
+  subscription           Subscription[]
 }
+
+
+
 
 enum PermissionType {
   READ

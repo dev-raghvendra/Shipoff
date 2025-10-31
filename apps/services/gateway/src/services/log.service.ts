@@ -1,5 +1,5 @@
 import { GetLogClient } from "@shipoff/grpc-clients";
-import { GetLogsRequest, IPutLogRequest, LogServiceClient, StreamLogsRequest } from "@shipoff/proto";
+import { ExportLogsRequest, IPutLogRequest, LogServiceClient, StreamLogsRequest } from "@shipoff/proto";
 import { promisifyGrpcCall } from "@shipoff/services-commons";
 
 export class LogService {
@@ -26,10 +26,10 @@ export class LogService {
         return stream
     }
 
-    async getLogs(data:any){
+    async exportLogs(data:any){
         try {
-            const request = GetLogsRequest.fromObject(data)
-            const response = await promisifyGrpcCall(this._logService.GetLogs.bind(this._logService), request);
+            const request = ExportLogsRequest.fromObject(data)
+            const response = await promisifyGrpcCall(this._logService.ExportLogs.bind(this._logService), request);
             return response
         } catch (e:any) {
             return e;

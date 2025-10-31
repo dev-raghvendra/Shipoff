@@ -24,7 +24,7 @@ model Project {
   createdAt              DateTime?   @default(now())
   updatedAt              DateTime?   @updatedAt
   framework              Framework   @relation(fields: [frameworkId], references: [frameworkId])
-  outDir                 String    
+  outDir                 String      
 
   repository             Repository ?
   deployments            Deployment[]
@@ -42,16 +42,16 @@ model GithubInstallation {
 }
 
 model Framework {
-  frameworkId       String   @id @default(uuid())
-  icon              String
-  name              String   @unique
-  displayName       String   @unique
-  keywordName       String   @unique
-  applicationType   ProjectType
+  frameworkId           String   @id @default(uuid())
+  icon                  String
+  name                  String   @unique
+  displayName           String   @unique
+  keywordName           String   @unique
+  applicationType       ProjectType
   defaultBuildCommand   String
   defaultProdCommand    String?  @default("N/A")
-  runtime           Runtime  
-  outDir            String
+  runtime               Runtime  
+  defaultOutDir         String
 
   project         Project[]
 }
@@ -66,6 +66,7 @@ model Repository {
   githubRepoURI          String      @unique
   projectId              String      @unique
   branch                 String?     @default("main")
+  rootDir                String?     @default("/")
   createdAt              DateTime?   @default(now())
   updatedAt              DateTime?   @updatedAt
 
@@ -87,13 +88,13 @@ model Deployment {
   commitMessage   String
   author          String
   projectId       String
-  repositoryId    String
+  repositoryId    String ?
   lastDeployedAt  DateTime?
 
   buildEnvironment  BuildEnvironment[]
   runtimeEnvironment  RuntimeEnvironment[]
   project         Project          @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
-  repository      Repository       @relation(fields: [repositoryId], references: [repositoryId])
+  repository      Repository ?      @relation(fields: [repositoryId], references: [repositoryId], onDelete: SetNull)
 }
 
 model BuildEnvironment{
@@ -102,7 +103,7 @@ model BuildEnvironment{
   startedAt     DateTime? @default(now())
   active        Boolean   @default(true)
 
-  deployment    Deployment @relation(fields: [deploymentId], references: [deploymentId])
+  deployment    Deployment @relation(fields: [deploymentId], references: [deploymentId], onDelete:Cascade)
 }
 
 model RuntimeEnvironment{
@@ -111,7 +112,7 @@ model RuntimeEnvironment{
   startedAt     DateTime? @default(now())
   active        Boolean   @default(true)
 
-  deployment    Deployment @relation(fields: [deploymentId], references: [deploymentId])
+  deployment    Deployment @relation(fields: [deploymentId], references: [deploymentId], onDelete:Cascade)
 }
 
 model EnvironmentVariable {

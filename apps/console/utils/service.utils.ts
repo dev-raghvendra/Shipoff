@@ -1,7 +1,5 @@
-import { AuthService } from "@/services/auth.service"
 import { BaseService } from "@/services/base.service"
-import { TeamsService } from "@/services/teams.service"
-import { InternalAxiosRequestConfig, AxiosResponse, AxiosError } from "axios"
+import { InternalAxiosRequestConfig, AxiosError } from "axios"
 import { getSession } from "next-auth/react"
 
 export function serviceReqInterceptor(this:BaseService){
@@ -13,28 +11,44 @@ export function serviceReqInterceptor(this:BaseService){
 }
 
 export function serviceResIntercepter(this:BaseService){
-    return async(res:AxiosResponse)=>{
+    return async(res:AxiosError)=>{
        if(res.status===401){
+           this._authToken = null
+           this._tokenExpiresAt = 0
            await getAccessToken.apply(this)
-           return this._axiosInstance.request(res.config)
+           return this._axiosInstance.request(res.config!)
        }
-       return res;
+       return Promise.reject(res);
     }
 }
 
 export async function getAccessToken(this:BaseService){
-   if(this._isFetching) await new Promise((res)=>setTimeout(res,600));
-   if(this._sessionExpired) throw new AxiosError("Session expired","401");
-   if(!this._authToken){
-      this._isFetching = true
-      this._authToken = await getSession().then(s=>s?.error ? null : s?.accessToken as string)
+   if(this._sessionExpired) return window.location.href = "/login";
+
+   const now = Math.floor(Date.now() / 1000);
+   const bufferTime = 5 * 60;
+   
+   if(this._authToken && this._tokenExpiresAt && now < (this._tokenExpiresAt - bufferTime)) {
+      return this._authToken; // Return cached token if still valid
    }
-   if(!this._authToken){
-      this._sessionExpired = true;
-      this._isFetching  = false
-      this._authToken = null
-      throw new AxiosError("Session Expired","401")
-   }
+   
+   // Token expired or doesn't exist, fetch fresh one
+   if(this._isFetching) return await new Promise((res)=>setTimeout(()=>res(""),1000));
+   if(this._isFetching) return await new Promise((res)=>setTimeout(()=>res(""),1000));
+   if(this._sessionExpired) return window.location.href = "/login";
+   this._isFetching = true;
+   const session = await getSession();
    this._isFetching = false;
-   return this._authToken
+   
+   if(session?.error || !session?.accessToken) {
+      this._sessionExpired = true;
+      this._authToken = null;
+      this._tokenExpiresAt = 0;
+      return window.location.href = "/login";
+   }
+   
+   this._authToken = session.accessToken;
+   this._tokenExpiresAt = Math.floor(Date.now() / 1000) + (24 * 60 * 60); // 24 hours
+   
+   return this._authToken;
 }

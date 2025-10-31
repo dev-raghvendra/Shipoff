@@ -69,11 +69,10 @@ export const authOptions: NextAuthOptions = {
                         provider:"GOOGLE",
                         data:{
                             email:profile.email,
-                            fullname:profile.name,
+                            fullName:profile.name,
                             avatarUri:profile.picture
                         }
                     })
-                    
                     if(!res) return returnErrorFromOAuth ({name:"InternalError"})
                     const {user,accessToken,refreshToken} = res;
                     return {
@@ -86,7 +85,7 @@ export const authOptions: NextAuthOptions = {
                         error:undefined
                     };
                 } catch (e:any) {
-                    errHandler(e,"GOOGLE_OAUTH_PROFILE",false);
+                    errHandler(e,"GOOGLE_OAUTH_CALLBACK",false,false);
                     return returnErrorFromOAuth ({name:"InternalError"});
                 }
             }
@@ -100,7 +99,7 @@ export const authOptions: NextAuthOptions = {
                         provider:"GITHUB",
                         data:{
                             email:profile.email,
-                            fullname:profile.name,
+                            fullName:profile.name,
                             avatarUri:profile.avatar_url
                         }
                     })
@@ -115,7 +114,6 @@ export const authOptions: NextAuthOptions = {
                         accessTokenExpiresAt: Math.floor(Date.now() / 1000) + 24 * 60 * 60
                     };
                 } catch (e:any) {
-                    errHandler(e,"GITHUB_OAUTH_PROFILE",false);
                     return returnErrorFromOAuth ({name:"InternalError"});
                 }
             }
@@ -146,13 +144,19 @@ export const authOptions: NextAuthOptions = {
 
             const now = Math.floor(Date.now() / 1000);
             const bufferTime = 5 * 60; 
-
+            
+            // If access token is still valid, return it
             if (now < (token.accessTokenExpiresAt - bufferTime)) return token;
-            if (now < (token.refreshTokenExpiresAt - bufferTime)) return token;
-            else if (now >= (token.refreshTokenExpiresAt - bufferTime)) return {
-                ...token, error: "RefreshTokenExpired"
+            
+            // If refresh token has expired, return error
+            if (now >= (token.refreshTokenExpiresAt - bufferTime)) {
+                return {
+                    ...token, 
+                    error: "RefreshTokenExpired"
+                };
             }
 
+            // Access token expired but refresh token valid - refresh the token
             const newTokens = await refreshAccessToken(token.refreshToken);
 
             if (!newTokens) {
@@ -163,12 +167,11 @@ export const authOptions: NextAuthOptions = {
             }
 
             const decodedUser = decode(newTokens.accessToken) as DecodedToken;
-
             return {
                 ...token,
                 accessToken: newTokens.accessToken,
                 refreshToken: newTokens.refreshToken,
-                refreshTokenExpiresAt: Math.floor(Date.now() / 1000) + 6 * 24 * 6,
+                refreshTokenExpiresAt: Math.floor(Date.now() / 1000) + 6 * 24 * 60 * 60,
                 user: decodedUser.authUserData,
                 accessTokenExpiresAt: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
                 error: undefined

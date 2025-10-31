@@ -1,4 +1,4 @@
-import {AcceptInvitationRequest, AuthServiceClient, BodyLessRequest, BulkResourceRequest, CreateProjectMemberInvitationRequest, CreateTeamMemberInvitationRequest, CreateTeamRequest, DeleteProjectMemberRequest, DeleteTeamMemberRequest, DeleteTeamRequest, GetProjectMemberRequest, GetTeamMemberRequest, GetTeamRequest, GetTeamsLinkedToProjectRequest, GetUserRequest, LoginRequest, OAuthRequest, SigninRequest, TransferTeamOwnershipRequest} from "@shipoff/proto";
+import {AcceptInvitationRequest, AuthServiceClient, BodyLessRequest, BulkResourceRequest, CreateProjectMemberInvitationRequest, CreateTeamMemberInvitationRequest, CreateTeamRequest, DeleteProjectMemberRequest, DeleteTeamMemberRequest, DeleteTeamRequest, GetProjectMemberRequest, GetTeamMemberRequest, GetTeamMembersRequest, GetTeamRequest, GetTeamsLinkedToProjectRequest, GetUserRequest, LinkTeamToProjectRequest, LoginRequest, OAuthRequest, SigninRequest, TransferTeamOwnershipRequest, UnlinkTeamFromProjectRequest, VerifyEmailRequest} from "@shipoff/proto";
 import {GetAuthClient} from "@shipoff/grpc-clients";
 import {promisifyGrpcCall} from "@shipoff/services-commons"
 
@@ -32,11 +32,19 @@ export class AuthService {
     async OAuth(data:any){
         try {
             const req =  OAuthRequest.fromObject(data);
-            console.log(data)
             const response = await promisifyGrpcCall(this._authService.OAuth.bind(this._authService), req);
             return response;
         } catch (e:any) {
-            console.log(e)
+            return e;
+        }
+    }
+
+    async verifyEmail(data:any){
+        try {
+            const req = VerifyEmailRequest.fromObject(data);
+            const response = await promisifyGrpcCall(this._authService.VerifyEmail.bind(this._authService), req);
+            return response;
+        } catch (e:any) {
             return e;
         }
     }
@@ -65,6 +73,16 @@ export class AuthService {
         try {
             const req = BodyLessRequest.fromObject(data);
             const response = await promisifyGrpcCall(this._authService.RefreshToken.bind(this._authService), req);
+            return response;
+        } catch (e:any) {
+            return e;
+        }
+    }
+
+    async getWSAuthToken(data:any){
+        try {
+            const req = BodyLessRequest.fromObject(data);
+            const response = await promisifyGrpcCall(this._authService.GetWSAuthToken.bind(this._authService), req);
             return response;
         } catch (e:any) {
             return e;
@@ -111,6 +129,7 @@ export class AuthService {
         }
     }
 
+    
     async deleteTeam(data:any){
         try {
             const req =  DeleteTeamRequest.fromObject(data);
@@ -131,10 +150,12 @@ export class AuthService {
         }
     }
 
-    async getTeamMember(data:any){
+
+
+    async getTeamMembers(data:any){
         try {
-            const req =  GetTeamMemberRequest.fromObject(data);
-            const response = await promisifyGrpcCall(this._authService.GetTeamMember.bind(this._authService), req);
+            const req =  GetTeamMembersRequest.fromObject(data);
+            const response = await promisifyGrpcCall(this._authService.GetTeamMembers.bind(this._authService), req);
             return response;
         } catch (e:any) {
             return e;
@@ -145,6 +166,25 @@ export class AuthService {
         try {
             const req =  DeleteTeamMemberRequest.fromObject(data);
             const response = await promisifyGrpcCall(this._authService.DeleteTeamMember.bind(this._authService), req);
+            return response;
+        } catch (e:any) {
+            return e;
+        }
+    }
+
+    async linkTeamToProject(data:any){
+        try {
+            const req =  LinkTeamToProjectRequest.fromObject(data);
+            const response = await promisifyGrpcCall(this._authService.LinkTeamToProject.bind(this._authService), req);
+            return response;
+        } catch (e:any) {
+            return e;
+        }
+    }
+    async unlinkTeamFromProject(data:any){
+        try {
+            const req =  UnlinkTeamFromProjectRequest.fromObject(data);
+            const response = await promisifyGrpcCall(this._authService.UnlinkTeamFromProject.bind(this._authService), req);
             return response;
         } catch (e:any) {
             return e;
@@ -181,15 +221,7 @@ export class AuthService {
         }
     }
 
-    async getProjectMember(data:any){
-        try {
-            const req =  GetProjectMemberRequest.fromObject(data);
-            const response = await promisifyGrpcCall(this._authService.GetProjectMember.bind(this._authService), req);
-            return response;
-        } catch (e:any) {
-            return e;
-        }
-    }
+
 
     async deleteProjectMember(data:any){
         try {

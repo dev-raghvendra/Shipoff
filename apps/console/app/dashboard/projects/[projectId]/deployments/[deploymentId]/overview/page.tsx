@@ -1,107 +1,73 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { statusBadge } from "@/components/deployments/deployment-card"
-import { Badge } from "@/components/ui/badge"
+import { BuildEnvironment } from "@/components/deployments/build-environment"
+import { RuntimeEnvironment } from "@/components/deployments/runtime-environment"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import {
-  CheckCircle,
-  XCircle,
-  Clock,
   Loader2, GitBranch,
   User,
   Calendar,
   Globe,
   Code,
-  Terminal, ChevronDown,
-  ChevronRight, AlertTriangle
+  Terminal,
+  AlertTriangle
 } from "lucide-react"
 import { useDeployment } from "@/hooks/use-deployment"
+import { Skeleton } from "@/components/ui/skeleton"
+import projectService from "@/services/projects.service"
+import { RotateCw, Trash2 } from "lucide-react"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
+import { redirect } from "next/navigation"
+import { toast } from "sonner"
+import { FrameworkIcon } from "@/components/ui/framework-icon"
+import { useParams } from "next/navigation"
+import { logsService } from "@/services/logs.service"
+import { downloadFiles } from "@/utils/misc.client.utils"
+import { useRouter } from "next/navigation"
 
-interface DeploymentDetailPageProps {
-  params: {
-    projectId: string
-    deploymentId: string
-  }
-}
-
-
-const getStatusIcon = (status: string) => {
-  switch (status) {
-    case "PRODUCTION":
-      return <CheckCircle className="h-4 w-4 text-green-600" />
-    case "BUILDING":
-      return <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
-    case "FAILED":
-      return <XCircle className="h-4 w-4 text-red-600" />
-    default:
-      return <Clock className="h-4 w-4 text-yellow-600" />
-  }
-}
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case "PRODUCTION":
-      return "bg-green-100 text-green-800 border-green-200"
-    case "BUILDING":
-      return "bg-blue-100 text-blue-800 border-blue-200"
-    case "FAILED":
-      return "bg-red-100 text-red-800 border-red-200"
-    default:
-      return "bg-yellow-100 text-yellow-800 border-yellow-200"
-  }
-}
-
-export default function DeploymentDetailPage({ params }: DeploymentDetailPageProps) {
-  const [activeTab, setActiveTab] = useState("overview")
-  const [buildLogsOpen, setBuildLogsOpen] = useState(true)
-  const [runtimeLogsOpen, setRuntimeLogsOpen] = useState(true)
-  const [selectedLogIndex, setSelectedLogIndex] = useState<number | null>(null)
-  const [buildSearchQuery, setBuildSearchQuery] = useState("")
-  const [runtimeSearchQuery, setRuntimeSearchQuery] = useState("")
+export default function DeploymentDetailPage() {
+  const {projectId,deploymentId} = useParams()
   const [isExporting, setIsExporting] = useState(false)
-  const {data:deployment} = useDeployment({projectId:params.projectId,deploymentId:params.deploymentId})
-
+  const [isRedeploying, setIsRedeploying] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const {data:deployment,isLoading,error,isError} = useDeployment({projectId:projectId as string,deploymentId:deploymentId as string})
+  const statusesToMountRuntimeEnvironment = ["PRODUCTION","FAILED","INACTIVE"]
+  const router = useRouter()
 
   const handleExportLogs = async () => {
+    if(isLoading) return
     setIsExporting(true)
-    // try {
-    //   const response = await fetch(`/api/deployments/${params.deploymentId}/export-logs`, {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify({
-    //       projectId: params.projectId,
-    //       deploymentId: params.deploymentId,
-    //       buildLogs: deployment.buildLogs,
-    //       runtimeLogs: deployment.runtimeLogs
-    //     })
-    //   })
-      
-    //   if (response.ok) {
-    //     const blob = await response.blob()
-    //     const url = window.URL.createObjectURL(blob)
-    //     const a = document.createElement('a')
-    //     a.href = url
-    //     a.download = `deployment-${params.deploymentId}-logs.zip`
-    //     document.body.appendChild(a)
-    //     a.click()
-    //     window.URL.revokeObjectURL(url)
-    //     document.body.removeChild(a)
-    //   } else {
-    //     throw new Error('Export failed')
-    //   }
-    // } catch (error) {
-    //   console.error('Export failed:', error)
-    //   // Handle error - could show a toast notification
-    // } finally {
-    //   setIsExporting(false)
-    // }
+    try {
+       const res = await logsService.exportLogs({
+         projectId: projectId as string,
+         deploymentId: deploymentId as string
+       })
+       if(!res.res.downloadURLs.length) throw {message:"No logs available to export"}
+       downloadFiles(res.res.downloadURLs)
+       toast.success("Log export initiated. Downloads should begin shortly.")
+    } catch (error) {
+       toast.error((error as any).message || "Failed to export logs")
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
+
+  useEffect(()=>{
+    if(isLoading) return
+    if(error){
+      if((error as any).code==404){
+        redirect(`/not-found?code=404&message=Deployment not found`)
+      } else toast.error((error as any).message || "Failed to load deployment details")
+    }
+  },[isLoading])
+
+  if(isError){
+    return null
   }
 
   return (
@@ -110,327 +76,287 @@ export default function DeploymentDetailPage({ params }: DeploymentDetailPagePro
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Deployment Details</h1>
-          <p className="text-sm text-muted-foreground">Deployment ID: {params.deploymentId}</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            {isLoading ? (
+              <Skeleton className="h-5 w-64" />
+            ) : (
+              `Deployment ID: ${deploymentId as string}`
+            )}
+          </p>
         </div>
-        {statusBadge(deployment.status)}
+        <div className="flex items-center gap-2">
+          {isLoading ? (
+            <Skeleton className="h-6 w-24" />
+          ) : (
+            statusBadge(deployment.status)
+          )}
+          {!isLoading && ["PRODUCTION","FAILED","QUEUED"].includes(deployment.status) && (
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={isRedeploying}
+              onClick={async()=>{
+                try{
+                  window.dispatchEvent(new CustomEvent('reset-deploy-backoff', { detail: { projectId: projectId as string, deploymentId: deploymentId as string } }))
+                  setIsRedeploying(true)
+                  await projectService.redeployDeployment({projectId: projectId as string, deploymentId: deploymentId as string})
+                  toast.success("Redeployment started")
+                }catch(e:any){
+                  toast.error(e.message||"Failed to redeploy")
+                }finally{setIsRedeploying(false)}
+              }}
+              className="gap-1.5"
+            >
+              {isRedeploying ? <Loader2 className="h-4 w-4 animate-spin"/> : <RotateCw className="h-4 w-4"/>}
+              <span className="hidden sm:inline">Redeploy</span>
+            </Button>
+          )}
+          {!isLoading && ["FAILED","INACTIVE"].includes(deployment.status) && (
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={isDeleting}
+              onClick={()=> setConfirmOpen(true)}
+              className="gap-1.5 text-destructive hover:text-destructive hover:bg-destructive/10"
+            >
+              <Trash2 className="h-4 w-4"/>
+              <span className="hidden sm:inline">Delete</span>
+            </Button>
+          )}
+        </div>
       </div>
 
-      {/* Tabs */}
+      {/* Deployment Information Card */}
       <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Deployment Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Globe className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium">Domain</p>
-                    <p className="text-sm text-muted-foreground">{deployment.project.domain}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Code className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium">Repository</p>
-                      <p className="text-sm text-muted-foreground">{deployment.repository.githubRepoFullName}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <GitBranch className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium">Branch</p>
-                      <p className="text-sm text-muted-foreground">{deployment.repository.branch}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Terminal className="h-4 w-4 text-muted-foreground" />
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium">Framework</p>
-                      <div>
-                        <img src={deployment.project.framework.icon} alt="Framework Icon" className="inline-block h-4 w-4" />
-                      <p className="text-sm text-muted-foreground">{deployment.project.framework.displayName}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Code className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium">Commit Hash</p>
-                      <p className="text-sm text-muted-foreground font-mono">{deployment.commitHash}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium">Commit Author</p>
-                      <p className="text-sm text-muted-foreground">{deployment.author}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm font-medium">Deployed At</p>
-                    <p className="text-sm text-muted-foreground">
-                      {new Date(deployment.lastDeployedAt).toLocaleString()}
+        <CardHeader>
+          <CardTitle className="text-base">Deployment Information</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Left Column */}
+            <div className="space-y-3">
+              {/* Domain */}
+              <div className="flex items-center gap-2">
+                <Globe className="h-4 w-4 text-muted-foreground" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">Domain</p>
+                  {isLoading ? (
+                    <Skeleton className="h-4 w-48 mt-1" />
+                  ) : (
+                    <p className="text-sm text-muted-foreground truncate">
+                      {deployment.project.domain}
                     </p>
-                  </div>
+                  )}
                 </div>
               </div>
-            </CardContent>
-          </Card>
+              
+              {/* Repository */}
+              <div className="flex items-center gap-2">
+                <Code className="h-4 w-4 text-muted-foreground" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">Repository</p>
+                  {isLoading ? (
+                    <Skeleton className="h-4 w-64 mt-1" />
+                  ) : (
+                    <p className="text-sm text-muted-foreground truncate">
+                      {deployment.repository.githubRepoFullName}
+                    </p>
+                  )}
+                </div>
+              </div>
 
-
-          {/* Environment Sections */}
-          <div className="space-y-4">
-            {/* Build Environment */}
-            <div className="bg-background border border-border rounded-lg overflow-hidden">
-              <Collapsible open={buildLogsOpen} onOpenChange={setBuildLogsOpen}>
-                <CollapsibleTrigger asChild>
-                  <div className="bg-muted/50 border-b border-border px-4 py-3 cursor-pointer hover:bg-muted transition-colors">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        {buildLogsOpen ? (
-                          <ChevronDown className="h-4 w-4 text-foreground" />
-                        ) : (
-                          <ChevronRight className="h-4 w-4 text-foreground" />
-                        )}
-                        <Terminal className="h-4 w-4 text-foreground" />
-                        <div>
-                          <h3 className="text-sm font-medium text-foreground">Build Logs</h3>
-                          <p className="text-xs text-muted-foreground">
-                            Build ID: <code className="bg-muted text-foreground px-1 rounded text-xs">{deployment.buildEnvironment[0].buildId}</code>
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <Badge variant="outline" className="text-xs">
-                          {deployment.buildLogs.length} logs
-                        </Badge>
-                        <div className="flex items-center gap-2">
-                          <Input
-                            placeholder="Search logs..."
-                            value={buildSearchQuery}
-                            onChange={(e) => setBuildSearchQuery(e.target.value)}
-                            className="h-8 w-48 text-xs"
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <div className="h-80 overflow-y-auto bg-background">
-                    <div className="p-0">
-                      {deployment.buildLogs
-                        .filter(log => 
-                          buildSearchQuery === "" || 
-                          log.message.toLowerCase().includes(buildSearchQuery.toLowerCase())
-                        )
-                        .map((log, index) => (
-                        <Popover key={index}>
-                          <PopoverTrigger asChild>
-                            <div 
-                              className={`flex items-start gap-4 py-1 px-4 cursor-pointer hover:bg-muted/50 transition-colors ${
-                                selectedLogIndex === index ? 'bg-muted' : ''
-                              }`}
-                              onClick={() => setSelectedLogIndex(selectedLogIndex === index ? null : index)}
-                            >
-                              <span className="text-muted-foreground text-xs font-mono flex-shrink-0 mt-0.5">
-                                {new Date(log.time).toLocaleTimeString('en-US', { 
-                                  hour12: false, 
-                                  hour: '2-digit', 
-                                  minute: '2-digit', 
-                                  second: '2-digit',
-                                  fractionalSecondDigits: 3
-                                })}
-                              </span>
-                              <span className={`flex-1 font-mono text-sm ${
-                                log.level === 'error' ? 'text-red-500 dark:text-red-400' : 
-                                log.level === 'success' ? 'text-green-600 dark:text-green-400' : 
-                                'text-foreground'
-                              }`}>
-                                {log.message}
-                              </span>
-                            </div>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-80 p-3" align="start">
-                            <div className="space-y-2">
-                              <h4 className="font-medium text-sm">Log Details</h4>
-                              <div className="space-y-1 text-xs">
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">Level:</span>
-                                  <Badge variant={log.level === 'error' ? 'destructive' : log.level === 'success' ? 'default' : 'secondary'} className="text-xs">
-                                    {log.level}
-                                  </Badge>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">Type:</span>
-                                  <span className="font-mono">{log.type}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">Time:</span>
-                                  <span className="font-mono">{new Date(log.time).toLocaleString()}</span>
-                                </div>
-                                <div className="pt-2 border-t">
-                                  <span className="text-muted-foreground text-xs">Message:</span>
-                                  <p className="font-mono text-xs mt-1 break-words">{log.message}</p>
-                                </div>
-                              </div>
-                            </div>
-                          </PopoverContent>
-                        </Popover>
-                      ))}
-                    </div>
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
+              {/* Branch */}
+              <div className="flex items-center gap-2">
+                <GitBranch className="h-4 w-4 text-muted-foreground" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">Branch</p>
+                  {isLoading ? (
+                    <Skeleton className="h-4 w-32 mt-1" />
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      {deployment.repository.branch}
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
 
-            {/* Runtime Environment - Only for dynamic projects */}
-            {deployment.isDynamic && (
-              <div className="bg-background border border-border rounded-lg overflow-hidden">
-                <Collapsible open={runtimeLogsOpen} onOpenChange={setRuntimeLogsOpen}>
-                  <CollapsibleTrigger asChild>
-                    <div className="bg-muted/50 border-b border-border px-4 py-3 cursor-pointer hover:bg-muted transition-colors">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          {runtimeLogsOpen ? (
-                            <ChevronDown className="h-4 w-4 text-foreground" />
-                          ) : (
-                            <ChevronRight className="h-4 w-4 text-foreground" />
-                          )}
-                          <Globe className="h-4 w-4 text-foreground" />
-                          <div>
-                            <h3 className="text-sm font-medium text-foreground">Runtime Logs</h3>
-                            <p className="text-xs text-muted-foreground">
-                              Runtime ID: <code className="bg-muted text-foreground px-1 rounded text-xs">runtime_{deployment.id}</code>
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <Badge variant="outline" className="text-xs">
-                            {deployment.runtimeLogs.length} logs
-                          </Badge>
-                          <div className="flex items-center gap-2">
-                            <Input
-                              placeholder="Search logs..."
-                              value={runtimeSearchQuery}
-                              onChange={(e) => setRuntimeSearchQuery(e.target.value)}
-                              className="h-8 w-48 text-xs"
-                              onClick={(e) => e.stopPropagation()}
-                            />
-                          </div>
-                        </div>
-                      </div>
+            {/* Right Column */}
+            <div className="space-y-3">
+              {/* Framework */}
+              <div className="flex items-center gap-2">
+                <Terminal className="h-4 w-4 text-muted-foreground" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">Framework</p>
+                  {isLoading ? (
+                    <Skeleton className="h-4 w-40 mt-1" />
+                  ) : (
+                    <div className="flex items-center gap-2 mt-1">
+                      <FrameworkIcon 
+                        src={deployment.project.framework.keywordName} 
+                        alt={deployment.project.framework.displayName}
+                        className="h-4 w-4" 
+                      />
+                      <p className="text-sm text-muted-foreground">
+                        {deployment.project.framework.displayName}
+                      </p>
                     </div>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <div className="h-80 overflow-y-auto bg-background">
-                      <div className="p-0">
-                        {deployment.runtimeLogs
-                          .filter(log => 
-                            runtimeSearchQuery === "" || 
-                            log.message.toLowerCase().includes(runtimeSearchQuery.toLowerCase())
-                          )
-                          .map((log, index) => (
-                          <Popover key={index}>
-                            <PopoverTrigger asChild>
-                              <div 
-                                className={`flex items-start gap-4 py-1 px-4 cursor-pointer hover:bg-muted/50 transition-colors ${
-                                  selectedLogIndex === index ? 'bg-muted' : ''
-                                }`}
-                                onClick={() => setSelectedLogIndex(selectedLogIndex === index ? null : index)}
-                              >
-                                <span className="text-muted-foreground text-xs font-mono flex-shrink-0 mt-0.5">
-                                  {new Date(log.time).toLocaleTimeString('en-US', { 
-                                    hour12: false, 
-                                    hour: '2-digit', 
-                                    minute: '2-digit', 
-                                    second: '2-digit',
-                                    fractionalSecondDigits: 3
-                                  })}
-                                </span>
-                                <span className={`flex-1 font-mono text-sm ${
-                                  log.level === 'error' ? 'text-red-500 dark:text-red-400' : 
-                                  log.level === 'success' ? 'text-green-600 dark:text-green-400' : 
-                                  'text-foreground'
-                                }`}>
-                                  {log.message}
-                                </span>
-                              </div>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-80 p-3" align="start">
-                              <div className="space-y-2">
-                                <h4 className="font-medium text-sm">Log Details</h4>
-                                <div className="space-y-1 text-xs">
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Level:</span>
-                                    <Badge variant={log.level === 'error' ? 'destructive' : log.level === 'success' ? 'default' : 'secondary'} className="text-xs">
-                                      {log.level}
-                                    </Badge>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Type:</span>
-                                    <span className="font-mono">{log.type}</span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Time:</span>
-                                    <span className="font-mono">{new Date(log.time).toLocaleString()}</span>
-                                  </div>
-                                  <div className="pt-2 border-t">
-                                    <span className="text-muted-foreground text-xs">Message:</span>
-                                    <p className="font-mono text-xs mt-1 break-words">{log.message}</p>
-                                  </div>
-                                </div>
-                              </div>
-                            </PopoverContent>
-                          </Popover>
-                        ))}
-                      </div>
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
+                  )}
+                </div>
               </div>
-            )}
+
+              {/* Commit Hash */}
+              <div className="flex items-center gap-2">
+                <Code className="h-4 w-4 text-muted-foreground" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">Commit Hash</p>
+                  {isLoading ? (
+                    <Skeleton className="h-4 w-32 mt-1" />
+                  ) : (
+                    <p className="text-sm text-muted-foreground font-mono truncate">
+                      {deployment.commitHash}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Commit Author */}
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4 text-muted-foreground" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">Commit Author</p>
+                  {isLoading ? (
+                    <Skeleton className="h-4 w-48 mt-1" />
+                  ) : (
+                    <p className="text-sm text-muted-foreground truncate">
+                      {deployment.author}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
 
-
-          {/* Log Persistence Warning */}
-          <div className="bg-[var(--label-alert)] text-[var(--label-alert-foreground)] rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="h-5 w-5 mt-0.5 flex-shrink-0" />
+          {/* Deployed At */}
+          <div className="pt-4 border-t">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-muted-foreground" />
               <div className="flex-1">
-                <h4 className="text-sm font-medium">Log Persistence Notice</h4>
-                <p className="text-sm mt-1">
-                  Logs are automatically deleted after 24 hours. To preserve them permanently, export the logs using the button below.
-                </p>
-                <div className="mt-3">
+                <p className="text-sm font-medium">Deployed At</p>
+                {isLoading ? (
+                  <Skeleton className="h-4 w-48 mt-1" />
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    {new Date(deployment.lastDeployedAt).toLocaleString()}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Environment Sections */}
+      <div className="space-y-4">
+        {/* Build Environment */}
+        <BuildEnvironment 
+          isLoading={isLoading}
+          data={!isLoading && deployment?.buildEnvironment?.[0] ? {
+            buildId: deployment.buildEnvironment[0].buildId,
+            environmentId: deployment.buildEnvironment[0].buildId,
+            projectId: deployment.projectId,
+            status: deployment.status
+          } : undefined}
+        />
+
+        {/* Runtime Environment */}
+        <RuntimeEnvironment 
+          isLoading={isLoading}
+          data={!isLoading && deployment?.runtimeEnvironment?.[0] && statusesToMountRuntimeEnvironment.includes(deployment.status) ? {
+            runtimeId: deployment.runtimeEnvironment[0].runtimeId,
+            environmentId: deployment.runtimeEnvironment[0].runtimeId,
+            projectId: deployment.projectId,
+            status: deployment.status
+          } : undefined}
+        />
+      </div>
+
+      {/* Log Persistence Warning */}
+      {
+        !isLoading && deployment?.buildEnvironment[0] || deployment?.runtimeEnvironment[0] ? (
+          <Card className="border-orange-200 dark:border-orange-900 bg-orange-50 dark:bg-orange-950/30">
+        <CardContent className="p-4">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 mt-0.5 flex-shrink-0 text-orange-600 dark:text-orange-400" />
+            <div className="flex-1">
+              <h4 className="text-sm font-medium text-orange-900 dark:text-orange-100">
+                Log Persistence Notice
+              </h4>
+              <p className="text-sm mt-1 text-orange-800 dark:text-orange-200">
+                Logs are automatically deleted after 24 hours. To preserve them permanently, export the logs using the button below.
+              </p>
+              <div className="mt-3">
+                {isLoading ? (
+                  <Skeleton className="h-9 w-40" />
+                ) : (
                   <Button 
                     onClick={handleExportLogs}
                     disabled={isExporting}
                     size="sm"
-                    className="bg-[var(--label-alert)] text-[var(--label-alert-foreground)] hover:bg-[var(--label-alert-foreground)] hover:text-[var(--background)] "
+                    variant="outline"
+                    className="border-orange-300 dark:border-orange-700 hover:bg-orange-100 dark:hover:bg-orange-900"
                   >
-                    Export Logs as ZIP  
+                    {isExporting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Exporting...
+                      </>
+                    ) : (
+                      "Export Logs as JSON"
+                    )}
                   </Button>
-                </div>
+                )}
               </div>
             </div>
           </div>
+        </CardContent>
+      </Card>
+        ) : null
+      }
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Deployment?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete deployment <code className="font-mono text-xs bg-muted px-1 py-0.5 rounded">{(deploymentId as string)?.slice(0,9)}</code>. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive hover:bg-destructive/90"
+              disabled={isDeleting}
+              onClick={async()=>{
+                try{
+                  window.dispatchEvent(new CustomEvent('reset-deploy-backoff', { detail: { projectId: projectId as string, deploymentId: deploymentId as string } }))
+                  setIsDeleting(true)
+                  await projectService.deleteDeployment({projectId: projectId as string, deploymentId: deploymentId as string})
+                  toast.success("Deployment deleted")
+                  router.push(`/dashboard/projects/${projectId}/deployments`)
+                }catch(e:any){
+                  toast.error(e.message||"Failed to delete deployment")
+                }finally{
+                  setIsDeleting(false)
+                  setConfirmOpen(false)
+                }
+              }}
+            >
+              {isDeleting? 'Deleting...' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

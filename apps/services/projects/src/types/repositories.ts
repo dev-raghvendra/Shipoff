@@ -14,6 +14,7 @@ export const CreateRepositoryRequestSchema = z.object({
     githubRepoId:z.string().min(1),
     githubRepoFullName:z.string().min(1),
     branch:z.string().min(1),
+    rootDir:z.string().min(1),
     githubRepoURI:z.string().min(1),
     reqMeta:RequestMetaSchema
 }).strict();

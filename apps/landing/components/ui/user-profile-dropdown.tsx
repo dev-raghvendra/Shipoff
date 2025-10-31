@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { LogOut, MonitorSmartphoneIcon, Moon, Palette, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
-import { useSession } from "next-auth/react"
+import { useSession } from "@/context/session.context"
 import { useDebounceRequest } from "@/hooks/debounce-req"
 import { toast } from "sonner"
 

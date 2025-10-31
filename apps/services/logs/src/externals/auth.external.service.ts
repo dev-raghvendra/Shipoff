@@ -27,7 +27,6 @@ export class AuthExternalService {
                 reqMeta
             })
             const res = await promisifyGrpcCall(this._authServiceClient.HasPermissions,req)
-            
             if(!(res as ReturnType<typeof res.toObject>).res) throw new GrpcAppError(status.PERMISSION_DENIED,"")
             return res.res;
         } catch (e:any) {

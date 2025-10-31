@@ -24,8 +24,9 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { UserProfileDropdown } from "@/components/ui/user-profile-dropdown"
 import { LayoutDashboard, Boxes, Rocket, Settings, User, ChevronLeft, Users2, BugIcon } from "lucide-react"
-import { SessionProvider } from "next-auth/react"
-
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { SessionProvider as NextAuthSessionProvider } from "next-auth/react"
+import { SessionProvider } from "@/context/session.context"
 
 const getDashboardNav = () => [
   {group:"General",items:[
@@ -98,9 +99,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const isProjectView = Boolean(params.projectId) && !Boolean(params.deploymentId)
   const isDeploymentView = Boolean(params.projectId) && Boolean(params.deploymentId)
 
-  console.log("Is Project View:", isProjectView)
-  console.log("Is Deployment View:", isDeploymentView)
-
   let nav = isDeploymentView
     ? getDeploymentNav(params.projectId as string, params.deploymentId as string)
     : isProjectView
@@ -114,8 +112,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       ? '/dashboard/projects' 
       : null
 
+  const queryClient = React.useRef(new QueryClient({
+     defaultOptions:{
+        queries:{
+          staleTime:5 * 6 * 1000,
+          gcTime:5 * 1000,
+          refetchOnWindowFocus:false,
+          retry:(failureCount) =>failureCount < 2,
+        }
+     }
+  }))
+
   return (
-     <SessionProvider>
+    <NextAuthSessionProvider refetchInterval={0} refetchOnWindowFocus={false}>
+      <SessionProvider>
+    <QueryClientProvider client={queryClient.current}>
       <SidebarProvider defaultOpen>
       <Sidebar variant="inset" collapsible="icon" className="sticky max-h-screen overflow-y-auto">
         <SidebarHeader>
@@ -192,18 +203,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       }}>
         <header className="border-b bg-background sticky top-0 z-10">
           <div className="flex h-14 items-center justify-between gap-2 px-3 md:px-4">
-            <div className="flex items-center gap-2">
-              <SidebarTrigger />
-              <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <SidebarTrigger className="shrink-0" />
+              <div className="flex items-center gap-2 min-w-0 overflow-hidden">
                 {breadcrumbs.map((crumb, idx) => (
                   <React.Fragment key={crumb.href}>
-                    {idx > 0 && <span className="text-muted-foreground">/</span>}
+                    {idx > 0 && <span className="text-muted-foreground shrink-0">/</span>}
                     {idx === breadcrumbs.length - 1 ? (
-                      <h1 className="text-sm font-medium">{crumb.label}</h1>
+                      <h1 className="text-sm font-medium truncate">{crumb.label}</h1>
                     ) : (
                       <Link 
                         href={crumb.href} 
-                        className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                        className="text-sm text-muted-foreground hover:text-foreground transition-colors truncate shrink-0 max-w-[150px]"
                       >
                         {crumb.label}
                       </Link>
@@ -212,7 +223,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 ))}
               </div>
             </div>
-            <UserProfileDropdown />
+            <div className="shrink-0">
+              <UserProfileDropdown />
+            </div>
           </div>
         </header>
 
@@ -221,6 +234,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </main>
       </SidebarInset>
     </SidebarProvider>
+    </QueryClientProvider>
     </SessionProvider>
+    </NextAuthSessionProvider>
   )
 }

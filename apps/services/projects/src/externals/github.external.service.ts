@@ -117,14 +117,31 @@ export class GithubExternalService {
                     ...(skip && limit ? {page: Math.floor(skip/limit) + 1} : {})
             }
             const route = `/installation/repositories`;
-            const res = await this._axiosInstance.get(route,{
+            const repo = await this._axiosInstance.get(route,{
                 headers:{
                     "X-GitHub-Api-Version":"2022-11-28"
                 },
                 installationId,
                 params:pagination
             } as GithubAxiosRequestConfig);
-            return this.formatRepositoryData(res.data.repositories) as GitHubRepository[];
+            const repoData = this.formatRepositoryData(repo.data.repositories) as GitHubRepository[];
+            const branches = await Promise.all(repoData.map(async(r)=>{
+                const branchRes = await this._axiosInstance.get(`/repos/${r.githubRepoFullName}/branches`,{
+                        headers:{
+                            "X-GitHub-Api-Version":"2022-11-28"
+                        },
+                        installationId
+                    } as GithubAxiosRequestConfig);
+                return branchRes.data.map((b:any)=>({branch:b.name.toString(),repo:r.githubRepoId}));
+            }))
+            const res = repoData.map(r=>{
+                const branchList = branches.flat().filter(b=>b.repo === r.githubRepoId);
+                return {
+                    ...r,
+                    branches: branchList.map(b=>b.branch) as string[]
+                }
+            })
+            return res
         } catch (e:any) {
             if(e instanceof AxiosError){
                 if(e.response?.headers["x-ratelimit-remaining"]==0){

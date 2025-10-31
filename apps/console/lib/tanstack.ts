@@ -15,5 +15,12 @@ export const QUERY_KEYS = {
     },
     teamMembers:{
         infinite:(teamId:string, limit:number)=> ['teams', teamId, 'members', 'infinite', limit ] as const,
+        detail:(teamId:string, userId:string)=> ['teams', teamId, 'members', userId] as const,
+    },
+    githubRepos:{
+        infinite:(limit:number)=> ['github','repos','infinite', limit ] as const,
+    },
+    frameworks:{
+        all: ['frameworks'] as const,
     }
 }

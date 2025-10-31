@@ -11,7 +11,7 @@ export async function authenticateApiKey(req:RequestWithMeta,res:Response,next:N
     try {
         const apiKey = req.headers["x-api-key"];
         if(!apiKey) throw new JsonWebTokenError("API Key missing");
-        await verifyJwt(apiKey as string,SECRETS.API_KEY_SECRET)
+        await verifyJwt((apiKey as string).trim(),SECRETS.API_KEY_SECRET)
         next();
     } catch (e:any) {
         if(e instanceof JsonWebTokenError){

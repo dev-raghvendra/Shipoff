@@ -8,6 +8,12 @@ import "google/protobuf/empty.proto";
 
 
 
+message TeamMemberUserData {
+  string fullName = 1;
+  string email = 2;
+  string avatarUri = 3;
+}
+
 
 message GetUserRequest {
   User authUserData = 1;
@@ -31,17 +37,17 @@ message GetUserResponse {
 
 
 message GetCurrentUserResponseData {
-  string fullName = 1;
-  string email = 2;
-  string avatarUri = 3;
-  string createdAt = 4;
-  string updatedAt = 5;
-  string password = 6;
-  bool emailVerified = 7;
-  string userId = 8;
-  repeated SubscriptionData subscriptions = 9;
+  string userId = 1;
+  string fullName = 2;
+  string email = 3;
+  string avatarUri = 4;
+  bool   emailVerified = 5;
+  string createdAt = 6;
+  string updatedAt = 7;
+  string provider = 8;
+  SubscriptionData subscription = 9;
   repeated GetTeamMemberResponseData teamMembers = 10;
-  repeated GetProjectMemberResponseData  projectMembers = 11;
+  repeated GetProjectMemberResponseData  projectMembers = 21;
 }
 
 
@@ -96,7 +102,12 @@ message Team {
   string description = 3;
   string planType = 4;
   string createdAt = 5;
-  string updatedAt = 6;
+  TeamMemberCount _count = 6;
+  string updatedAt = 7;
+}
+
+message TeamMemberCount {
+  int32 teamMembers = 1;
 }
 
 message CreateTeamRequest {
@@ -191,6 +202,9 @@ message GetTeamMemberResponseData {
   string userId = 1;
   string teamId = 2;
   string role = 3;
+  TeamMemberUserData member = 4;
+  string createdAt = 5;
+  string updatedAt = 6;
 }
 
 message GetTeamMemberResponse {
@@ -332,6 +346,57 @@ message GetTeamMembersResponse {
   repeated GetTeamMemberResponseData res = 3;
 }
 
+message GetProjectIdsLinkedToTeamRequest {
+  User authUserData = 1;
+  string teamId = 2;
+  RequestMeta reqMeta= 3;
+}
+
+message LinkTeamToProjectRequest {
+   User authUserData = 1;
+   string projectId = 2;
+   string teamId = 3;
+   RequestMeta reqMeta = 4; 
+}
+
+message LinkTeamToProjectResponse {
+   int32 code = 1;
+   string message = 2;
+   bool res = 3;
+}
+
+message UnlinkTeamFromProjectRequest {
+  User authUserData = 1;
+   string projectId = 2;
+   string teamId = 3;
+   RequestMeta reqMeta = 4; 
+}
+
+message UnlinkTeamFromProjectResponse {
+   int32 code = 1;
+   string message = 2;
+   bool res = 3;
+}
+
+message GetWSAuthTokenResponse {
+  int32 code = 1;
+  string message = 2;
+  WSAuthToken res = 3;
+}
+
+message WSAuthToken {
+  string wsAuthToken = 1;
+}
+
+message VerifyEmailRequest {
+  string token = 1;
+  RequestMeta reqMeta = 2;
+} 
+
+
+
+
+
 // AuthService definition
 service AuthService {
   // Authentication
@@ -341,6 +406,8 @@ service AuthService {
   rpc GetUser(GetUserRequest) returns (GetUserResponse);
   rpc GetMe(BodyLessRequest) returns (GetCurrentUserResponse);
   rpc RefreshToken(BodyLessRequest) returns (LoginResponse);
+  rpc GetWSAuthToken(BodyLessRequest) returns (GetWSAuthTokenResponse);
+  rpc VerifyEmail (VerifyEmailRequest) returns (google.protobuf.Empty);
 
   // Team Management
   rpc CreateTeam(CreateTeamRequest) returns (CreateTeamResponse);
@@ -348,11 +415,12 @@ service AuthService {
   rpc GetTeamsLinkedToProject(GetTeamsLinkedToProjectRequest) returns (GetAllUserTeamsResponse);
   rpc DeleteTeam(DeleteTeamRequest) returns (DeleteTeamResponse);
   rpc GetAllUserTeams(BulkResourceRequest) returns (GetAllUserTeamsResponse);
+  rpc LinkTeamToProject (LinkTeamToProjectRequest) returns (LinkTeamToProjectResponse);
+  rpc UnlinkTeamFromProject (UnlinkTeamFromProjectRequest) returns (UnlinkTeamFromProjectResponse);
 
   
   // Team Members
   rpc CreateTeamMemberInvitation(CreateTeamMemberInvitationRequest) returns (CreateTeamMemberInvitationResponse);
-  rpc GetTeamMember(GetTeamMemberRequest) returns (GetTeamMemberResponse);
   rpc GetTeamMembers(GetTeamMembersRequest) returns (GetTeamMembersResponse);
   rpc DeleteTeamMember(DeleteTeamMemberRequest) returns (DeleteProjectMemberResponse);
   rpc AcceptTeamInvitation(AcceptInvitationRequest) returns (GetTeamMemberResponse);
@@ -360,13 +428,14 @@ service AuthService {
   
   // Project Members
   rpc CreateProjectMemberInvitation(CreateProjectMemberInvitationRequest) returns (CreateProjectMemberInvitationResponse);
-  rpc GetProjectMember(GetProjectMemberRequest) returns (GetProjectMemberResponse);
   rpc DeleteProjectMember(DeleteProjectMemberRequest) returns (DeleteProjectMemberResponse);
   rpc AcceptProjectInvitation(AcceptInvitationRequest) returns (GetProjectMemberResponse);
   rpc GetAllUserProjectIds (BodyLessRequest) returns (GetAllUserProjectIdsResponse);
   rpc TransferProjectOwnership(TransferProjectOwnershipRequest) returns (google.protobuf.Empty);
 
   rpc HasPermissions(HasPermissionsRequest) returns (HasPermissionsResponse);
+
+  rpc IGetAllProjectIdsLinkedToTeam (GetProjectIdsLinkedToTeamRequest) returns (GetAllUserProjectIdsResponse);
 
   // Future: partial decentralized RBAC
   // rpc UpdateTeamMember(UpdateTeamMemberRequest) returns (UpdateTeamMemberResponse);

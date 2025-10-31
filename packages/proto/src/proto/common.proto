@@ -10,16 +10,16 @@ message User {
   string createdAt = 6;
   string updatedAt = 7;
   string provider = 8;
-  SubscriptionData subscriptions = 9;
+  SubscriptionData subscription = 9;
 }
+
 
 message SubscriptionData {
   string subscriptionId = 1;
   string type = 2;
-  SubscriptionPerks freePerks = 3;
-  SubscriptionPerks proPerks = 4; 
-  string startedAt = 5;
-  string endedAt = 6;
+  SubscriptionPerks perks = 3;
+  string startedAt = 4;
+  string endedAt = 5;
 }
 
 message SubscriptionPerks {

@@ -1,14 +1,16 @@
+import { dbService } from "@/db/db-service";
 import {optionalArray, optionalObject, optionalString, optNumWithDefaultValue, RequestMetaSchema, UserSchema} from "@shipoff/types"
 import z from "zod";
 
 export const EnvVarsSchema = z.object({
-    name:z.string(),
-    value:z.string(),
-})
+    name:z.string().min(1),
+    value:z.string().min(1),
+}).strict()
 
 export const CreateProjectRequestSchema = z.object({
      authUserData  : UserSchema,
      name:z.string().min(1) ,
+     description:optionalString(),
      frameworkId : z.string().min(1),
      buildCommand:z.string().min(1),
      prodCommand:optionalString(),
@@ -18,9 +20,10 @@ export const CreateProjectRequestSchema = z.object({
      githubRepoURI:z.url(),
      githubRepoFullName:z.string().min(1),
      outDir:z.string().min(2),
-     environmentVars:optionalArray(EnvVarsSchema),
+     rootDir:z.string().min(1),
+     environmentVars:optionalArray(EnvVarsSchema.shape),
      reqMeta:RequestMetaSchema
-}).strict();
+}).strict()
 
 export const GetProjectRequestSchema = z.object({
     authUserData: UserSchema,
@@ -50,6 +53,12 @@ export const updatesSchema = z.object({
 }).strict();
 
 
+export const CheckDomainAvailabilityRequestSchema = z.object({
+    domain: z.string().min(1),
+    authUserData: UserSchema,
+    reqMeta:RequestMetaSchema
+}).strict();
+
 export const UpdateProjectRequestSchema = z.object({
     authUserData: UserSchema,
     projectId: z.string(),
@@ -66,17 +75,7 @@ export const DeleteProjectRequestSchema = z.object({
 export const UpsertEnvVarsRequestSchema = z.object({
     authUserData: UserSchema,
     projectId: z.string(),
-    envs:optionalArray(z.object({
-        name: z.string(),
-        value: z.string(),
-    })),
-    reqMeta:RequestMetaSchema
-}).strict();
-
-export const DeleteEnvVarsRequestSchema = z.object({
-    authUserData: UserSchema,
-    projectId: z.string(),
-    name: z.string(),
+    envs:z.array(EnvVarsSchema).min(1),
     reqMeta:RequestMetaSchema
 }).strict();
 
@@ -98,6 +97,24 @@ export const IDeleteStaleEnvironmentsRequestSchema = z.object({
     environmentIds: z.array(z.string().min(1)).min(1),
     reqMeta:RequestMetaSchema
 }).strict();
+
+export const GetProjectsLinkedToTeamRequestSchema = z.object({
+    authUserData: UserSchema,
+    teamId: z.string().min(1),
+    reqMeta:RequestMetaSchema
+}).strict();
+
+export const DeleteEnvVarsRequestSchema = z.object({
+    authUserData: UserSchema,
+    projectId: z.string(),
+    envVarKeys: z.array(z.string().min(1)).min(1),
+    reqMeta:RequestMetaSchema
+}).strict();
+
+export type GetProjectsLinkedToTeamRequestBodyType = z.infer<typeof GetProjectsLinkedToTeamRequestSchema>;
+export type GetProjectsLinkedToTeamRequestDBBodyType = Omit<GetProjectsLinkedToTeamRequestBodyType, "authUserData" | "reqMeta">;
+export type CheckDomainAvailabilityRequestBodyType = z.infer<typeof CheckDomainAvailabilityRequestSchema>;
+export type CheckDomainAvailabilityRequestDBBodyType = Omit<CheckDomainAvailabilityRequestBodyType, "authUserData" | "reqMeta">;
 
 
 

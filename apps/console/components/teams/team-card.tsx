@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
-import { Users } from "lucide-react"
+import { Users, ChevronRight } from "lucide-react"
 import type { Team } from "@/app/dashboard/teams/page"
 
 export function TeamCard({
@@ -20,8 +20,8 @@ export function TeamCard({
   layout:"minimal" | "detailed"
   children?: React.ReactNode
 }) {
-  const count = team.members.length
-  const initials = team.name
+  const count = team._count.teamMembers
+  const initials = team.teamName
     .split(" ")
     .map((s) => s[0])
     .slice(0, 2)
@@ -29,30 +29,45 @@ export function TeamCard({
     .toUpperCase()
 
   return (
-      <Card  onClick={onClick}  aria-label={`Open team ${team.name}`} className={`p-4 gap-6 cursor-pointer  hover:bg-muted ${className}`}>
-        {/* <div className="flex items-center justify-between"> */}
-          <div className="flex items-start gap-3">
-          <Avatar className="size-8">
-            <AvatarImage alt={team.name} />
-            <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+    <Card 
+      onClick={onClick}  
+      aria-label={`Open team ${team.teamName}`} 
+      className={cn(
+        "group p-5 cursor-pointer hover:shadow-md transition-all duration-200 hover:border-primary/20 animate-in fade-in-0 slide-in-from-bottom-2",
+        className
+      )}
+    >
+      <div className="space-y-4">
+        {/* Header */}
+        <div className="flex items-start gap-3">
+          <Avatar className="size-10">
+            <AvatarImage alt={team.teamName} />
+            <AvatarFallback className="text-sm font-semibold">{initials}</AvatarFallback>
           </Avatar>
-          <div className="space-y-1">
-            <div className="text-sm font-medium leading-none">{team.name}</div>
-            {team.description ? <div className="text-xs text-muted-foreground whitespace-wrap line-clamp-2 h-8">{team.description}</div> : null}
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold leading-tight text-pretty truncate">{team.teamName}</h3>
+            {team.description && (
+              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{team.description}</p>
+            )}
           </div>
-          {children}
+          <ChevronRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-1 flex-shrink-0" />
         </div>
-        {layout==="detailed" && <div className="flex items-start w-full gap-3">
-          <div className="text-xs text-muted-foreground flex items-center gap-1">
-            <Users className="size-3.5" aria-hidden />
-            {count} member{count === 1 ? "" : "s"}
+
+        {/* Footer */}
+        {layout === "detailed" && (
+          <div className="flex items-center justify-between pt-3 border-t border-border/50">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Users className="size-3.5" />
+              <span>{count} member{count === 1 ? "" : "s"}</span>
+            </div>
+            <Badge variant="outline" className="text-xs">
+              View members
+            </Badge>
           </div>
-          <Badge variant="outline" className="text-xs">
-            View members
-          </Badge>
-        </div>}
+        )}
         
-        {/* </div> */}
-      </Card>
+        {children}
+      </div>
+    </Card>
   )
 }

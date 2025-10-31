@@ -1,7 +1,7 @@
 import { sendUnaryData, ServerUnaryCall, status } from "@grpc/grpc-js";
-import { AcceptInvitationRequest, BulkResourceRequest, CreateTeamMemberInvitationRequest, CreateTeamMemberInvitationResponse, CreateTeamMemberInvitationResponseData, CreateTeamRequest, CreateTeamResponse, DeleteTeamMemberRequest, DeleteTeamMemberResponse, DeleteTeamMemberResponseData, DeleteTeamRequest, DeleteTeamResponse, GetAllUserTeamsResponse, GetTeamMemberRequest, GetTeamMemberResponse, GetTeamMemberResponseData, GetTeamRequest, GetTeamResponse, GetTeamsLinkedToProjectRequest, google, Team, TransferTeamOwnershipRequest } from "@shipoff/proto";
+import { AcceptInvitationRequest, BulkResourceRequest, CreateTeamMemberInvitationRequest, CreateTeamMemberInvitationResponse, CreateTeamRequest, CreateTeamResponse, DeleteTeamMemberRequest, DeleteTeamMemberResponse, DeleteTeamRequest, DeleteTeamResponse, GetAllUserTeamsResponse, GetTeamMemberResponse, GetTeamMembersResponse, GetTeamRequest, GetTeamResponse, GetTeamsLinkedToProjectRequest, google, LinkTeamToProjectRequest, LinkTeamToProjectResponse, TransferTeamOwnershipRequest, UnlinkTeamFromProjectRequest, UnlinkTeamFromProjectResponse } from "@shipoff/proto";
 import TeamService from "@/services/team.service";
-import { CreateTeamRequestBodyType, DeleteTeamMemberRequestBodyType, DeleteTeamRequestBodyType, GetTeamMemberRequestBodyType, GetTeamRequestBodyType, GetTeamsLinkedToProjectRequestBodyType, TeamMemberInvitationRequestBodyType, TransferTeamOwnershipRequestBodyType } from "@/types/team";
+import { CreateTeamRequestBodyType, DeleteTeamMemberRequestBodyType, DeleteTeamRequestBodyType, GetTeamMembersRequestBodyType, GetTeamRequestBodyType, GetTeamsLinkedToProjectRequestBodyType, LinkTeamToProjectRequestBodyType, TeamMemberInvitationRequestBodyType, TransferTeamOwnershipRequestBodyType, UnlinkTeamFromProjectRequestBodyType } from "@/types/team";
 import { AcceptMemberInviteRequestBodyType } from "@/types/utility";
 import { BulkResourceRequestBodyType } from "@shipoff/types";
 
@@ -53,6 +53,34 @@ class TeamHandlers {
        }
     }
 
+    async handleLinkTeamToProject(call:ServerUnaryCall<LinkTeamToProjectRequest & {body:LinkTeamToProjectRequestBodyType},LinkTeamToProjectResponse>,callback:sendUnaryData<LinkTeamToProjectResponse>){
+       try {
+          const {code,res,message} = await this._teamService.linkTeamToProject(call.request.body);
+          if(code!==status.OK) return callback({code,message})
+          const response = LinkTeamToProjectResponse.fromObject({code,message,res})
+          callback(null,response);
+       } catch (e) {
+        return callback({
+          code:status.INTERNAL,
+          message:"Internal server error"
+        }) 
+       }
+    }
+
+    async handleUnlinkTeamFromProject(call:ServerUnaryCall<UnlinkTeamFromProjectRequest & {body:UnlinkTeamFromProjectRequestBodyType},UnlinkTeamFromProjectResponse>,callback:sendUnaryData<UnlinkTeamFromProjectResponse>){
+       try {
+          const {code,res,message} = await this._teamService.unlinkTeamFromProject(call.request.body);
+          if(code!==status.OK) return callback({code,message})
+          const response = UnlinkTeamFromProjectResponse.fromObject({code,message,res})
+          callback(null,response);
+       } catch (e) {
+        return callback({
+          code:status.INTERNAL,
+          message:"Internal server error"
+        }) 
+       }
+    }
+
     async handleDeleteTeam(call:ServerUnaryCall<DeleteTeamRequest & {body:DeleteTeamRequestBodyType},DeleteTeamResponse>,callback:sendUnaryData<DeleteTeamResponse>){
        try {
           const {code,res,message} = await this._teamService.deleteTeam(call.request.body);
@@ -81,11 +109,11 @@ class TeamHandlers {
       }
     }
 
-    async handleGetTeamMembers(call:ServerUnaryCall<BulkResourceRequest & {body:GetTeamMembersRequestBodyType},GetTeamMemberResponse>,callback:sendUnaryData<GetTeamMemberResponse>){
+    async handleGetTeamMembers(call:ServerUnaryCall<BulkResourceRequest & {body:GetTeamMembersRequestBodyType},GetTeamMembersResponse>,callback:sendUnaryData<GetTeamMembersResponse>){
        try {
           const {code,res,message} = await this._teamService.getTeamMembers(call.request.body);
           if(code!==status.OK) return callback({code,message})
-          const response = GetTeamMemberResponse.fromObject({code,message,res})
+          const response = GetTeamMembersResponse.fromObject({code,message,res})
           return callback(null,response);
        } catch (e) {
                 return callback({
@@ -107,20 +135,6 @@ class TeamHandlers {
                     message:"Internal server error"
               }) 
            }
-    }
-
-    async handleGetTeamMember(call:ServerUnaryCall<GetTeamMemberRequest & {body:GetTeamMemberRequestBodyType},GetTeamMemberResponse>,callback:sendUnaryData<GetTeamMemberResponse>){
-      try {
-         const {code,res,message} = await this._teamService.getTeamMember(call.request.body);
-         if(code!==status.OK) return callback({code,message})
-         const response = GetTeamMemberResponse.fromObject({code,message,res})
-         return callback(null,response);
-      } catch (e) {
-                return callback({
-                    code:status.INTERNAL,
-                    message:"Internal server error"
-              }) 
-      }
     }
 
     async handleDeleteTeamMember(call:ServerUnaryCall<DeleteTeamMemberRequest & {body:DeleteTeamMemberRequestBodyType},DeleteTeamMemberResponse>,callback:sendUnaryData<DeleteTeamMemberResponse>){

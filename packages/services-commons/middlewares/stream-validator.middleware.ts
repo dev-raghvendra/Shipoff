@@ -59,10 +59,10 @@ export function createStreamValidator<Map extends SchemaMap>(schemaMap: Map, log
         const callWithBody = call as unknown as ValidatedCall<Map, K, TReq, TRes>;
         (callWithBody.request as any).body = parsed;
         handler(callWithBody);
-      } catch(e){
+      } catch(e:any){
         call.emit("error",{
           code: status.INVALID_ARGUMENT,
-          message: schemaMap[method].errMsg || "Invalid request data"
+          message: `${e.issues[0].path.join("->")}: ${e.issues[0].message}` || schemaMap[method].errMsg || "Invalid request body"
         })
         call.end();
       }

@@ -27,17 +27,20 @@ export const DeleteProjectMemberRequestSchema = z.object({
   reqMeta: RequestMetaSchema
 }).strict();
 
-export const CreateTeamLinkRequestSchema = z.object({
-  projectId: z.string(),
+
+export const GetProjectIdsLinkedToTeamRequestSchema = z.object({
   teamId: z.string(),
   authUserData: UserSchema,
   reqMeta: RequestMetaSchema
 }).strict();
 
+
 export const TransferProjectOwnershipRequestSchema = TransferOwnershipBase.extend({
    projectId:z.string().min(4)
 }).strict()
 export type ProjectRoleType = z.infer<typeof ProjectRoles>;
+
+export type GetProjectIdsLinkedToTeamRequestBodyType = z.infer<typeof GetProjectIdsLinkedToTeamRequestSchema>;
 
 export type ProjectMemberInvitationRequestBodyType = z.infer<typeof ProjectMemberInvitationRequestSchema>;
 export type ProjectMemberInvitationRequestDBBodyType = Omit<ProjectMemberInvitationRequestBodyType, "authUserData" | "reqMeta">;
@@ -48,8 +51,6 @@ export type GetProjectMemberRequestDBBodyType = Omit<GetProjectMemberRequestBody
 export type DeleteProjectMemberRequestBodyType = z.infer<typeof DeleteProjectMemberRequestSchema>;
 export type DeleteProjectMemberRequestDBBodyType = Omit<DeleteProjectMemberRequestBodyType, "authUserData" | "reqMeta">;
 
-export type CreateTeamLinkRequestBodyType = z.infer<typeof CreateTeamLinkRequestSchema>;
-export type CreateTeamLinkRequestDBBodyType = Omit<CreateTeamLinkRequestBodyType, "authUserData" | "reqMeta">;
 
 export type TransferProjectOwnershipRequestBodyType = z.infer<typeof TransferProjectOwnershipRequestSchema>;
 export type TransferProjectOwnershipRequestDBBodyType = Omit<TransferProjectOwnershipRequestBodyType, "authUserData" | "reqMeta"> & {

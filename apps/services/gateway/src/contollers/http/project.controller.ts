@@ -19,7 +19,9 @@ export async function getAllUserProjectsController(req:RequestWithMeta, res: Res
     }
     const { code, message, res: data } = await projectService.getAllUserProjects(body);
     grpcToHttpResponse.call(res, code, message, data);
+
 }
+
 
 export async function getLatestProjectsController(req:RequestWithMeta, res: Response) {
     const body = {
@@ -112,9 +114,23 @@ export async function createOrUpdateEnvironmentVariableController(req:RequestWit
 }
 
 export async function deleteEnvironmentVariableController(req:RequestWithMeta, res: Response) {
-    const {projectId,env_name} = req.params;
-    const body = { ...req.body, projectId, env_name, reqMeta:req.meta };
-    const { code, message, res: data } = await projectService.deleteEnvVar(body);
+    const {projectId} = req.params;
+    const {"keys[]":keys} = req.query;
+    const body = { ...req.body, envVarKeys:keys, projectId, reqMeta:req.meta };
+    const { code, message, res:data } = await projectService.deleteEnvVar(body);
+    grpcToHttpResponse.call(res, code, message, data);
+}
+export async function getProjectsLinkedToTeamController(req:RequestWithMeta, res: Response) {
+    const {teamId} = req.params;
+    const body = { ...req.body, teamId, reqMeta:req.meta };
+    const { code, message, res: data } = await projectService.getProjectsLinkedToTeam(body);
+    grpcToHttpResponse.call(res, code, message, data);
+}
+
+export async function checkDomainAvailabilityController(req:RequestWithMeta, res: Response) {
+    const {domain} = req.params;
+    const body = { ...req.body, domain, reqMeta:req.meta };
+    const { code, message, res: data } = await projectService.checkDomainAvailability(body);
     grpcToHttpResponse.call(res, code, message, data);
 }
 
@@ -134,7 +150,7 @@ export async function createRepositoryController(req:RequestWithMeta, res: Respo
 
 export async function deleteRepositoryController(req:RequestWithMeta, res: Response) {
     const {projectId} = req.params;
-    const body = { ...req.body, projectId, reqMeta:req.meta };
+    const body = { ...req.body, projectId, reqMeta:req.meta }
     const { code, message, res: data } = await projectService.deleteRepository(body);
     grpcToHttpResponse.call(res, code, message, data);
 }
@@ -142,8 +158,6 @@ export async function deleteRepositoryController(req:RequestWithMeta, res: Respo
 export async function getFrameworksController(req:RequestWithMeta, res: Response) {
     const body = {
         ...req.body,
-        ...(req.query.skip && { skip: req.query.skip }),
-        ...(req.query.limit && { limit: req.query.limit }),
         reqMeta:req.meta
     }
     const { code, message, res: data } = await projectService.getFrameworks(body);

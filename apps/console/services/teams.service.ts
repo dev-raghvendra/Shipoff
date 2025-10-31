@@ -1,8 +1,8 @@
 import { AUTH_API_ROUTES, MAIN_BACKEND_API } from "@/config/service-route-config";
-import { GetAllUserTeamsResponse, GetCurrentUserResponse, CreateTeamRequest, CreateTeamResponse, GetTeamRequest, GetTeamResponse, DeleteTeamRequest, DeleteTeamResponse, CreateTeamMemberInvitationRequest, CreateTeamMemberInvitationResponseData, AcceptInvitationRequest, GetTeamMemberResponse, TransferTeamOwnershipRequest, DeleteTeamMemberRequest, DeleteTeamMemberResponse, BulkResourceRequest, GetTeamsLinkedToProjectRequest } from "@shipoff/proto";
+import { GetAllUserTeamsResponse, GetCurrentUserResponse, CreateTeamRequest, CreateTeamResponse, GetTeamRequest, GetTeamResponse, DeleteTeamRequest, DeleteTeamResponse, CreateTeamMemberInvitationRequest, CreateTeamMemberInvitationResponseData, AcceptInvitationRequest, GetTeamMemberResponse, TransferTeamOwnershipRequest, DeleteTeamMemberRequest, DeleteTeamMemberResponse, BulkResourceRequest, GetTeamsLinkedToProjectRequest, GetTeamMembersRequest, GetTeamMembersResponse, CreateTeamMemberInvitationResponse } from "@shipoff/proto";
 import { TeamRoleType } from "@shipoff/types";
-import { InferRequest } from "@/types/request";
-import { InferResponse } from "@/types/response";
+import { InferRequest } from "@shipoff/types";
+import { InferResponse } from "@shipoff/types";
 import { BaseService } from "./base.service";
 
 
@@ -62,6 +62,26 @@ export class TeamsService extends BaseService {
        }
    }
 
+   async linkTeamToProject({projectId, teamId}:{projectId:string, teamId:string}){
+       try {
+          const res = await this._axiosInstance.post(AUTH_API_ROUTES.LINK_TEAM_TO_PROJECT({ teamId}),{
+            projectId
+          })
+          return res.data
+       } catch (e:any) {
+          return this.handleError(e,undefined,true)
+       }
+   }
+
+   async unlinkTeamFromProject({projectId, teamId}:{projectId:string, teamId:string}){
+       try {
+          const res = await this._axiosInstance.delete(AUTH_API_ROUTES.UNLINK_TEAM_FROM_PROJECT({projectId, teamId}))
+          return res.data
+       } catch (e:any) {
+          return this.handleError(e,undefined,true)
+       }
+   }
+
    async deleteTeam({teamId}:InferRequest<DeleteTeamRequest>){
        try {
           const res = await this._axiosInstance.delete<InferResponse<DeleteTeamResponse>>(AUTH_API_ROUTES.DELETE_TEAM({teamId}))
@@ -73,7 +93,7 @@ export class TeamsService extends BaseService {
 
    async inviteTeamMember({teamId,role}:InferRequest<CreateTeamMemberInvitationRequest,"role">&{role:Omit<TeamRoleType,"TEAM_OWNER">}){
      try {
-        const res = await this._axiosInstance.post<InferResponse<CreateTeamMemberInvitationResponseData>>(AUTH_API_ROUTES.CREATE_TEAM_MEMBER_INVITE({
+        const res = await this._axiosInstance.post<InferResponse<CreateTeamMemberInvitationResponse>>(AUTH_API_ROUTES.CREATE_TEAM_MEMBER_INVITE({
             teamId
         }),{
             role
@@ -82,6 +102,19 @@ export class TeamsService extends BaseService {
      } catch (e:any) {
         return this.handleError(e,undefined,true)
      }
+   }
+
+   async getTeamMembers({teamId, skip, limit}:InferRequest<GetTeamMembersRequest>){
+       try {
+            const res = await this._axiosInstance.get<InferResponse<GetTeamMembersResponse>>(AUTH_API_ROUTES.GET_TEAM_MEMBERS({
+                teamId,
+                skip,
+                limit
+            }))
+            return res.data
+       } catch (e:any) {
+           return this.handleError(e,undefined,true)
+       }
    }
 
    async deleteTeamMember({teamId,targetUserId}:InferRequest<DeleteTeamMemberRequest>){
@@ -98,7 +131,7 @@ export class TeamsService extends BaseService {
 
    async acceptTeamMemberInvite({inviteId}:InferRequest<AcceptInvitationRequest>){
       try {
-         const res = await this._axiosInstance.get<InferResponse<GetTeamMemberResponse>>(AUTH_API_ROUTES.ACCEPT_TEAM_MEMBER_INVITE({inviteId}))
+         const res = await this._axiosInstance.post<InferResponse<GetTeamMemberResponse>>(AUTH_API_ROUTES.ACCEPT_TEAM_MEMBER_INVITE({inviteId}))
          return res.data
       } catch (e:any) {
         return this.handleError(e,undefined,true)

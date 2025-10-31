@@ -14,14 +14,13 @@ export async function putLogController(req:Request,res:Response){
     else res.sendStatus(204);
 }
 
-export async function getLogsController(req:RequestWithMeta,res:Response){
+export async function exportController(req:RequestWithMeta,res:Response){
     const body ={
         reqMeta:req.meta,
-        environmentId:req.params.envId,
         projectId:req.params.projectId,
-        lastBatchId:req.query.lastBatchId ,
+        deploymentId:req.params.deploymentId,
         ...req.body
     };
-    const {code,message,res:data} = await logService.getLogs(body);
+    const {code,message,res:data} = await logService.exportLogs(body);
     grpcToHttpResponse.call(res,code,message,data);
 }

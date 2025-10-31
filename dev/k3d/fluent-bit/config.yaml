@@ -34,9 +34,9 @@ data:
         Match           user-static-apps.*
         Host            host.k3d.internal   
         Port            8000
-        URI             /apis/v1/log
+        URI             /apis/v1/logs
         Header          Content-Type application/json
-        Header          X-Api-Key  <your-api-key-here>
+        Header          X-Api-Key <your_api_key_here>
         Format          json
         Json_date_key   timestamp
         Json_date_format iso8601

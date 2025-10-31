@@ -1,7 +1,7 @@
 import { sendUnaryData, ServerUnaryCall, status } from "@grpc/grpc-js";
 import AuthService from "@/services/auth.service";
-import { GetCurrentUserResponse, GetUserRequest, GetUserResponse, HasPermissionsRequest, HasPermissionsResponse, LoginRequest, LoginResponse, SigninRequest, BodyLessRequest } from "@shipoff/proto";
-import { EmailPassLoginRequestBodyType, GetUserRequestBodyType, OAuthRequestBodyType, SigninRequestBodyType } from "@/types/user";
+import { GetCurrentUserResponse, HasPermissionsRequest, HasPermissionsResponse, LoginRequest, LoginResponse, SigninRequest, BodyLessRequest, GetWSAuthTokenResponse, google, VerifyEmailRequest } from "@shipoff/proto";
+import { EmailPassLoginRequestBodyType, OAuthRequestBodyType, SigninRequestBodyType, VerifyEmailRequestBodyType } from "@/types/user";
 import { HasPermissionsRequestBodyType } from "@/types/utility";
 import { BodyLessRequestBodyType } from "@shipoff/types";
 
@@ -53,17 +53,14 @@ class AuthHandlers {
         }
     }
 
-    async handleGetUser(call:ServerUnaryCall<GetUserRequest & {body:GetUserRequestBodyType},GetUserResponse>,callback:sendUnaryData<GetUserResponse>){
+    async handleVerifyEmail(call:ServerUnaryCall<VerifyEmailRequest & {body:VerifyEmailRequestBodyType},google.protobuf.Empty>,callback:sendUnaryData<google.protobuf.Empty>){
         try {
-            const {code,message,res} = await this._authService.GetUser(call.request.body);
+            const {code,message} = await this._authService.verifyEmail(call.request.body);
             if(code!==status.OK) return callback({code,message})
-            const response = GetUserResponse.fromObject({code,message,res})
-            callback(null,response)
+            const response = google.protobuf.Empty.fromObject({})
+            return callback(null,response)
         } catch (e) {
-          return callback({
-                code:status.INTERNAL,
-                message:"Internal server error"
-          })  
+            return callback({code:status.INTERNAL,message:"Internal server error"})
         }
     }
 
@@ -71,6 +68,7 @@ class AuthHandlers {
        try {
           const {code,res,message} = await this._authService.GetMe(call.request.body);
           if(code!==status.OK) return callback({code,message});
+          console.log(res)
           const response = GetCurrentUserResponse.fromObject({code,message,res})
           callback(null,response)
         } catch (e) {
@@ -87,6 +85,20 @@ class AuthHandlers {
             const {res,code,message} = await this._authService.refreshToken(call.request.body);
             if(code!==status.OK) return callback({code,message});
             const response = LoginResponse.fromObject({code,message,res});
+            return callback(null,response)
+        } catch (e) {
+             return callback({
+                code:status.INTERNAL,
+                message:"Internal server error"
+            })
+        }
+    }
+
+    async handleGetWSAuthToken(call:ServerUnaryCall<BodyLessRequest & {body:BodyLessRequestBodyType},GetWSAuthTokenResponse>,callback:sendUnaryData<GetWSAuthTokenResponse>){
+        try {
+            const {code,res,message} = await this._authService.getWSAuthToken(call.request.body);
+            if(code!==status.OK) return callback({code,message});
+            const response = GetWSAuthTokenResponse.fromObject({code,message,res});
             return callback(null,response)
         } catch (e) {
              return callback({

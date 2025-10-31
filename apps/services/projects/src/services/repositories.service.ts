@@ -1,9 +1,10 @@
-import { createGrpcErrorHandler, GrpcResponse } from "@shipoff/services-commons";
+import { createGrpcErrorHandler, generateId, GrpcResponse } from "@shipoff/services-commons";
 import { Database, dbService } from "@/db/db-service";
 import authExternalService, { AuthExternalService } from "@/externals/auth.external.service";
 import githubExternalService, { GithubExternalService } from "@/externals/github.external.service";
 import { CreateRepositoryRequestBodyType, DeleteRepositoryRequestBodyType, GetRepositoryRequestBodyType } from "@/types/repositories";
 import { logger } from "@/libs/winston";
+import { console } from "inspector";
 
 export class RepositoriesService {
     private _dbService : Database;
@@ -26,7 +27,8 @@ export class RepositoriesService {
                 permissions:["READ"],
                 scope:"REPOSITORY",
                 resourceId: projectId,
-                errMsg: "You do not have permission to read this repository"
+                errMsg: "You do not have permission to read this repository",
+                reqMeta
             })
             const repository = await this._dbService.findUniqueRepository({
                 where:{
@@ -46,7 +48,8 @@ export class RepositoriesService {
                 permissions:["DELETE"],
                 scope:"REPOSITORY",
                 resourceId: projectId,
-                errMsg: "You do not have permission to delete this repository"
+                errMsg: "You do not have permission to delete this repository",
+                reqMeta
             })
             const repository = await this._dbService.deleteUniqueRepository({
                 where:{
@@ -65,7 +68,8 @@ export class RepositoriesService {
             authUserData,
             permissions:["CREATE"],
             scope:"REPOSITORY",
-            resourceId:body.projectId
+            resourceId:body.projectId,
+            reqMeta
           })
 
           const {githubInstallationId} =  await this._dbService.findUniqueGithubInstallation({
@@ -74,15 +78,35 @@ export class RepositoriesService {
             }
           })
           const ghr = await this._githubService.getRepositoryDetails(githubInstallationId,body.githubRepoId);
-          const createdRepo = await this._dbService.createRepository({
-              githubInstallationId,
-              projectId:body.projectId,
-              githubRepoFullName: ghr.githubRepoFullName,
-              githubRepoId: ghr.githubRepoId,
-              githubRepoURI: ghr.githubRepoURI,
-              branch: body.branch
+          const data = {
+            repositoryId:generateId("Repository",{Repository:"repo"}),
+            githubInstallationId,
+            projectId:body.projectId,
+            githubRepoFullName: ghr.githubRepoFullName,
+            githubRepoId: ghr.githubRepoId,
+            githubRepoURI: ghr.githubRepoURI,
+            branch: body.branch,
+            rootDir: body.rootDir
+          }
+          await this._dbService.startTransaction(async(tx)=>{
+            await tx.repository.deleteMany({
+                where:{
+                    projectId:body.projectId
+                }
+            })
+            await tx.repository.create({
+                data
+            })
+            await tx.deployment.updateMany({
+                where:{
+                    projectId:body.projectId
+                },
+                data:{
+                    repositoryId: data.repositoryId
+                }
+            })
           })
-          return GrpcResponse.OK(createdRepo,"Repository created");
+          return GrpcResponse.OK(data,"Repository created");
        } catch (e:any) {
             return this._errHandler(e,"CREATE-REPOSITORY",reqMeta.requestId);
        }

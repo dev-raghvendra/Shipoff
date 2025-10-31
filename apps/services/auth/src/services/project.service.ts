@@ -1,19 +1,21 @@
 import { BodyLessRequestBodyType } from "@shipoff/types";
-import  { Database, dbService } from "@/db/db-service";
-import { CreateTeamLinkRequestBodyType, DeleteProjectMemberRequestBodyType, GetProjectMemberRequestBodyType, ProjectMemberInvitationRequestBodyType, TransferProjectOwnershipRequestBodyType } from "@/types/project";
+import { Database, dbService } from "@/db/db-service";
+import { DeleteProjectMemberRequestBodyType, GetProjectIdsLinkedToTeamRequestBodyType, GetProjectMemberRequestBodyType, ProjectMemberInvitationRequestBodyType, TransferProjectOwnershipRequestBodyType } from "@/types/project";
 import { AcceptMemberInviteRequestBodyType } from "@/types/utility";
-import { Permission } from "@/utils/rbac-utils";
+import { Permission, PermissionBase } from "@/utils/rbac-utils";
 import { createGrpcErrorHandler, GrpcAppError, GrpcResponse } from "@shipoff/services-commons";
 import { status } from "@grpc/grpc-js";
-import {logger} from "@/libs/winston";
+import { logger } from "@/libs/winston";
 
 
 class ProjectService {
     private _permissions : Permission
+    private _permissionsBase : PermissionBase
     private _dbService : Database;
     private _errorHandler : ReturnType<typeof createGrpcErrorHandler>
     constructor(){
       this._permissions = new Permission()
+      this._permissionsBase = new PermissionBase()
       this._dbService = dbService;
       this._errorHandler = createGrpcErrorHandler({subServiceName:"AUTH_SERVICE",logger});
     }
@@ -69,15 +71,6 @@ class ProjectService {
        }
     }
 
-    async linkTeam({projectId,teamId, authUserData:{userId},reqMeta}:CreateTeamLinkRequestBodyType){
-      try {
-        await this._permissions.canCreateTeamLink(userId,projectId);
-        const link = await this._dbService.createTeamLink({data:{projectId,teamId}})
-        return GrpcResponse.OK(link,"Linked team");
-      } catch (e:any) {
-        return this._errorHandler(e,"LINK-TEAM",reqMeta.requestId);
-      }
-    }
 
     async GetAllUserProjectIds({authUserData:{userId},reqMeta}:BodyLessRequestBodyType){
         try {
@@ -117,8 +110,7 @@ class ProjectService {
                 const finalIds =  [...uniqueProjectIds,...directProjects.map(p=>p.projectId)];
                 return finalIds
             }) as string[]
-            if(res.length) return GrpcResponse.OK(res,"ProjectIds found");
-            throw new GrpcAppError(status.NOT_FOUND,"No projects found for user",null);
+             return GrpcResponse.OK(res,"ProjectIds found");throw new GrpcAppError(status.NOT_FOUND,"No projects found for user",null);
         } catch (e:any) {
             return this._errorHandler(e,"GET-ALL-USER-PROJECT-IDS",reqMeta.requestId);
         }
@@ -142,6 +134,31 @@ class ProjectService {
             return GrpcResponse.OK(null,"Ownership transferred");
         } catch (e:any) {
             return this._errorHandler(e,"TRANSFER-PROJECT-OWNERSHIP",reqMeta.requestId);
+        }
+    }
+
+     async IGetAllProjectIdsLinkedToTeam({authUserData:{userId},teamId,reqMeta}:GetProjectIdsLinkedToTeamRequestBodyType){
+        try {
+            //adding self_delete helps us to verify if the user is part of the team or not because only team members can self delete and non team memebers but project memebers can also read teams and members which the project is linked to but cannot self delete therefore this check is sufficient
+            const res =await this._permissionsBase.canAccess({
+                userId,
+                permission:["READ","SELF_DELETE"],
+                scope:"TEAM_MEMBER",
+                resourceId:teamId,
+            })
+            if(!res) throw new GrpcAppError(status.PERMISSION_DENIED,"You do not have permission to access projects linked to this team");
+            const teamLinks = await this._dbService.findTeamLinks({
+                where:{
+                    teamId
+                },
+                select:{
+                    projectId:true
+                }
+            });
+            const projectIds = teamLinks.map(tl=>tl.projectId);
+            return GrpcResponse.OK(projectIds,"Project Ids found");
+        } catch (e:any) {
+            return this._errorHandler(e,"GET-ALL-PROJECT-IDS-LINKED-TO-TEAM",reqMeta.requestId);
         }
     }
 

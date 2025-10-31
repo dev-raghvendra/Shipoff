@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
-export default function Redirect({params}:{params:{projectId:string,deploymentId:string}}){
-    return redirect(`/dashboard/projects/${params.projectId}/deployments/${params.deploymentId}/overview`)
+export default async function Redirect({params}:{params:Promise<{projectId:string,deploymentId:string}>}){
+    const {projectId,deploymentId} = await params
+    return redirect(`/dashboard/projects/${projectId}/deployments/${deploymentId}/overview`)
 }

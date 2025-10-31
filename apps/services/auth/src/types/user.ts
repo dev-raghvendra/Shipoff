@@ -10,6 +10,13 @@ export const SigninRequestSchema = z.object({
   reqMeta:RequestMetaSchema,
 }).strict();
 
+export const VerifyEmailRequestSchema = z.object({
+  token: z.string(),
+  reqMeta:RequestMetaSchema,
+}).strict();
+
+
+
 
 export const OAuthRequestSchema = SigninRequestSchema.extend({
   provider:Providers.exclude(["EMAIL"])
@@ -20,7 +27,7 @@ export const EmailPassLoginRequestSchema = z.object({
     reqMeta:RequestMetaSchema
 }).strict();
 
-
+export type VerifyEmailRequestBodyType = z.infer<typeof VerifyEmailRequestSchema>;
 export type UserSchemaType = z.infer<typeof UserSchema>;
 export type UserBody = z.infer<typeof UserSchema>;
 export type EmailPassLoginRequestBodyType = z.infer<typeof EmailPassLoginRequestSchema>;

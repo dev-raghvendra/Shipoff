@@ -1,8 +1,10 @@
 export const CONFIG = {
     PORT:Number(process.env.PORT) || 8000,
-    POST_GITHUB_INSTALLATION_FRONTEND_DESTINATION: String(process.env.POST_GITHUB_INSTALLATION_FRONTEND_DESTINATION || "http://localhost:3000/projects/new")
+    POST_GITHUB_INSTALLATION_FRONTEND_DESTINATION: String(process.env.POST_GITHUB_INSTALLATION_FRONTEND_DESTINATION || "http://localhost:3000/projects/new"),
+    BACKEND_API_URL:String(process.env.BACKEND_API_URL || "http://localhost:8000"),
+    BACKEND_WS_API_URL:String(process.env.BACKEND_WS_API_URL || "ws://localhost:8000"),
 } as const
 
 export const WS_ROUTES = {
-    "/ws/logs/stream":"/logs/stream"
+    "/apis/v1/ws/logs/stream":"/logs/stream"
 } as const

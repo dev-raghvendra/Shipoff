@@ -16,9 +16,10 @@ message Framework {
     string keywordName = 4;
     string defaultBuildCommand = 5;
     string defaultProdCommand = 6;
-    string runtime = 7;
-    string name = 8;
-    string applicationType = 9;
+    string defaultOutDir = 7;
+    string runtime = 8;
+    string name = 9;
+    string applicationType = 10;
 }
 
 message Repository {
@@ -27,10 +28,11 @@ message Repository {
     string githubRepoId = 3;
     string githubRepoFullName = 4;
     string githubRepoURI = 5;
-    string createdAt = 6;
-    string updatedAt = 7;
-    string githubInstallationId = 8;
-    string branch = 9;
+    string rootDir = 6;
+    string createdAt = 7;
+    string updatedAt = 8;
+    string githubInstallationId = 9;
+    string branch = 10;
 }
 
 message DeploymentProjectData {
@@ -80,13 +82,14 @@ message Project {
     string updatedAt = 9;
     Repository repository = 10;
     string outDir = 11;
-    repeated EnvironmentVariablesKeyValue environmentVariables = 12;
-    repeated Deployment deployments = 13;
+    string rootDir = 12;
+    repeated EnvironmentVariablesKeyValue environmentVariables = 13;
+    repeated Deployment deployments = 14;
 }
 
 message EnvironmentVariables {
     string projectId = 1;
-    string name = 2;
+    string key = 2;
     string value = 3;
 }
 
@@ -97,7 +100,8 @@ message GithubRepository {
     string githubRepoFullName = 3;
     string githubRepoURI = 4;
     string githubRepoDefaultBranch = 5;
-    bool githubRepoPrivate = 6;
+    repeated string branches = 6;
+    bool githubRepoPrivate = 7;
 }
 
 message GithubInstallation {
@@ -108,17 +112,17 @@ message GithubInstallation {
     string updatedAt = 5;
 }
 
+message FrameworkUpdates {
+    string frameworkId = 1;
+    string buildCommand = 2;
+    string prodCommand = 3;
+}
+
 message ProjectUpdates {
      string name = 1;
      string domain = 2;
-     string prodCommand = 3;
-     string buildCommand = 4;
-     message framework {
-         string frameworkId = 1;
-         string buildCommand = 2;
-         string prodCommand = 3;
-     }
-     string outDir = 5;
+     FrameworkUpdates framework = 3;
+     string outDir = 4;
 }
 
 // Requests
@@ -134,9 +138,11 @@ message CreateProjectRequest {
     string prodCommand = 8;
     string branch = 9;
     string outDir = 10;
-    repeated EnvironmentVariablesKeyValue environmentVars = 11;
-    string domain = 12;
-    RequestMeta reqMeta= 13;
+    string rootDir = 11;
+    repeated EnvironmentVariablesKeyValue environmentVars = 12;
+    string description = 13;
+    string domain = 14;
+    RequestMeta reqMeta= 15;
 }
 
 message UpdateProjectRequest {
@@ -210,7 +216,7 @@ message UpsertEnvVarsRequest {
 message DeleteEnvVarsRequest {
     User authUserData = 1;
     string projectId = 2;
-    string name = 3;
+    repeated string envVarKeys = 3;
     RequestMeta reqMeta = 4;
 }
 
@@ -218,22 +224,11 @@ message CreateRepositoryRequest {
     User authUserData = 1;
     string githubRepoId = 2;
     string projectId = 3;
-    string branch = 4;
-    RequestMeta reqMeta = 5;
-}
-
-message UpdateRepositoryRequest {
-    User authUserData = 1;
-    string projectId = 2;
-    message updates {
-        string branch = 3;
-        message github {
-          string githubRepoId = 1;
-          string githubRepoURI = 2;
-          string githubRepoFullName = 3;
-        }
-    }
-    RequestMeta reqMeta = 4;
+    string githubRepoFullName = 4;
+    string githubRepoURI = 5; 
+    string branch = 6;
+    string rootDir = 7;
+    RequestMeta reqMeta = 8;
 }
 
 message DeleteRepositoryRequest {
@@ -278,11 +273,6 @@ message IGetProjectRequest {
     string projectId = 1;
     string domain = 2;
     RequestMeta reqMeta = 3;
-}
-
-message IGetProjectByDomainRequest {
-    string domain = 1;
-    RequestMeta reqMeta = 2;
 }
 
 
@@ -350,7 +340,7 @@ message GithubRepoResponse {
 message DeleteEnvVarsResponse {
     int32 code = 1;
     string message = 2;
-    EnvironmentVariables res = 3;
+    google.protobuf.Empty res = 3;
 }
 
 message IGetGithubRepoAccessTokenRequest {
@@ -376,6 +366,38 @@ message StaleEnvironmentIdsResponse {
     repeated string res = 3;
 }
 
+message GetProjectsLinkedToTeamRequest {
+    User authUserData = 1;
+    string teamId = 2;
+    RequestMeta reqMeta = 3;
+}
+
+message ProjectsLinkedToTeamResponse {
+    int32 code = 1;
+    string message = 2;
+    repeated ProjectsLinkedToTeamResponseData res = 3;
+}
+
+message ProjectsLinkedToTeamResponseData {
+    string name = 1;
+    string projectId = 2;
+}
+
+message CheckDomainAvailabilityRequest {
+    User authUserData = 1;
+    string domain = 2;
+    RequestMeta reqMeta = 3;
+}
+
+message CheckDomainAvailabilityResponse {
+    int32 code = 1;
+    string message = 2;
+    DomainAvailabilityResponseData   res = 3;
+}
+
+message DomainAvailabilityResponseData {
+    bool isAvailable = 1;
+}
 // Service
 service ProjectsService {
     // Project
@@ -385,6 +407,8 @@ service ProjectsService {
     rpc GetLatestProjects (BulkResourceRequest) returns (AllProjectsResponse);
     rpc UpdateProject (UpdateProjectRequest) returns (ProjectResponse);
     rpc DeleteProject (DeleteProjectRequest) returns (ProjectResponse);
+    rpc GetProjectsLinkedToTeam (GetProjectsLinkedToTeamRequest) returns (ProjectsLinkedToTeamResponse);
+    rpc CheckDomainAvailability (CheckDomainAvailabilityRequest) returns (CheckDomainAvailabilityResponse);
 
     // Deployment
     rpc GetDeployment (GetDeploymentRequest) returns (DeploymentResponse);
@@ -400,7 +424,6 @@ service ProjectsService {
 
     // Repository
     rpc GetRepository (GetRepositoryRequest) returns (RepositoryResponse);
-    rpc UpdateRepository (UpdateRepositoryRequest) returns (RepositoryResponse);
     rpc CreateRepository (CreateRepositoryRequest) returns (RepositoryResponse);
     rpc DeleteRepository (DeleteRepositoryRequest) returns (RepositoryResponse);
 
@@ -409,7 +432,7 @@ service ProjectsService {
     rpc GetGithubRepo (GetGithubRepoRequest) returns (GithubRepoResponse);
     rpc GetGithubInstallation (BodyLessRequest) returns (GithubInstallationResponse);
 
-    rpc GetFrameworks (BulkResourceRequest) returns (FrameworkResponse);
+    rpc GetFrameworks (BodyLessRequest) returns (FrameworkResponse);
 
     //webhooks
     rpc GithubWebhook (GithubWebhookRequest) returns (google.protobuf.Empty);

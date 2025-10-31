@@ -12,6 +12,7 @@ export abstract class BaseService {
   protected _axiosInstance: AxiosInstance
   protected _isFetching = false
   protected _authToken: string | null = null
+  protected _tokenExpiresAt = 0
   protected _sessionExpired = false
   protected handleError: ReturnType<typeof createErrHandler>
 

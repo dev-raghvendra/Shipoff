@@ -64,7 +64,7 @@ export function createUnaryValidator<Map extends SchemaMap>(schemaMap: Map, logg
       } catch(e:any){
         callback({
           code: status.INVALID_ARGUMENT,
-          message: `${e.issues[0].path[0]}: ${e.issues[0].message}` || schemaMap[method].errMsg,
+          message: `${e.issues[0].path.join("->")}: ${e.issues[0].message}` || schemaMap[method].errMsg,
         });
       }
     };

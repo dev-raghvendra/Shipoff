@@ -13,10 +13,11 @@ export async function logsController(ws: WebSocket, req: WebSocketRequest) {
         reqMeta: req.meta,
         authUserData: req.user,
     };
-
     const stream = logService.streamLogs(body);
     const streamState = { closed: false }; 
-
+    
+     
+    inactivityShutdown.apply(ws, [stream, streamState, { time: 3 * 60 * 1000 }]);
     
     stream.on("data", (data: LogBody) => upstreamMessageHandler(data, ws));
 
@@ -33,6 +34,14 @@ export async function logsController(ws: WebSocket, req: WebSocketRequest) {
     ws.on("error", (err) => clientErrorHandler(err, streamState, ws, stream));
 }
 
+function inactivityShutdown(this:WebSocket,upstream:{cancel:()=>void},streamState:{closed:boolean},{time=30000}:{time:number}){
+     setTimeout(()=>{
+        if(streamState.closed) return;
+        streamState.closed = true;
+        try { grpcToWsResponse.call(this,0,"Stream shutdown due to inactivity"); } catch { }
+        try { upstream.cancel(); } catch { }
+     },time)
+}
 
 function upstreamMessageHandler(data: LogBody, ws: WebSocket) {
     try {
@@ -49,9 +58,7 @@ function upstreamErrorHandler(
 ) {
     if (!streamState.closed) {
         streamState.closed = true;
-        try {
-            grpcToWsResponse.call(ws, e.code || 1011, e.message || "Stream error");
-        } catch { }
+        try { grpcToWsResponse.call(ws, e.code || 2, e.message || "Stream error");    } catch { }
         try { stream.cancel(); } catch { }
     }
 }
@@ -59,9 +66,7 @@ function upstreamErrorHandler(
 function upstreamClosedHandler(streamState: { closed: boolean }, ws: WebSocket) {
     if (!streamState.closed) {
         streamState.closed = true;
-        try {
-            grpcToWsResponse.call(ws, 0, "Stream closed by server");
-        } catch { }
+        try { grpcToWsResponse.call(ws, 0, "Stream closed by server");  } catch { }
     }
 }
 
@@ -73,9 +78,7 @@ function clientErrorHandler(
 ) {
     if (!streamState.closed) {
         streamState.closed = true;
-        try {
-            grpcToWsResponse.call(ws, 1011, "WebSocket connection error");
-        } catch { }
+        try { grpcToWsResponse.call(ws, 2, "WebSocket connection error"); } catch { }
         try { stream.cancel(); } catch { }
     }
 }

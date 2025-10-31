@@ -34,16 +34,15 @@ export default function Auth({isSignin}:{isSignin:boolean}) {
      e.preventDefault();
      setLoading(true);
      setError(null);
-     try {
-        console.log("FORM_SUBMIT",email,password)
-        const validationError = validateForm();
-        if(!validationError) {
-          const res  = await signIn("credentials",{
-            email,
-            password,
-            isSignup:String(isSignin),
-            redirect:false
-        });
+        try {
+           const validationError = validateForm();
+           if(!validationError) {
+             const res  = await signIn("credentials",{
+               email,
+               password,
+               isSignup:String(isSignin),
+               redirect:false
+           });
         
         if(res?.error) setError({message:res.error,title:"Authentication Error"});
         else router.push(params.get("callbackUrl") || "/");
@@ -56,7 +55,7 @@ export default function Auth({isSignin}:{isSignin:boolean}) {
      } finally {
         setLoading(false);
      }
-  },[loading])
+  },[loading,email,password,isSignin,router,params])
 
   const validateForm = useMemo(()=>()=>{
      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -174,7 +173,7 @@ useEffect(()=>{
                 <Label htmlFor="email" className="text-foreground">
                   Email
                 </Label>
-                <Input onChange={(e) => setEmail(e.target.value)} id="email" type="text" name="email" aria-label="Email" placeholder="you@company.com" className="h-11" />
+                <Input value={email} onChange={(e) => setEmail(e.target.value)} id="email" type="text" name="email" aria-label="Email" placeholder="you@company.com" className="h-11" />
               </div>
 
               <div className="space-y-2">
@@ -189,7 +188,7 @@ useEffect(()=>{
                     Forgot password?
                   </Link>
                 </div>
-                <Input onChange={(e) => setPassword(e.target.value)} id="password" type="password" placeholder="Enter your password" className="h-11" />
+                <Input value={password} onChange={(e) => setPassword(e.target.value)} id="password" type="password" placeholder="Enter your password" className="h-11" />
               </div>
             </div>
 

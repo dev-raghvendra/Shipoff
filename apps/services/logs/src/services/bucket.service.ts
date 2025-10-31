@@ -3,6 +3,7 @@ import { _Object, DeleteObjectsCommand, GetObjectCommand, ListObjectsV2Command, 
 import { logBody } from "@/types/Logs";
 import { GrpcAppError } from "@shipoff/services-commons";
 import { status } from "@grpc/grpc-js";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 export class BucketService {
     private _bucketClient : S3Client;
 
@@ -43,6 +44,16 @@ export class BucketService {
         }
     }
 
+    async getLogPresignedUrl(fileKey:string,expiresIn?:number,params?:Record<string,string>){
+        const command = new GetObjectCommand({
+            Bucket:SECRETS.BUCKET_NAME,
+            Key:fileKey,
+            ResponseContentDisposition:params?.ResponseContentDisposition
+        })
+        return await getSignedUrl(this._bucketClient,command,{expiresIn:expiresIn || 3600})
+    }
+
+
     async getNextLogKey(prefix:string,startAfter?:string){
         const command = new ListObjectsV2Command({
             Bucket:SECRETS.BUCKET_NAME,
@@ -55,11 +66,10 @@ export class BucketService {
         else throw new GrpcAppError(status.NOT_FOUND,"No logs found for the given environment")
     }
 
-    async getAllLogKeys(prefix:string,continuationToken?:string){
+    async getAllLogKeys(prefix:string){
         const command = new ListObjectsV2Command({
               Bucket:SECRETS.BUCKET_NAME,
-              Prefix:prefix,
-              ContinuationToken:continuationToken
+              Prefix:prefix
           })
           return await this._bucketClient.send(command)
     }

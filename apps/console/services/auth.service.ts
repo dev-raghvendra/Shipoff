@@ -1,6 +1,6 @@
 import { AUTH_API_ROUTES, MAIN_BACKEND_API } from "@/config/service-route-config";
-import { GetCurrentUserResponse } from "@shipoff/proto";
-import { InferResponse } from "@/types/response";
+import { GetCurrentUserResponse, GetWSAuthTokenResponse } from "@shipoff/proto";
+import { InferResponse } from "@shipoff/types";
 import { BaseService } from "./base.service";
 
 
@@ -18,6 +18,33 @@ export class AuthService extends BaseService{
             return res.data
         } catch (e:any) {
             return this.handleError(e,undefined,true)
+        }
+   }
+
+   async getWSAuthToken(){
+        try {
+            const res = await this._axiosInstance.get<InferResponse<GetWSAuthTokenResponse>>(AUTH_API_ROUTES.GET_WS_AUTH_TOKEN())
+            return res.data
+        } catch (e:any) {
+            return this.handleError(e,undefined,true,true)
+        }
+   }
+
+   async updateSubscription(type: string){
+        try {
+            const res = await this._axiosInstance.post(AUTH_API_ROUTES.UPDATE_SUBSCRIPTION(), { type })
+            return res.data
+        } catch (e:any) {
+            return this.handleError(e, undefined, true)
+        }
+   }
+
+   async updateProfile(payload: { fullName?: string }){
+        try {
+            const res = await this._axiosInstance.patch(AUTH_API_ROUTES.UPDATE_PROFILE(), payload)
+            return res.data
+        } catch (e:any) {
+            return this.handleError(e, undefined, true)
         }
    }
 } 

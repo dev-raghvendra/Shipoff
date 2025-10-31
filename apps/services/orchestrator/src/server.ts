@@ -10,7 +10,11 @@ import {DeploymentConsumer} from "@/consumer/deployment.consumer"
 import { ProjectConsumer } from "@/consumer/project.consumer";
 import { logger } from "@/libs/winston";
 
-const server = new Server()
+const server = new Server({
+    'grpc.max_connection_idle_ms':10*60*1000,
+    'grpc.keepalive_time_ms':60*1000,
+    'grpc.keepalive_timeout_ms':20*1000,
+})
 const validateRPCBody = createUnaryValidator(RPC_SCHEMA,logger);
 const orchestratorHandlers = new OrchestratorHandler();
 const orchestratorWebhookHandler = new OrchestratorWebhookHandler()

@@ -22,7 +22,7 @@ export class ProjectConsumer {
     const groupName = PROJECT_TOPIC_CONSUMER_GROUPS[this._serviceName];
     const streamName = TOPICS.PROJECT_TOPIC;
     let backoffTime = 1000;
-    const maxBackoffTime = 60000;
+    const maxBackoffTime = 10000;
 
     while (true) {
       try {

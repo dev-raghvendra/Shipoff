@@ -12,7 +12,11 @@ import {logger} from "@/libs/winston";
 import { ContainerConsumer } from "@/consumer/container.consumer";
 
 const validateRPCBody = createUnaryValidator(RPC_SCHEMA,logger);    
-const server = new Server();
+const server = new Server({
+    'grpc.max_connection_idle_ms':10*60*1000,
+    'grpc.keepalive_time_ms':60*1000,
+    'grpc.keepalive_timeout_ms':20*1000,
+});
 const projectsHandlers = new ProjectsHandlers();
 const deploymentsHandlers = new DeploymentsHandlers();
 const githubWebhookHandlers = new GithubWebhookHandlers();
@@ -29,7 +33,8 @@ server.addService(UnimplementedProjectsServiceService.definition, {
     GetAllUserProjects: validateRPCBody("GetAllUserProjects", projectsHandlers.handleGetAllUserProjects.bind(projectsHandlers)),
     GetLatestProjects: validateRPCBody("GetLatestProjects", projectsHandlers.handleGetLatestProjects.bind(projectsHandlers)),
     UpdateProject: validateRPCBody("UpdateProject", projectsHandlers.handleUpdateProject.bind(projectsHandlers)),
-
+    GetProjectsLinkedToTeam: validateRPCBody("GetProjectsLinkedToTeam", projectsHandlers.handleGetProjectsLinkedToTeam.bind(projectsHandlers)),
+    CheckDomainAvailability: validateRPCBody("CheckDomainAvailability", projectsHandlers.handleCheckDomainAvailability.bind(projectsHandlers)),
     GetRepository: validateRPCBody("GetRepository", repositoriesHandlers.handleGetRepository.bind(repositoriesHandlers)),
     CreateRepository: validateRPCBody("CreateRepository", repositoriesHandlers.handleCreateRepository.bind(repositoriesHandlers)),
     DeleteRepository: validateRPCBody("DeleteRepository", repositoriesHandlers.handleDeleteUniqueRepository.bind(repositoriesHandlers)),

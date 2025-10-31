@@ -183,25 +183,31 @@ Please provide any additional context, screenshots, or error messages that might
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between animate-in fade-in-0 slide-in-from-top-2 duration-300">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Report Bug</h1>
-          <p className="text-sm text-muted-foreground">Create a GitHub issue for {context.title.toLowerCase()}</p>
+          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+            Report Bug
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1.5">
+            Create a GitHub issue for {context.title.toLowerCase()}
+          </p>
         </div>
-        <Badge variant="outline" className="flex items-center gap-1">
-          <Github className="h-3 w-3" />
-          GitHub Issue
+        <Badge variant="outline" className="flex items-center gap-1.5 px-3 py-1.5">
+          <Github className="h-3.5 w-3.5" />
+          <span>GitHub Issue</span>
         </Badge>
       </div>
 
       {/* Context Information */}
-      <Card>
-        <CardHeader>
+      <Card className="animate-in fade-in-0 slide-in-from-bottom-3 duration-500 delay-75 border-primary/10 shadow-sm hover:shadow-md transition-shadow">
+        <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <Info className="h-4 w-4" />
-            {context.title} Context
+            <div className="p-1.5 rounded-md bg-primary/10">
+              <Info className="h-4 w-4 text-primary" />
+            </div>
+            <span>{context.title} Context</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -209,10 +215,19 @@ Please provide any additional context, screenshots, or error messages that might
             {context.items.map((item, index) => {
               const Icon = item.icon
               return (
-                <div key={index} className="flex items-center gap-2">
-                  {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
-                  <div>
-                    <span className="font-medium">{item.label}:</span> {item.value}
+                <div 
+                  key={index} 
+                  className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors animate-in fade-in-0 slide-in-from-left-2 duration-300"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  {Icon && (
+                    <div className="p-1 rounded bg-background">
+                      <Icon className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <span className="font-medium text-foreground">{item.label}:</span>
+                    <span className="text-muted-foreground ml-1.5 truncate block">{item.value}</span>
                   </div>
                 </div>
               )
@@ -223,41 +238,53 @@ Please provide any additional context, screenshots, or error messages that might
 
       {/* System Information */}
       {systemInfo && (
-        <Card>
-          <CardHeader>
+        <Card className="animate-in fade-in-0 slide-in-from-bottom-3 duration-500 delay-150 border-primary/10 shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              {getDeviceIcon()}
-              System Information
+              <div className="p-1.5 rounded-md bg-primary/10">
+                {getDeviceIcon()}
+              </div>
+              <span>System Information</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Monitor className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <span className="font-medium">Platform:</span> {systemInfo.platform}
+              <div className="space-y-3">
+                <div className="flex items-start gap-3 p-2.5 rounded-lg bg-muted/20 hover:bg-muted/30 transition-colors">
+                  <Monitor className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                  <div className="min-w-0">
+                    <span className="font-medium text-foreground">Platform:</span>
+                    <span className="text-muted-foreground ml-1.5">{systemInfo.platform}</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Globe className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <span className="font-medium">Language:</span> {systemInfo.language}
+                <div className="flex items-start gap-3 p-2.5 rounded-lg bg-muted/20 hover:bg-muted/30 transition-colors">
+                  <Globe className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                  <div className="min-w-0">
+                    <span className="font-medium text-foreground">Language:</span>
+                    <span className="text-muted-foreground ml-1.5">{systemInfo.language}</span>
                   </div>
                 </div>
-                <div>
-                  <span className="font-medium">Screen:</span> {systemInfo.screenResolution}
+                <div className="p-2.5 rounded-lg bg-muted/20 hover:bg-muted/30 transition-colors">
+                  <span className="font-medium text-foreground">Screen:</span>
+                  <span className="text-muted-foreground ml-1.5">{systemInfo.screenResolution}</span>
                 </div>
               </div>
-              <div className="space-y-2">
-                <div>
-                  <span className="font-medium">Timezone:</span> {systemInfo.timezone}
+              <div className="space-y-3">
+                <div className="p-2.5 rounded-lg bg-muted/20 hover:bg-muted/30 transition-colors">
+                  <span className="font-medium text-foreground">Timezone:</span>
+                  <span className="text-muted-foreground ml-1.5">{systemInfo.timezone}</span>
                 </div>
-                <div>
-                  <span className="font-medium">Timestamp:</span> {new Date(systemInfo.timestamp).toLocaleString()}
+                <div className="p-2.5 rounded-lg bg-muted/20 hover:bg-muted/30 transition-colors">
+                  <span className="font-medium text-foreground">Timestamp:</span>
+                  <span className="text-muted-foreground ml-1.5 text-xs">
+                    {new Date(systemInfo.timestamp).toLocaleString()}
+                  </span>
                 </div>
-                <div className="text-xs text-muted-foreground break-all">
-                  <span className="font-medium">URL:</span> {systemInfo.url}
+                <div className="p-2.5 rounded-lg bg-muted/20 hover:bg-muted/30 transition-colors">
+                  <span className="font-medium text-foreground block mb-1">URL:</span>
+                  <code className="text-xs text-muted-foreground break-all font-mono bg-background px-1.5 py-0.5 rounded">
+                    {systemInfo.url}
+                  </code>
                 </div>
               </div>
             </div>
@@ -266,11 +293,13 @@ Please provide any additional context, screenshots, or error messages that might
       )}
 
       {/* Issue Form */}
-      <Card>
-        <CardHeader>
+      <Card className="animate-in fade-in-0 slide-in-from-bottom-3 duration-500 delay-225 border-primary/10 shadow-sm hover:shadow-md transition-shadow">
+        <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <Bug className="h-4 w-4" />
-            Issue Details
+            <div className="p-1.5 rounded-md bg-destructive/10">
+              <Bug className="h-4 w-4 text-destructive" />
+            </div>
+            <span>Issue Details</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -377,36 +406,53 @@ Please provide any additional context, screenshots, or error messages that might
           </div>
 
           {/* Preview */}
-          <div className="border rounded-lg p-4 bg-muted/30">
-            <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
-              <ExternalLink className="h-4 w-4" />
-              GitHub Issue Preview
+          <div className="border rounded-lg p-4 bg-gradient-to-br from-muted/40 to-muted/20 border-primary/10 hover:border-primary/20 transition-colors">
+            <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+              <ExternalLink className="h-4 w-4 text-primary" />
+              <span>GitHub Issue Preview</span>
             </h4>
-            <div className="text-xs text-muted-foreground space-y-1">
-              <div><strong>Title:</strong> {title || `${issueTypes.find(t => t.value === issueType)?.icon || "🐛"} ${issueTypes.find(t => t.value === issueType)?.label || "Bug"} - ${context.title}`}</div>
-              <div><strong>Labels:</strong> {labels.join(", ")}</div>
-              <div><strong>Repository:</strong> {repository}</div>
+            <div className="text-xs text-muted-foreground space-y-2.5">
+              <div className="flex items-start gap-2">
+                <span className="font-semibold text-foreground min-w-[60px]">Title:</span>
+                <span className="flex-1">{title || `${issueTypes.find(t => t.value === issueType)?.icon || "🐛"} ${issueTypes.find(t => t.value === issueType)?.label || "Bug"} - ${context.title}`}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-foreground min-w-[60px]">Labels:</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {labels.map((label, idx) => (
+                    <Badge key={idx} variant="secondary" className="text-xs px-1.5 py-0">
+                      {label}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-foreground min-w-[60px]">Repository:</span>
+                <code className="text-xs font-mono bg-background px-1.5 py-0.5 rounded flex-1 truncate">
+                  {repository}
+                </code>
+              </div>
             </div>
           </div>
 
-          {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
             <Button 
               onClick={handleOpenGitHub}
-              className="flex-1"
+              className="flex-1 group transition-all hover:scale-[1.02] active:scale-[0.98]"
               disabled={!issueType}
             >
-              <Github className="mr-2 h-4 w-4" />
+              <Github className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />
               Open GitHub Issue
             </Button>
             <Button 
               variant="outline" 
               onClick={handleCopyLink}
               disabled={!issueType}
+              className="transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
               {copied ? (
                 <>
-                  <Check className="mr-2 h-4 w-4" />
+                  <Check className="mr-2 h-4 w-4 animate-in zoom-in-50 duration-200" />
                   Copied!
                 </>
               ) : (
@@ -419,11 +465,13 @@ Please provide any additional context, screenshots, or error messages that might
           </div>
 
           {/* Info */}
-          <div className="flex items-start gap-2 p-3 bg-[var(--label-alert)] rounded-lg">
-            <AlertTriangle className="h-4 w-4 text-[var(--label-fg-alert)] mt-0.5 flex-shrink-0" />
+          <div className="flex items-start gap-3 p-4 bg-[var(--label-alert)] rounded-lg border border-[var(--label-alert)]/50 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
+            <div className="p-1.5 rounded-md bg-[var(--label-fg-alert)]/10 flex-shrink-0">
+              <AlertTriangle className="h-4 w-4 text-[var(--label-fg-alert)]" />
+            </div>
             <div className="text-sm text-[var(--label-fg-alert)]">
-              <p className="font-medium">Note:</p>
-              <p>This will open GitHub in a new tab with a pre-filled issue template. You can edit the content before submitting the issue.</p>
+              <p className="font-semibold mb-1">Note:</p>
+              <p className="leading-relaxed">This will open GitHub in a new tab with a pre-filled issue template. You can edit the content before submitting the issue.</p>
             </div>
           </div>
         </CardContent>

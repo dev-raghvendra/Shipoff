@@ -37,6 +37,7 @@ export class Database {
                     githubRepoFullName:body.githubRepoFullName,
                     githubRepoURI:body.githubRepoURI,
                     branch:body.branch,
+                    rootDir:body.rootDir,
                     githubInstallationId:body.githubInstallationId
                 }
             },
@@ -76,13 +77,7 @@ export class Database {
     }
 
     async findUniqueProject<T extends Prisma.ProjectFindUniqueArgs>(args:T): Promise<Prisma.ProjectGetPayload<T>>{
-        const res = await this._client.project.findUnique({
-            where: args.where,
-            include:{
-                ...args.include,
-                t
-            }
-        });
+        const res = await this._client.project.findUnique(args);
         if(res)return res as Prisma.ProjectGetPayload<T>; 
         throw new GrpcAppError(status.NOT_FOUND, "Project not found", {
             projectId: args.where.projectId
@@ -188,33 +183,25 @@ export class Database {
         
         const res = await this._client.deployment.findUnique({
             where: { deploymentId },
-            select:{
-                    project:{
-                        select:{
-                            projectId:true,
-                            domain:true,
-                            framework:true
-                        }
-                    },
-                    repository:{
-                        select:{
-                            githubRepoFullName:true,
-                            githubRepoId:true,
-                            branch:true,
-                            repositoryId:true,
-                            githubRepoURI:true
-                        }
-                    },
-                    commitHash:true,
-                    deploymentId:true,
-                    commitMessage:true,
-                    author:true,
-                    createdAt:true,
-                    status:true,
-                    lastDeployedAt:true,
-                    completedAt:true,
-                    buildEnvironment:{orderBy:{startedAt:"desc"},take:1,select:{ buildId:true, startedAt:true }},
-                    runtimeEnvironment:{orderBy:{startedAt:"desc"},take:1,select:{ runtimeId:true, startedAt:true }}
+            include:{
+                project:{
+                    include:{
+                        framework:true
+                    }
+                },
+                repository:true,
+                buildEnvironment:{
+                    take:1,
+                    orderBy:{
+                       startedAt:"desc",
+                    }
+                },
+                runtimeEnvironment:{
+                    take:1,
+                    orderBy:{
+                       startedAt:"desc"
+                    }
+                }
             }
         });
         if(res)return res;
@@ -293,8 +280,7 @@ export class Database {
 
     async findManyDeployments<T extends Prisma.DeploymentFindManyArgs>(args:T){
         const res = await this._client.deployment.findMany(args);
-        if(res.length)return res as Prisma.DeploymentGetPayload<T>[];
-        throw new GrpcAppError(status.NOT_FOUND, "No deployments found");
+        return res as Prisma.DeploymentGetPayload<T>[];
     }
 
     async deleteDeploymentById(deploymentId: string) {
@@ -502,37 +488,49 @@ export class Database {
         });
     }
 
-    async createEnvironmentVariable({projectId,envs}:UpsertEnvVarsRequestDBBodyType){
-        if(!envs) throw new GrpcAppError(status.INVALID_ARGUMENT, "Environment variables are required");
-        const values = envs.map((_,i)=> `($1, $${i+2}, $${i+3})`).join(", ")
-        const params = [projectId, ...envs.flatMap(envVar=> [envVar.name, envVar.value])];
-        const q = `INSERT INTO "EnvironmentVariable" ("projectId","name","value") VALUES ${values} ON CONFLICT ("projectId", "name") DO UPDATE SET "value" = EXCLUDED."value"`
-        const res = await this._client.$executeRawUnsafe(q,...params);
-        if(res) return res;
+    async createEnvironmentVariable({ projectId, envs }: UpsertEnvVarsRequestDBBodyType) {
+        const values = envs
+          .map((_, i) => `($1, $${i * 2 + 2}, $${i * 2 + 3})`)
+          .join(", ");
+      
+        const params = [projectId, ...envs.flatMap(envVar => [envVar.name, envVar.value])];
+
+        const q = `
+          INSERT INTO "EnvironmentVariable" ("projectId", "name", "value")
+          VALUES ${values}
+          ON CONFLICT ("projectId","name")
+          DO UPDATE SET "value" = EXCLUDED."value"
+        `;
+      
+        const res = await this._client.$executeRawUnsafe(q, ...params);
+      
+        if (res) return res;
+      
         throw new GrpcAppError(status.INTERNAL, "Failed to create environment variables", {
-            projectId,
-            envs
+          projectId,
+          envs
         });
-    }
+      }
+      
     
-    async deleteEnvironmentVariable({projectId,name}:DeleteEnvVarsRequestDBBodyType){
+    async deleteEnvironmentVariable({projectId,envVarKeys}:DeleteEnvVarsRequestDBBodyType){
         try {
-            const res = await this._client.environmentVariable.delete({
+            const res = await this._client.environmentVariable.deleteMany({
                 where: {
-                    projectId_name: {
-                        projectId,
-                        name
+                    projectId,
+                    name: {
+                        in: envVarKeys
                     }
                 }
             });
-            return res;
+            if(res.count === 0) {
+                throw new GrpcAppError(status.NOT_FOUND, "No environment variables found for the give keys");
+            }
+            return {};
         } catch (e:any) {
             if(e instanceof PrismaClientKnownRequestError) {
                 if(e.code === "P2025") {
-                    throw new GrpcAppError(status.NOT_FOUND, "Environment variable not found", {
-                        projectId,
-                        name
-                    });
+                    throw new GrpcAppError(status.NOT_FOUND, "Environment variable not found");
                 }
             }
             throw new GrpcAppError(status.INTERNAL, "Unexpected error occurred", {
@@ -556,6 +554,7 @@ export class Database {
 
     startParallelTransaction(fn:(client:PrismaClient)=>Promise<any>[]){
         return Promise.all([fn(this._client)])
+        
     }
     getClient(){
         return this._client

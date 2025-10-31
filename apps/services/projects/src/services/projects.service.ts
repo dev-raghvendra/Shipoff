@@ -4,7 +4,7 @@ import { GrpcResponse } from "@shipoff/services-commons/utils/rpc-utils";
 import { BodyLessRequestBodyType, BulkResourceRequestBodyType, InternalEmptyRequestBodyType } from "@shipoff/types";
 import { Database, dbService } from "@/db/db-service";
 import authExternalService, { AuthExternalService } from "@/externals/auth.external.service";
-import { CreateProjectRequestBodyType, DeleteEnvVarsRequestBodyType, GetEnvVarsRequestBodyType, GetProjectRequestBodyType, IGetProjectRequestBodyType, UpdateProjectRequestBodyType, UpsertEnvVarsRequestBodyType } from "@/types/projects";
+import { CheckDomainAvailabilityRequestBodyType, CreateProjectRequestBodyType, DeleteEnvVarsRequestBodyType, GetEnvVarsRequestBodyType, GetProjectRequestBodyType, GetProjectsLinkedToTeamRequestBodyType, IGetProjectRequestBodyType, UpdateProjectRequestBodyType, UpsertEnvVarsRequestBodyType } from "@/types/projects";
 import { ProjectProducer } from "@/producer/project.producer";
 import { status } from "@grpc/grpc-js";
 import { logger } from "@/libs/winston";
@@ -35,10 +35,8 @@ export class ProjectsService {
                         lastDeployedAt:"desc"
                     },
                     take:1,
-                    select:{
-                        deploymentId:true,
-                        status:true,
-                        commitHash:true
+                    include:{
+                        repository:true
                     }
                 }
             }
@@ -84,6 +82,23 @@ export class ProjectsService {
             return GrpcResponse.OK(project, "Project found");
         } catch (e:any) {
             return this._errHandler(e,"GET-PROJECT",reqMeta.requestId);
+        }
+    }
+
+    async getProjectsLinkedToTeam({teamId,authUserData,reqMeta}:GetProjectsLinkedToTeamRequestBodyType){
+        try {
+            const projectIds = await this._authService.getUserProjectIdsLinkedToTeam({authUserData,teamId,reqMeta});
+            const projects = await this._dbService.findManyProjects({where:{
+                projectId:{in:projectIds}
+            },
+            select:{
+                projectId:true,
+                name:true
+            }
+            });
+            return GrpcResponse.OK(projects,"Projects found");
+        } catch (e:any) {
+            return this._errHandler(e,"GET-PROJECTS-LINKED-TO-TEAM",reqMeta.requestId);
         }
     }
 
@@ -222,14 +237,12 @@ export class ProjectsService {
         }
     }
 
-    async getFrameworks({skip,limit,reqMeta}:BulkResourceRequestBodyType){
+    async getFrameworks({reqMeta}:BodyLessRequestBodyType){
         try {
             const frameworks = await this._dbService.findManyFrameworks({
-                skip,
                 orderBy:{
                     displayName:"asc"
-                },
-                take:limit
+                }
             });
             return GrpcResponse.OK(frameworks, "Frameworks found");
         } catch (e:any) {
@@ -298,5 +311,20 @@ export class ProjectsService {
        }
      }
 
+     async checkDomainAvailability({reqMeta,domain}:CheckDomainAvailabilityRequestBodyType) {
+        try {
+            await this._dbService.findUniqueProject({
+                where:{
+                    domain
+                },
+                select:{
+                    projectId:true
+                }
+            });
+            return GrpcResponse.OK({isAvailable:false},"Domain is unavailable")
+        } catch (e:any) {
+            if(e.code === status.NOT_FOUND) return GrpcResponse.OK({isAvailable:true},"Domain is available");
+            return this._errHandler(e,"CHECK-DOMAIN-AVAILABILITY",reqMeta.requestId);
+        }
+    }
 }
-

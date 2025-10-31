@@ -1,7 +1,7 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import passHashMiddleware from "./middleware";
 import {  OAuthRequestDBBodyType, SigninRequestDBBodyType } from "@/types/user";
-import { CreateTeamRequestDBBodyType, DeleteTeamRequestDBBodyType, TeamMemberDBBodyType, TeamMemberInvitationRequestDBBodyType, TransferTeamOwnershipRequestDBBodyType } from "@/types/team";
+import { CreateTeamRequestDBBodyType, DeleteTeamRequestDBBodyType, LinkTeamToProjectRequestDBBodyType, TeamMemberDBBodyType, TeamMemberInvitationRequestDBBodyType, TransferTeamOwnershipRequestDBBodyType, UnlinkTeamFromProjectRequestDBBodyType } from "@/types/team";
 import { ProjectMemberDBBodyType, ProjectMemberInvitationRequestDBBodyType, TransferProjectOwnershipRequestDBBodyType } from "@/types/project";
 import { generateId, GrpcAppError } from "@shipoff/services-commons";
 import { DefaultArgs } from "@prisma/runtime/library";
@@ -25,10 +25,10 @@ export class Database {
     }
 
     // FIND METHODS
-    async findUniqueUser(args: Prisma.UserFindUniqueArgs) {
+    async findUniqueUser<T extends Prisma.UserFindUniqueArgs>(args: T) {
         const res = await this._client.user.findUnique(args);
         if(res){
-            return res;
+            return res as Prisma.UserGetPayload<T>;
         }
         throw new GrpcAppError(status.NOT_FOUND,"User not found",null)
     }
@@ -46,6 +46,12 @@ export class Database {
         throw new GrpcAppError(status.NOT_FOUND,"User not found",null);
     }
 
+    async updateUser<T extends Prisma.UserUpdateArgs>(args:T){
+        const res = await this._client.user.update(args);
+        if(res) return res as Prisma.UserGetPayload<T>;
+        throw new GrpcAppError(status.NOT_FOUND,"User not found",null);
+    }
+
     async findUniqueTeamById(teamId: string, select?: Prisma.TeamSelect) {
         const res = await this._client.team.findUnique({ where: { teamId }, select });
         if(res) return res;
@@ -58,10 +64,9 @@ export class Database {
         throw new GrpcAppError(status.NOT_FOUND,"Team not found",null);
     }
 
-    async findTeams(args:Prisma.TeamFindManyArgs){
+    async findManyTeams(args:Prisma.TeamFindManyArgs){
         const res = await this._client.team.findMany(args);
-        if(res.length) return res;
-        throw new GrpcAppError(status.NOT_FOUND,"No teams found",null);
+        return res as Prisma.TeamGetPayload<{include:typeof args.include}>[];
     }
 
     async findUniqueTeamMember(where: Prisma.TeamMemberWhereUniqueInput, select?: Prisma.TeamMemberSelect) {
@@ -103,67 +108,58 @@ export class Database {
     async findTeamLinks(args:Prisma.TeamLinkFindManyArgs){
         const res = await this._client.teamLink.findMany(args)
         if(res) return res;
-        throw new GrpcAppError(status.NOT_FOUND,"No team links found",null);
+        throw new GrpcAppError(status.INTERNAL,"Unexpected error occurred",res);
     }
 
     // CREATE METHODS
-    async createOAuthUser(body:OAuthRequestDBBodyType) {
+    async createOAuthUser<T extends Prisma.UserSelect>(body:OAuthRequestDBBodyType,select:T){ {
         try {
             const res = await this._client.user.create({
                 data: {
                     userId:generateId("User",MODEL_MAP),
                     emailVerified:true,
                     ...body,
-                    subscriptions:{
+                    subscription:{
                         create:{
-                            subscriptionId:generateId("Subscription",MODEL_MAP),
+                            subscriptionId: generateId("Subscription",MODEL_MAP),
                             freePerksId:SECRETS.FREE_SUBSCRIPTION_PERKS_ID,
+                            proPerksId:null,
                             type:"FREE"
                         }
                     }
                 },
-                select: {
-                    userId:true,
-                    avatarUri:true,
-                    fullName:true,
-                    email:true,
-                    emailVerified:true,
-                    createdAt:true,
-                    provider:true,
-                    updatedAt:true
-                },
-            });
-            return res;
+                select
+            },
+            );
+            return res as Prisma.UserGetPayload<{select:T}>;
         } catch (error) {
             if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
                 throw new GrpcAppError(status.ALREADY_EXISTS,"User already exists",null);
             }
             throw new GrpcAppError(status.INTERNAL,"Unexpected error occurred",null);
         }
-    }
+    }}
 
-    async createEmailUser(body:SigninRequestDBBodyType){
+    async createEmailUser<T extends Prisma.UserSelect>(body:SigninRequestDBBodyType,select:T){
         try {
-            const userId = generateId("User",MODEL_MAP)
             const subscriptionId = generateId("Subscription",MODEL_MAP)
             const res = await this._client.user.create({
                 data: {
                     userId: generateId("User",MODEL_MAP),
                     ...body,
-                    provider:"EMAIL"
+                    provider:"EMAIL",
+                    subscription:{
+                        create:{
+                            subscriptionId,
+                            freePerksId:SECRETS.FREE_SUBSCRIPTION_PERKS_ID,
+                            proPerksId:null,
+                            type:"FREE"
+                        }
+                    }
                 },
-                select: {
-                    userId:true,
-                    avatarUri:true,
-                    fullName:true,
-                    email:true,
-                    emailVerified:true,
-                    createdAt:true,
-                    provider:true,
-                    updatedAt:true
-                },
+                select
             });
-            return res;
+            return res as Prisma.UserGetPayload<{select:T}>;
         } catch (error) {
             if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
                 throw new GrpcAppError(status.ALREADY_EXISTS,"User already exists",null);
@@ -264,10 +260,16 @@ export class Database {
         }
     }
 
-    async createTeamLink(args:Prisma.TeamLinkCreateArgs){
+    async createTeamLink(select:Prisma.TeamLinkSelect,{projectId,teamId}:LinkTeamToProjectRequestDBBodyType){
         try {
-            const res = await this._client.teamLink.create(args)
-            return res;
+            const res = await this._client.teamLink.create({
+                data: {
+                    projectId,
+                    teamId,
+                },
+                select
+            })
+            return res as Prisma.TeamLinkGetPayload<{select:typeof select}>;
         } catch (error) {
             if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
                 throw new GrpcAppError(status.ALREADY_EXISTS,"Team is already linked with the project",null);
@@ -276,10 +278,17 @@ export class Database {
         }
     }
 
-    async deleteTeamLink(args:Prisma.TeamLinkDeleteArgs){
+    async deleteTeamLink(select:Prisma.TeamLinkSelect,{projectId,teamId}:UnlinkTeamFromProjectRequestDBBodyType){
         try {
-            const res = await this._client.teamLink.delete(args);
-            return res;
+            const res = await this._client.teamLink.delete({
+                where: {
+                    teamId_projectId: {
+                        projectId,
+                        teamId
+                    }
+                }
+            });
+            return res as Prisma.TeamLinkGetPayload<{select:typeof select}>;
         } catch (e:any) {
             if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2025') {
                 throw new GrpcAppError(status.NOT_FOUND,"Team link not found",null);

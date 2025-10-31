@@ -1,8 +1,8 @@
 import { sendUnaryData, ServerUnaryCall, ServerWritableStream, status } from "@grpc/grpc-js";
 import { LogsService } from "@/services/logs.service";
-import {GetLogsRequest, GetLogsResponse, google, IPutLogRequest, LogBody, StreamLogsRequest} from "@shipoff/proto";
-import { GetLogsRequestBodyType, IPutLogRequestBodyType, StreamLogsRequestBodyType } from "@/types/Logs";
-import {endStreamWithError} from "@/libs/grpc"
+import { ExportLogsRequest, ExportLogsResponse, google, IPutLogRequest, LogStreamBody, StreamLogsRequest } from "@shipoff/proto";
+import { ExportLogsRequestBodyType, IPutLogRequestBodyType, StreamLogsRequestBodyType } from "@/types/Logs";
+import { endStreamWithError } from "@/libs/grpc";
 
 export class LogsHandler {
     private _logsService : LogsService;
@@ -21,23 +21,23 @@ export class LogsHandler {
         }
     }
 
-    async handleGetLogs(call:ServerUnaryCall<GetLogsRequest & {body:GetLogsRequestBodyType},sendUnaryData<GetLogsResponse>>,callback:sendUnaryData<GetLogsResponse>){
-        try {
-            const {code,message,res} = await this._logsService.getLogs(call.request.body);
-            if(code!==status.OK) return callback({code,message})
-            const response = GetLogsResponse.fromObject({code,res,message})
-            return callback(null,response)
-        } catch (e:any) {
-            return callback({code:status.INTERNAL,message:"Internal Server Error"})
-        }
-    }
-
-    async handleStreamLogs(call:ServerWritableStream<StreamLogsRequest & {body:StreamLogsRequestBodyType},LogBody>){
+    async handleStreamLogs(call:ServerWritableStream<StreamLogsRequest & {body:StreamLogsRequestBodyType},LogStreamBody>){
         try {
             const response = await this._logsService.streamLogs(call) 
             response && endStreamWithError.call(call,response.code,response.message)
         } catch (e:any) {
             endStreamWithError.call(call,status.INTERNAL,"Internal Server Error")
+        }
+    }
+
+    async handleExportLogs(call:ServerUnaryCall<ExportLogsRequest & {body:ExportLogsRequestBodyType},sendUnaryData<ExportLogsResponse>>,callback:sendUnaryData<ExportLogsResponse>){
+        try {
+            const {res,code,message} = await this._logsService.ExportLogs(call.request.body);
+            if(code!==status.OK) return callback({code,message})
+            const response = ExportLogsResponse.fromObject({code,message,res})
+            return callback(null,response)
+        } catch (e:any) {
+            return callback({code:status.INTERNAL,message:"Internal Server Error"})
         }
     }
 }

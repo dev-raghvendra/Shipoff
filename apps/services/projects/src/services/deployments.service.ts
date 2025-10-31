@@ -62,12 +62,10 @@ export class DeploymentsService {
                 },
                 include:{
                     project:{
-                      select:{
-                      domain:true,
-                      name:true,
-                      framework:true
-                }
-                },
+                      include:{
+                        framework:true
+                      }
+                    },
                     repository:true,
                     buildEnvironment:{
                         take:1,
@@ -110,12 +108,10 @@ export class DeploymentsService {
                 },
                 include:{
                     project:{
-                      select:{
-                      domain:true,
-                      name:true,
-                      framework:true
-                }
-                },
+                      include:{
+                        framework:true
+                      }
+                    },
                     repository:true,
                     buildEnvironment:{
                         take:1,
@@ -136,6 +132,7 @@ export class DeploymentsService {
                             runtimeId:true,
                             startedAt:true
                         }
+                    
                     }
                 }
             });

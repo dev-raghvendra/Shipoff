@@ -1,6 +1,6 @@
 import { status } from "@grpc/grpc-js";
 import { GetAuthClient } from "@shipoff/grpc-clients";
-import { AuthServiceClient , HasPermissionsRequest, BodyLessRequest} from "@shipoff/proto";
+import { AuthServiceClient , HasPermissionsRequest, BodyLessRequest, GetProjectIdsLinkedToTeamRequest} from "@shipoff/proto";
 import { GrpcAppError, promisifyGrpcCall } from "@shipoff/services-commons";
 import { UserType, ScopesType, PermissionsType } from "@shipoff/types";
 
@@ -44,13 +44,27 @@ export class AuthExternalService {
                 authUserData,
                 reqMeta
             })
-        const res = await promisifyGrpcCall(this._authService.GetAllUserProjectIds, req, status.NOT_FOUND);
+        const res = await promisifyGrpcCall(this._authService.GetAllUserProjectIds, req);
         return res.res as string[];
         } catch (e:any) {
-            if(e.code === status.NOT_FOUND){
-                throw new GrpcAppError(status.NOT_FOUND, "No projects found for this user");
-            }
             throw new GrpcAppError(status.INTERNAL, "Unexpected error occurred", e);
+        }
+    }
+
+    async getUserProjectIdsLinkedToTeam({authUserData,teamId,reqMeta}:{authUserData:UserType,teamId:string,reqMeta:{requestId:string}}){
+        try {
+            const req = GetProjectIdsLinkedToTeamRequest.fromObject({
+                authUserData,
+                teamId,
+                reqMeta
+            })
+            const res = await promisifyGrpcCall(this._authService.IGetAllProjectIdsLinkedToTeam,req)
+            return res.res as string[];
+        } catch (e:any) {
+            if(e.code === status.PERMISSION_DENIED){
+                throw new GrpcAppError(status.PERMISSION_DENIED,"You do not have permission to access projects linked to this team");
+            }
+            throw new GrpcAppError(status.INTERNAL,"Unexpected error occurred",e)
         }
     }
 }

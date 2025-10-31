@@ -2,7 +2,7 @@
 
 "use client"
 
-import { useSession } from "next-auth/react"
+import { useSession } from "@/context/session.context"
 import { useEffect, useState } from "react"
 
 export function ProjectLimits({projectCount}:{projectCount:number}) {
@@ -13,14 +13,7 @@ export function ProjectLimits({projectCount}:{projectCount:number}) {
       if(status==="loading") return
       if(!session) window.location.href="/login"
       if(session?.user) {
-         let crrMaxLimit = 0      //
-         session.user.subscriptions.forEach(({freePerks,proPerks})=>{
-            crrMaxLimit = Math.max(crrMaxLimit,freePerks.dynamicProjects+freePerks.staticProjects,proPerks
-            ? proPerks.staticProjects + proPerks.dynamicProjects
-            : 0
-            )
-         })
-         setLimit(crrMaxLimit)
+         setLimit(session.user.subscription.perks.staticProjects + session.user.subscription.perks.dynamicProjects)
       }
     },[session,status])
 
@@ -28,7 +21,7 @@ export function ProjectLimits({projectCount}:{projectCount:number}) {
     const LIMIT_REMAINING = Math.max(0, limit - LIMIT_USED)
     const PERCENT = Math.min(100, Math.round((LIMIT_USED / limit) * 100))
     return (
-             <section aria-label="Project limits" className="rounded-lg border">
+       <section aria-label="Project limits" className="rounded-lg border">
         <div className="flex flex-col gap-3 p-4">
           <div className="flex items-center justify-between">
             <div className="text-sm text-muted-foreground">

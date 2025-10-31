@@ -15,7 +15,7 @@ async function seedFrameworks(){
         defaultBuildCommand: "npm run build",
         runtime: "NODEJS",
         defaultProdCommand: "N/A",
-        outDir: "build"
+        defaultOutDir: "build"
     },
     {
        frameworkId: generateId("Framework", { Framework: "fw" }),
@@ -27,7 +27,7 @@ async function seedFrameworks(){
        defaultBuildCommand: "npm run build",
        runtime: "NODEJS",
        defaultProdCommand: "N/A",
-       outDir: "dist"
+       defaultOutDir: "dist"
     },
     {
         frameworkId: generateId("Framework", { Framework: "fw" }),
@@ -39,7 +39,7 @@ async function seedFrameworks(){
         defaultBuildCommand: "npm run build",
         runtime: "NODEJS",
         defaultProdCommand: "N/A",
-        outDir: "dist"
+        defaultOutDir: "dist"
     },
     {
         frameworkId: generateId("Framework", { Framework: "fw" }),
@@ -51,7 +51,7 @@ async function seedFrameworks(){
         defaultBuildCommand: "npm run build",
         runtime: "NODEJS",
         defaultProdCommand: "N/A",
-        outDir: "dist"
+        defaultOutDir: "dist"
     },
     {
         frameworkId: generateId("Framework", { Framework: "fw" }),
@@ -63,7 +63,7 @@ async function seedFrameworks(){
         defaultBuildCommand: "npm run build",
         runtime: "NODEJS",
         defaultProdCommand: "N/A",
-        outDir: "public/build"
+        defaultOutDir: "public/build"
     },
     {
         frameworkId: generateId("Framework", { Framework: "fw" }),
@@ -75,7 +75,7 @@ async function seedFrameworks(){
         defaultBuildCommand: "npm run build",
         runtime: "NODEJS",
         defaultProdCommand: "npm run start",
-        outDir: ".next"
+        defaultOutDir: ".next"
     },
     {
         frameworkId: generateId("Framework", { Framework: "fw" }),
@@ -87,7 +87,7 @@ async function seedFrameworks(){
         defaultBuildCommand: "npm run build",
         runtime: "NODEJS",
         defaultProdCommand: "npm run start",
-        outDir: "outDir"
+        defaultOutDir: "defaultOutDir"
     },
     {
         frameworkId: generateId("Framework", { Framework: "fw" }),
@@ -99,7 +99,7 @@ async function seedFrameworks(){
         defaultBuildCommand: "npm run build",
         runtime: "NODEJS",
         defaultProdCommand: "npm run start",
-        outDir: "dist"
+        defaultOutDir: "dist"
     },
     {
         frameworkId: generateId("Framework", { Framework: "fw" }),
@@ -111,7 +111,7 @@ async function seedFrameworks(){
         defaultBuildCommand: "npm run build",
         runtime: "NODEJS",
         defaultProdCommand: "npm run start",
-        outDir: "outDir"
+        defaultOutDir: "defaultOutDir"
     },
     {
         frameworkId: generateId("Framework", { Framework: "fw" }),
@@ -123,7 +123,7 @@ async function seedFrameworks(){
         defaultBuildCommand: "npm run build",
         runtime: "NODEJS",
         defaultProdCommand: "npm run start",
-        outDir: ".output"
+        defaultOutDir: ".output"
     },
     {
         frameworkId: generateId("Framework", { Framework: "fw" }),
@@ -135,7 +135,7 @@ async function seedFrameworks(){
         defaultBuildCommand: "python manage.py collectstatic --noinput",
         runtime: "PYTHON",
         defaultProdCommand: "gunicorn wsgi:application",
-        outDir: "staticfiles"
+        defaultOutDir: "staticfiles"
     },
     {
         frameworkId: generateId("Framework", { Framework: "fw" }),
@@ -147,7 +147,7 @@ async function seedFrameworks(){
         defaultBuildCommand: "pip install -r requirements.txt",
         runtime: "PYTHON",
         defaultProdCommand: "gunicorn app:app",
-        outDir: "outDir"
+        defaultOutDir: "defaultOutDir"
     },
     {
         frameworkId: generateId("Framework", { Framework: "fw" }),
@@ -159,7 +159,7 @@ async function seedFrameworks(){
         defaultBuildCommand: "pip install -r requirements.txt",
         runtime: "PYTHON",
         defaultProdCommand: "uvicorn main:app",
-        outDir: "outDir"
+        defaultOutDir: "defaultOutDir"
     },
     {
         frameworkId: generateId("Framework", { Framework: "fw" }),
@@ -171,7 +171,7 @@ async function seedFrameworks(){
         defaultBuildCommand: "composer install --optimize-autoloader --no-dev",
         runtime: "PHP",
         defaultProdCommand: "php artisan serve",
-        outDir: "public"
+        defaultOutDir: "public"
     },
     {
         frameworkId: generateId("Framework", { Framework: "fw" }),
@@ -183,7 +183,7 @@ async function seedFrameworks(){
         defaultBuildCommand: "composer install --optimize-autoloader --no-dev",
         runtime: "PHP",
         defaultProdCommand: "php -S localhost:8000 -t public",
-        outDir: "public"
+        defaultOutDir: "public"
     },
     {
         frameworkId: generateId("Framework", { Framework: "fw" }),
@@ -195,7 +195,7 @@ async function seedFrameworks(){
         defaultBuildCommand: "composer install --optimize-autoloader --no-dev",
         runtime: "PHP",
         defaultProdCommand: "php -S localhost:8000 -t public",
-        outDir: "public"
+        defaultOutDir: "public"
     }
 ];
 

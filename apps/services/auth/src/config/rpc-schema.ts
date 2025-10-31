@@ -1,6 +1,6 @@
-import { ProjectMemberInvitationRequestSchema } from "@/types/project"
-import { CreateTeamRequestSchema, DeleteTeamMemberRequestSchema, DeleteTeamRequestSchema, GetTeamMemberRequestSchema, GetTeamRequestSchema, GetTeamsLinkedToProjectRequestSchema, TeamMemberInvitationRequestSchema } from "@/types/team"
-import { EmailPassLoginRequestSchema, SigninRequestSchema, GetUserRequestSchema, OAuthRequestSchema } from "@/types/user"
+import { GetProjectIdsLinkedToTeamRequestSchema, ProjectMemberInvitationRequestSchema } from "@/types/project"
+import { CreateTeamRequestSchema, DeleteTeamMemberRequestSchema, DeleteTeamRequestSchema, GetTeamMemberRequestSchema, GetTeamMembersRequestSchema, GetTeamRequestSchema, GetTeamsLinkedToProjectRequestSchema, LinkTeamToProjectRequestSchema, TeamMemberInvitationRequestSchema, UnlinkTeamFromProjectRequestSchema } from "@/types/team"
+import { EmailPassLoginRequestSchema, SigninRequestSchema, GetUserRequestSchema, OAuthRequestSchema, VerifyEmailRequestSchema } from "@/types/user"
 import { AcceptMemberInviteRequestSchema, HasPermissionsRequestSchema } from "@/types/utility"
 import { createRPCEntry, RPC_SCHEMA_T } from "@shipoff/services-commons";
 import { BodyLessRequestSchema, BulkResourceRequestSchema } from "@shipoff/types";
@@ -22,10 +22,9 @@ export const RPC_SCHEMA: RPC_SCHEMA_T<RPCs> = {
     GetTeamsLinkedToProject: createRPCEntry(GetTeamsLinkedToProjectRequestSchema),
     DeleteTeam: createRPCEntry(DeleteTeamRequestSchema),
     CreateTeamMemberInvitation: createRPCEntry(TeamMemberInvitationRequestSchema),
-    GetTeamMember: createRPCEntry(GetTeamMemberRequestSchema),
+    GetTeamMembers: createRPCEntry(GetTeamMembersRequestSchema),
     DeleteTeamMember: createRPCEntry(DeleteTeamMemberRequestSchema),
     CreateProjectMemberInvitation: createRPCEntry(ProjectMemberInvitationRequestSchema),
-    GetProjectMember: createRPCEntry(GetTeamMemberRequestSchema),
     DeleteProjectMember: createRPCEntry(DeleteTeamMemberRequestSchema),
     AcceptTeamInvitation:createRPCEntry(AcceptMemberInviteRequestSchema),
     AcceptProjectInvitation:createRPCEntry(AcceptMemberInviteRequestSchema),
@@ -33,5 +32,10 @@ export const RPC_SCHEMA: RPC_SCHEMA_T<RPCs> = {
     GetAllUserProjectIds:createRPCEntry(BodyLessRequestSchema),
     GetAllUserTeams:createRPCEntry(BulkResourceRequestSchema),
     TransferProjectOwnership:createRPCEntry(ProjectMemberInvitationRequestSchema),
-    TransferTeamOwnership:createRPCEntry(TeamMemberInvitationRequestSchema)
+    TransferTeamOwnership:createRPCEntry(TeamMemberInvitationRequestSchema),
+    IGetAllProjectIdsLinkedToTeam:createRPCEntry(GetProjectIdsLinkedToTeamRequestSchema),
+    LinkTeamToProject:createRPCEntry(LinkTeamToProjectRequestSchema),
+    UnlinkTeamFromProject:createRPCEntry(UnlinkTeamFromProjectRequestSchema),
+    GetWSAuthToken:createRPCEntry(BodyLessRequestSchema),
+    VerifyEmail:createRPCEntry(VerifyEmailRequestSchema),
 } as const

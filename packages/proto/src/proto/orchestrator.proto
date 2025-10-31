@@ -40,10 +40,10 @@ message IStartK8DeploymentResponse {
 }
 
 
-
 service OrchestratorService {
     rpc IGetCloneURI (IGetCloneURIRequest) returns (CloneURIResponse);
     rpc IOrchestratorWebhook (OrchestratorWebhookRequest) returns (google.protobuf.Empty);
     rpc IDeploymentIngressed (IDeploymentIngressedRequest) returns (google.protobuf.Empty);
+    rpc IStartK8Deployment (IStartK8DeploymentRequest) returns (IStartK8DeploymentResponse);
 }
 

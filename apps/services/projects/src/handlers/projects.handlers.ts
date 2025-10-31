@@ -1,8 +1,8 @@
 import { sendUnaryData, ServerUnaryCall, status } from "@grpc/grpc-js";
-import { AllProjectsResponse, BulkResourceRequest, CreateProjectRequest, DeleteEnvVarsRequest, DeleteEnvVarsResponse, DeleteProjectRequest, EnvVarsResponse, FrameworkResponse, GetAllUserProjectsRequest, GetEnvVarsRequest, GetProjectRequest, IGetProjectRequest, InternalEmptyRequest, ProjectResponse, StaleEnvironmentIdsResponse, UpdateProjectRequest, UpsertEnvVarsRequest, UpsertEnvVarsResponse } from "@shipoff/proto";
-import { BulkResourceRequestBodyType, InternalEmptyRequestBodyType } from "@shipoff/types";
+import { AllProjectsResponse, BodyLessRequest, BulkResourceRequest, CreateProjectRequest, DeleteEnvVarsRequest, DeleteEnvVarsResponse, DeleteProjectRequest, EnvVarsResponse, FrameworkResponse, GetAllUserProjectsRequest, GetEnvVarsRequest, GetProjectRequest, GetProjectsLinkedToTeamRequest, IGetProjectRequest, InternalEmptyRequest, ProjectResponse, ProjectsLinkedToTeamResponse, StaleEnvironmentIdsResponse, UpdateProjectRequest, UpsertEnvVarsRequest, UpsertEnvVarsResponse, CheckDomainAvailabilityResponse, CheckDomainAvailabilityRequest } from "@shipoff/proto";
+import { BodyLessRequestBodyType, BulkResourceRequestBodyType, InternalEmptyRequestBodyType } from "@shipoff/types";
 import { ProjectsService } from "services/projects.service";
-import { CreateProjectRequestBodyType, DeleteEnvVarsRequestBodyType, DeleteProjectRequestBodyType, GetAllUserProjectRequestBodyType, GetEnvVarsRequestBodyType, GetProjectRequestBodyType, IGetProjectRequestBodyType, UpdateProjectRequestBodyType, UpsertEnvVarsRequestBodyType } from "types/projects";
+import { CreateProjectRequestBodyType, DeleteEnvVarsRequestBodyType, DeleteProjectRequestBodyType, GetAllUserProjectRequestBodyType, GetEnvVarsRequestBodyType, GetProjectRequestBodyType, GetProjectsLinkedToTeamRequestBodyType, IGetProjectRequestBodyType, UpdateProjectRequestBodyType, UpsertEnvVarsRequestBodyType, CheckDomainAvailabilityRequestBodyType } from "types/projects";
 
 export class ProjectsHandlers {
     private _projectsService : ProjectsService;
@@ -137,7 +137,7 @@ export class ProjectsHandlers {
         }
     }
 
-    async handleGetFrameworks(call: ServerUnaryCall<BulkResourceRequest & {body:BulkResourceRequestBodyType}, FrameworkResponse>, callback: sendUnaryData<FrameworkResponse>) {
+    async handleGetFrameworks(call: ServerUnaryCall<BodyLessRequest & {body:BodyLessRequestBodyType}, FrameworkResponse>, callback: sendUnaryData<FrameworkResponse>) {
         try {
             const { code, res, message } = await this._projectsService.getFrameworks(call.request.body);
             if (code !== status.OK) return callback({ code, message });
@@ -170,6 +170,34 @@ export class ProjectsHandlers {
             const {code,res,message} = await this._projectsService.IGetStaleEnvironmentIds(call.request.body);
             if(code !== status.OK) return callback({code,message});
             const response = StaleEnvironmentIdsResponse.fromObject({code,message,res})
+            return callback(null,response);
+        } catch (e:any) {
+            return callback({
+                code:status.INTERNAL,
+                message:"Internal server error"
+            })
+        }
+    }
+
+    async handleGetProjectsLinkedToTeam(call:ServerUnaryCall<GetProjectsLinkedToTeamRequest & {body:GetProjectsLinkedToTeamRequestBodyType},ProjectsLinkedToTeamResponse>,callback:sendUnaryData<ProjectsLinkedToTeamResponse>){
+        try {
+            const {code,res,message} = await this._projectsService.getProjectsLinkedToTeam(call.request.body);
+            if(code!==status.OK) return callback({code,message})
+            const response = ProjectsLinkedToTeamResponse.fromObject({code,message,res})
+            return callback(null,response);
+         } catch (e) {
+              return callback({
+                  code:status.INTERNAL,
+                  message:"Internal server error"
+            }) 
+         }
+    }
+
+    async handleCheckDomainAvailability(call:ServerUnaryCall<CheckDomainAvailabilityRequest & {body:CheckDomainAvailabilityRequestBodyType},CheckDomainAvailabilityResponse>,callback:sendUnaryData<CheckDomainAvailabilityResponse>) {
+        try {
+            const {code,res,message} = await this._projectsService.checkDomainAvailability(call.request.body);
+            if(code !== status.OK) return callback({code,message});
+            const response = CheckDomainAvailabilityResponse.fromObject({code,message,res})
             return callback(null,response);
         } catch (e:any) {
             return callback({

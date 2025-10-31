@@ -33,7 +33,7 @@ export default async function RootLayout({
 }>) {
   const session = await getServerSession(authOptions)
   const preferredTheme = session?.user?.preferredTheme || "system"
-  console.log("Preferred Theme:", preferredTheme)
+  
   return (
         <html lang="en">
           <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>

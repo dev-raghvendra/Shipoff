@@ -1,10 +1,10 @@
 import { createRPCEntry, RPC_SCHEMA_T } from "@shipoff/services-commons";
 import { DeleteDeploymentRequestSchema, GetAllDeploymentsRequestSchema, GetDeploymentRequestSchema, RedeployRequestSchema } from "@/types/deployments";
-import { CreateProjectRequestSchema, DeleteEnvVarsRequestSchema, DeleteProjectRequestSchema, GetAllUserProjectsRequestSchema, GetEnvVarsRequestSchema, GetProjectRequestSchema, IGetProjectRequestSchema, UpdateProjectRequestSchema, UpsertEnvVarsRequestSchema } from "@/types/projects";
+import { CheckDomainAvailabilityRequestSchema, CreateProjectRequestSchema, DeleteEnvVarsRequestSchema, DeleteProjectRequestSchema, GetAllUserProjectsRequestSchema, GetEnvVarsRequestSchema, GetProjectRequestSchema, GetProjectsLinkedToTeamRequestSchema, IGetProjectRequestSchema, UpdateProjectRequestSchema, UpsertEnvVarsRequestSchema } from "@/types/projects";
 import { CreateRepositoryRequestSchema, DeleteRepositoryRequestSchema, GetGithubRepositoryAccessTokenRequestSchema, GetGithubRepositoryDetailsRequestSchema, GetRepositoryRequestSchema, GetUserGithubRepositoriesRequestSchema, UpdateRepositoryRequestSchema } from "@/types/repositories";
 
 import { BodyLessRequestSchema, BulkResourceRequestSchema, InternalEmptyRequestSchema } from "@shipoff/types";
-import { UnimplementedProjectsServiceService } from "@shipoff/proto";
+import { GetProjectsLinkedToTeamRequest, UnimplementedProjectsServiceService } from "@shipoff/proto";
 import { CreateGithubInstallationRequestSchema, GithubWebhookRequestSchema } from "@/types/webhooks";
  
 
@@ -26,7 +26,7 @@ export const RPC_SCHEMA: RPC_SCHEMA_T<RPCs> = {
     GetRepository: createRPCEntry(GetRepositoryRequestSchema),
     CreateRepository: createRPCEntry(CreateRepositoryRequestSchema),
     DeleteRepository: createRPCEntry(DeleteRepositoryRequestSchema),
-    GetFrameworks: createRPCEntry(BulkResourceRequestSchema),
+    GetFrameworks: createRPCEntry(BodyLessRequestSchema),
     GetGithubRepo: createRPCEntry(GetGithubRepositoryDetailsRequestSchema),
     GetUserGithubRepos: createRPCEntry(GetUserGithubRepositoriesRequestSchema),
     GithubWebhook: createRPCEntry(GithubWebhookRequestSchema),
@@ -34,9 +34,10 @@ export const RPC_SCHEMA: RPC_SCHEMA_T<RPCs> = {
     IGetGithubRepoAccessToken:createRPCEntry(GetGithubRepositoryAccessTokenRequestSchema),
     GetGithubInstallation: createRPCEntry(BodyLessRequestSchema),
     IGetProject: createRPCEntry(IGetProjectRequestSchema),
-    UpdateRepository: createRPCEntry(UpdateRepositoryRequestSchema),
     IGetStaleEnvironmentIds: createRPCEntry(InternalEmptyRequestSchema),
     GetLatestDeployments: createRPCEntry(BulkResourceRequestSchema),
     GetLatestProjects: createRPCEntry(BulkResourceRequestSchema),
+    GetProjectsLinkedToTeam: createRPCEntry(GetProjectsLinkedToTeamRequestSchema),
+    CheckDomainAvailability: createRPCEntry(CheckDomainAvailabilityRequestSchema),
 } as const;
 

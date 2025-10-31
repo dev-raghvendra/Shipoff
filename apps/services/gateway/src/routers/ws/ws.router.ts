@@ -4,7 +4,7 @@ import { WebSocketRequest } from "@/types/request";
 import { WS_ROUTES } from "@/config";
 
 const ROUTE_CONTROLLER_MAP : Record<keyof typeof WS_ROUTES,(ws:WebSocket,req:WebSocketRequest)=>void> = {
-    "/ws/logs/stream":logsController
+    "/apis/v1/ws/logs/stream":logsController
 }
 export function wsRouter(ws:WebSocket,req:WebSocketRequest){
     try {

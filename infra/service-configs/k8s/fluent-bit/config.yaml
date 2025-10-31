@@ -98,7 +98,7 @@ data:
         Match           user-apps.*
         Host            gateway.prod-services.svc.cluster.local
         Port            80
-        URI             /apis/v1/log
+        URI             /apis/v1/logs
         Header          Content-Type application/json
         Header          X-Api-Key <YOUR_API_KEY_HERE>
         Format          json

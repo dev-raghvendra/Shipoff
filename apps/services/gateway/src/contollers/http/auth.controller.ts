@@ -14,6 +14,12 @@ export async function signinController(req:RequestWithMeta, res:Response){
     grpcToHttpResponse.call(res, code, message, data);
 }
 
+export async function verifyEmailController(req:RequestWithMeta, res:Response){
+    const {code, message} = await authService.verifyEmail({...req.body,reqMeta:req.meta});
+    if(code) return grpcToHttpResponse.call(res,code,message);
+    res.sendStatus(204).end();
+}
+
 export async function OauthController(req:RequestWithMeta, res:Response){
     const {code, message, res:data} = await authService.OAuth({...req.body,reqMeta:req.meta});
     grpcToHttpResponse.call(res, code, message, data);
@@ -36,6 +42,11 @@ export async function getUserController(req:RequestWithMeta, res:Response){
 
 export async function refreshTokenController(req:RequestWithMeta, res:Response){
     const {code, message, res:data} = await authService.refreshToken({...req.body,reqMeta:req.meta});
+    grpcToHttpResponse.call(res, code, message, data);
+}
+
+export async function getWSAuthTokenController(req:RequestWithMeta,res:Response){
+    const {code, message, res:data} = await authService.getWSAuthToken({...req.body,reqMeta:req.meta});
     grpcToHttpResponse.call(res, code, message, data);
 }
 
@@ -98,10 +109,31 @@ export async function transferTeamOwnershipController(req:RequestWithMeta,res:Re
     res.status(204).end();
 }
 
-export async function getTeamMemberController(req:RequestWithMeta,res:Response){
-    const {teamId, targetUserId} = req.params;
-    const body = {...req.body, teamId, targetUserId, reqMeta:req.meta};
-    const {code, message, res:data} = await authService.getTeamMember(body);
+
+
+export async function getTeamMembersController(req:RequestWithMeta,res:Response){
+    const {teamId} = req.params;
+    const body = {
+        ...req.body,
+        teamId,
+        ...(req.query.skip && { skip: req.query.skip }),
+        ...(req.query.limit && { limit: req.query.limit }),
+        reqMeta:req.meta
+    };
+    const {code, message, res:data} = await authService.getTeamMembers(body);
+    grpcToHttpResponse.call(res, code, message, data);
+}
+
+export async function unlinkTeamFromProjectController(req:RequestWithMeta,res:Response){
+    const {teamId, projectId} = req.params;
+    const body = {...req.body, teamId, projectId, reqMeta:req.meta};
+    const {code, message, res:data} = await authService.unlinkTeamFromProject(body);
+    grpcToHttpResponse.call(res, code, message, data);
+}
+export async function linkTeamToProjectController(req:RequestWithMeta,res:Response){
+    const {teamId} = req.params;
+    const body = {...req.body, teamId, reqMeta:req.meta};
+    const {code, message, res:data} = await authService.linkTeamToProject(body);
     grpcToHttpResponse.call(res, code, message, data);
 }
 
@@ -126,12 +158,7 @@ export async function acceptProjectInvitationController(req:RequestWithMeta,res:
     grpcToHttpResponse.call(res, code, message, data);
 }
 
-export async function getProjectMemberController(req:RequestWithMeta,res:Response){
-    const {projectId, targetUserId} = req.params;
-    const body = {...req.body, projectId, targetUserId, reqMeta:req.meta};
-    const {code, message, res:data} = await authService.getProjectMember(body);
-    grpcToHttpResponse.call(res, code, message, data);
-}
+
 
 export async function deleteProjectMemberController(req:RequestWithMeta,res:Response){
     const {projectId, targetUserId} = req.params;

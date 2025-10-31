@@ -1,24 +1,24 @@
-import { FreeSubscriptionPerks, ProSubscriptionPerks } from "@prisma/index";
+import { FreePerks, ProPerks } from "@prisma/index";
 import { generateId } from "@shipoff/services-commons";
 import { dbService } from "./db-service";
 
 
 async function seedSubscriptions(){
-    const freeSub : FreeSubscriptionPerks = {
+    const freeSub : FreePerks = {
         perkId : generateId("PERK",{PERK:"perk"}),
         staticProjects:4,
         dynamicProjects:2
     }
-    const proSub : ProSubscriptionPerks = {
+    const proSub : ProPerks = {
         ...freeSub,
         perkId:generateId("PERK",{PERK:"perk"})
     }
 
-    const freeS = await dbService.getClient.freeSubscriptionPerks.create({
+    const freeS = await dbService.getClient.freePerks.create({
         data:freeSub
     })
 
-    const proS = await dbService.getClient.proSubscriptionPerks.create({
+    const proS = await dbService.getClient.proPerks.create({
         data:proSub
     })
     
