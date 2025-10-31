@@ -35,7 +35,7 @@ CREATE TABLE "User" (
 CREATE TABLE "Team" (
     "teamId" TEXT NOT NULL,
     "teamName" TEXT NOT NULL,
-    "description" TEXT,
+    "description" TEXT DEFAULT 'Team description was not provided',
     "planType" TEXT NOT NULL DEFAULT 'free',
     "createdAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3),

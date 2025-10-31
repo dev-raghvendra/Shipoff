@@ -77,7 +77,7 @@ CREATE TABLE "Deployment" (
     "commitMessage" TEXT NOT NULL,
     "author" TEXT NOT NULL,
     "projectId" TEXT NOT NULL,
-    "repositoryId" TEXT NOT NULL,
+    "repositoryId" TEXT,
     "lastDeployedAt" TIMESTAMP(3),
 
     CONSTRAINT "Deployment_pkey" PRIMARY KEY ("deploymentId")
@@ -106,10 +106,10 @@ CREATE TABLE "RuntimeEnvironment" (
 -- CreateTable
 CREATE TABLE "EnvironmentVariable" (
     "projectId" TEXT NOT NULL,
-    "key" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
     "value" TEXT NOT NULL,
 
-    CONSTRAINT "EnvironmentVariable_pkey" PRIMARY KEY ("projectId","key")
+    CONSTRAINT "EnvironmentVariable_pkey" PRIMARY KEY ("projectId","name")
 );
 
 -- CreateIndex
@@ -155,13 +155,13 @@ ALTER TABLE "Repository" ADD CONSTRAINT "Repository_githubInstallationId_fkey" F
 ALTER TABLE "Deployment" ADD CONSTRAINT "Deployment_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("projectId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Deployment" ADD CONSTRAINT "Deployment_repositoryId_fkey" FOREIGN KEY ("repositoryId") REFERENCES "Repository"("repositoryId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Deployment" ADD CONSTRAINT "Deployment_repositoryId_fkey" FOREIGN KEY ("repositoryId") REFERENCES "Repository"("repositoryId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "BuildEnvironment" ADD CONSTRAINT "BuildEnvironment_deploymentId_fkey" FOREIGN KEY ("deploymentId") REFERENCES "Deployment"("deploymentId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "BuildEnvironment" ADD CONSTRAINT "BuildEnvironment_deploymentId_fkey" FOREIGN KEY ("deploymentId") REFERENCES "Deployment"("deploymentId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "RuntimeEnvironment" ADD CONSTRAINT "RuntimeEnvironment_deploymentId_fkey" FOREIGN KEY ("deploymentId") REFERENCES "Deployment"("deploymentId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "RuntimeEnvironment" ADD CONSTRAINT "RuntimeEnvironment_deploymentId_fkey" FOREIGN KEY ("deploymentId") REFERENCES "Deployment"("deploymentId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "EnvironmentVariable" ADD CONSTRAINT "EnvironmentVariable_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("projectId") ON DELETE CASCADE ON UPDATE CASCADE;
