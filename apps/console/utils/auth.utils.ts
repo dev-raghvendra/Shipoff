@@ -44,7 +44,6 @@ export interface DecodedToken {
 
 
 export async function syncWithBackend({ provider, data }: ParamsType) {
-    console.log("syncWithBackend", provider, data);
     const route = provider === "EMAIL"
         ? data.isSignup ? AUTH_API_ROUTES.SIGNIN() : AUTH_API_ROUTES.LOGIN()
         : AUTH_API_ROUTES.OAUTH()

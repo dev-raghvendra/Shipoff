@@ -10,5 +10,13 @@ export function Logo({ className="h-10 w-auto" }: { className?: string }) {
       setSrc(theme === "dark" ? "/meta/logo-dark.svg" : "/meta/logo-light.svg");
     }, [theme]);
 
-    return <img className={className} src={src} alt="Logo" />;
+    console.log("Logo src:", src, "for theme:", theme); // Debug log
+
+    return (
+      <img
+        src={src}
+        alt="Logo"
+        className={className}
+      />
+    );
 }

@@ -268,8 +268,7 @@ export class ProjectsService {
                 dbClient.buildEnvironment.findMany({
                     where:{
                         OR:[
-                            {active:false},
-                            {startedAt:{lt:threeDaysAgo}}
+                            {active:false}
                         ]
                     },
                     select:{
@@ -279,8 +278,7 @@ export class ProjectsService {
                   dbClient.runtimeEnvironment.findMany({
                     where:{
                         OR:[
-                            {active:false},
-                            {startedAt:{lt:threeDaysAgo}}
+                            {active:false}
                         ]
                     },
                     select:{

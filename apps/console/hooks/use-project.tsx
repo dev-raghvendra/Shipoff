@@ -59,7 +59,6 @@ export function useProject({projectId}:{projectId:string}){
         data:data?.res!,
         updateProjectState:(body:Partial<Omit<typeof data,"code"|"message">>)=>{
            queryClient.setQueryData(QUERY_KEYS.projects.detail(projectId),(old:any)=>{
-            console.log(old)
              return {
                 ...old,
                 res:{

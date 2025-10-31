@@ -10,7 +10,7 @@ export function Navigation() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-2">
-            <Logo className='h-8' />
+        <Logo className='h-8' />
           </div>
           <div className="hidden md:flex items-center gap-8">
             <Link href="#features" className="text-sm hover:text-primary transition-colors">

@@ -142,7 +142,6 @@ export default function DeploymentCard({ d, onUpdate }: { d: Deployment; onUpdat
 
   return (
     <Card onClick={(e:any)=>{
-      console.log(e.target.classList)
     }} className="group hover:border-primary/50 hover:shadow-sm transition-all duration-200 relative overflow-hidden animate-in fade-in-0 slide-in-from-bottom-2">
       <CardContent className="p-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">

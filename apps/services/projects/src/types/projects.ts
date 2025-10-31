@@ -7,6 +7,13 @@ export const EnvVarsSchema = z.object({
     value:z.string().min(1),
 }).strict()
 
+
+const domainRegex = /^(?:$|(?!-)[a-z0-9-]+(?<!-)\.on\.shipoff\.in)$/;
+
+const DomainSchema = z.string().regex(domainRegex, {
+  message: "Domain must be in the format: something.on.shipoff.in (only lowercase letters, digits, and dashes allowed)."
+});
+
 export const CreateProjectRequestSchema = z.object({
      authUserData  : UserSchema,
      name:z.string().min(1) ,
@@ -15,7 +22,7 @@ export const CreateProjectRequestSchema = z.object({
      buildCommand:z.string().min(1),
      prodCommand:optionalString(),
      branch:z.string().min(1),
-     domain:z.string().min(1),
+     domain:DomainSchema.min(1),
      githubRepoId:z.string().min(1),
      githubRepoURI:z.url(),
      githubRepoFullName:z.string().min(1),
@@ -41,7 +48,7 @@ export const GetAllUserProjectsRequestSchema = z.object({
 
 export const updatesSchema = z.object({
     name: optionalString(),
-    domain: optionalString(),
+    domain: DomainSchema.transform(val=>val ? val.toLowerCase() : undefined).optional(),
     prodCommand: optionalString(),
     buildCommand: optionalString(),
     framework:optionalObject({
@@ -54,7 +61,7 @@ export const updatesSchema = z.object({
 
 
 export const CheckDomainAvailabilityRequestSchema = z.object({
-    domain: z.string().min(1),
+    domain: DomainSchema,
     authUserData: UserSchema,
     reqMeta:RequestMetaSchema
 }).strict();

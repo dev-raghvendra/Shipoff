@@ -37,11 +37,9 @@ export function UserProfileDropdown({ user }: UserProfileDropdownProps) {
   const {update} = useSession()
   
   const currentUser = user || defaultUser
-  console.log(theme)
   
   const handleLogout = () => {
     // Implement logout logic here
-    console.log("Logout clicked")
 }
   
   const handleThemeChange = async(theme:"dark"|"light"|"system") => {

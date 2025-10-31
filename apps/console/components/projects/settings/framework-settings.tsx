@@ -108,7 +108,6 @@ export function FrameworkSettings({ projectId, initialFrameworkId, initialBuildC
       toast.success("Framework settings saved successfully!")
       await refetchProject()
     } catch (error:any) {
-      console.log(error)
       toast.error(error.message || "Failed to save framework settings, please try again later.")
     } finally {
       setIsSaving(false)

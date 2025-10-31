@@ -68,7 +68,6 @@ class AuthHandlers {
        try {
           const {code,res,message} = await this._authService.GetMe(call.request.body);
           if(code!==status.OK) return callback({code,message});
-          console.log(res)
           const response = GetCurrentUserResponse.fromObject({code,message,res})
           callback(null,response)
         } catch (e) {

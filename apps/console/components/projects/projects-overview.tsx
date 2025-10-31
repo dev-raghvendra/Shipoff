@@ -573,7 +573,6 @@ export function ProjectOverview({ projectOverviewData, isLoading }: ProjectOverv
               if (!latest) {
                 return <p className="text-muted-foreground">No deployments yet.</p>
               }
-              console.log(latest)
               return <DeploymentCard d={{...latest,project:projectOverviewData}} />
             })()}
             <div>

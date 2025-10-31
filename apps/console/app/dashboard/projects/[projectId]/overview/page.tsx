@@ -8,7 +8,6 @@ import { toast } from "sonner"
 
 export default function ProjectOverviewPage() {
   const {projectId} = useParams()
-  console.log(projectId)
   const {data,isLoading,isError,error} = useProject({projectId:projectId as string})
 
   useEffect(()=>{

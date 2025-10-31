@@ -160,7 +160,6 @@ Please provide any additional context, screenshots, or error messages that might
   const handleCopyLink = async () => {
     try {
       const url = generateGitHubIssueUrl()
-      console.log("Generated URL:", url)
       await navigator.clipboard.writeText(url)
       setCopied(true)
       toast.success("GitHub issue link copied to clipboard!")
