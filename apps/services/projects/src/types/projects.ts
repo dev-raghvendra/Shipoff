@@ -8,10 +8,10 @@ export const EnvVarsSchema = z.object({
 }).strict()
 
 
-const domainRegex = /^(?:$|(?!-)[a-z0-9-]+(?<!-)\.on\.shipoff\.in)$/;
+const domainRegex = /^(?:$|(?!-)[a-z0-9-]+on\.shipoff\.in)$/
 
 const DomainSchema = z.string().regex(domainRegex, {
-  message: "Domain must be in the format: something.on.shipoff.in (only lowercase letters, digits, and dashes allowed)."
+  message: "Domain must be in the format: somethingon.shipoff.in (only lowercase letters, digits, and dashes allowed)"
 });
 
 export const CreateProjectRequestSchema = z.object({

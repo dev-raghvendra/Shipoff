@@ -21,7 +21,7 @@ export function DomainStep({
   onDomainPrefixChange,
   onAvailabilityChange 
 }: DomainStepProps) {
-  const fullDomain = `${domainPrefix}.${DOMAIN_SUFFIX}`
+  const fullDomain = `${domainPrefix}${DOMAIN_SUFFIX}`
   
   const { data, error, pending } = useDebounceRequest(
     projectService.checkDomainAvailability.bind(projectService),
@@ -84,7 +84,7 @@ export function DomainStep({
               </div>
             )}
           </div>
-          <span className="text-sm text-muted-foreground font-mono whitespace-nowrap">.{DOMAIN_SUFFIX}</span>
+          <span className="text-sm text-muted-foreground font-mono whitespace-nowrap">{DOMAIN_SUFFIX}</span>
         </div>
         
         {/* Status messages */}

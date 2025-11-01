@@ -39,11 +39,11 @@ const DOMAIN_SUFFIX = "on.shipoff.in"
     projectService.checkDomainAvailability.bind(projectService),
     500,
     [editedDomainPrefix],
-    {domain:`${editedDomainPrefix}.${DOMAIN_SUFFIX}`},
+    {domain:`${editedDomainPrefix}${DOMAIN_SUFFIX}`},
     fetchDomain && editedDomainPrefix.length > 0
   )
 
-  const fullDomain = `${editedDomainPrefix}.${DOMAIN_SUFFIX}`
+  const fullDomain = `${editedDomainPrefix}${DOMAIN_SUFFIX}`
   const isDirty = editedDomainPrefix !== originalDomainPrefix
 
   const handleSave = async () => {
@@ -142,7 +142,7 @@ const DOMAIN_SUFFIX = "on.shipoff.in"
                     </div>
                   )}
                 </div>
-                <span className="text-sm text-muted-foreground font-mono whitespace-nowrap">.{DOMAIN_SUFFIX}</span>
+                <span className="text-sm text-muted-foreground font-mono whitespace-nowrap">{DOMAIN_SUFFIX}</span>
               </div>
               
               {/* Status messages */}
