@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 export function Logo({ className="h-10 w-auto" }: { className?: string }) {
     const {resolvedTheme} = useTheme();
-    const [src, setSrc] = useState("/meta/logo-light.svg");
+    const [src, setSrc] = useState("/meta/logo-dark.svg");
 
     useEffect(() => {
       const newSrc = resolvedTheme === "dark" ? "/meta/logo-dark.svg" : "/meta/logo-light.svg";
@@ -12,9 +12,10 @@ export function Logo({ className="h-10 w-auto" }: { className?: string }) {
     }, [resolvedTheme]);
     return (
       <img
+        key={src}
         src={src}
         alt="Logo"
-        className={className}
+        className={className+" animate-fadeIn"}
       />
     );
 }

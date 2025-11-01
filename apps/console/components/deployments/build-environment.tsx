@@ -40,6 +40,7 @@ export function BuildEnvironment({ data, isLoading = false }: BuildEnvironmentPr
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null)
   const statusesToKeepAlive = ["BUILDING", "PROVISIONING"]
   const isMobile = useIsMobile()
+  const logsContainer = useRef<HTMLDivElement | null>(null)
 
   const getLogsStream = useCallback(async () => {
     try {
@@ -95,8 +96,22 @@ export function BuildEnvironment({ data, isLoading = false }: BuildEnvironmentPr
     }
   }, [wsLogsBuffer])
 
+  function scrollLogs(){
+    requestAnimationFrame(() => {
+     if (logsContainer.current) {
+      const hasUserScrolled =  Math.abs(logsContainer.current.scrollHeight - logsContainer.current.clientHeight - logsContainer.current.scrollTop) > 2
+      if(hasUserScrolled) return
+      logsContainer.current.scrollTo({
+        top: logsContainer.current.scrollHeight,
+        behavior: "smooth"
+      })
+     }
+    })
+  }
+
   useEffect(() => {
     if (!buildLogs.length) return
+    scrollLogs()
     const timeout = setTimeout(() => {
       logsStream?.close()
       setLogsStream(null)
@@ -284,7 +299,7 @@ export function BuildEnvironment({ data, isLoading = false }: BuildEnvironmentPr
                 <p className="text-xs text-muted-foreground/70 mt-1">Try adjusting your search or filter criteria</p>
               </div>
             ) : (
-              <div className="p-0 font-mono text-sm">
+              <div className="p-0 font-mono text-sm" ref={logsContainer}>
                 {filteredLogs.map((log, index) => {
                   const logContent = (
                     <div 

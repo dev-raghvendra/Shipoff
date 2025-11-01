@@ -38,6 +38,7 @@ export function RuntimeEnvironment({ data, isLoading = false }: RuntimeEnvironme
   const [runtimeSearchQuery, setRuntimeSearchQuery] = useState("")
   const [logLevelFilter, setLogLevelFilter] = useState<string>("ALL")
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null)
+  const [logsContainer, setLogsContainer] = useRef<HTMLDivElement | null>(null)
   const statusesToKeepAlive = ["PRODUCTION"]
   const isMobile = useIsMobile()
 
@@ -55,6 +56,19 @@ export function RuntimeEnvironment({ data, isLoading = false }: RuntimeEnvironme
       return null
     }
   }, [data])
+
+  function scrollLogs(){
+    requestAnimationFrame(() => {
+     if (logsContainer.current) {
+      const hasUserScrolled =  Math.abs(logsContainer.current.scrollHeight - logsContainer.current.clientHeight - logsContainer.current.scrollTop) > 2
+      if(hasUserScrolled) return
+      logsContainer.current.scrollTo({
+        top: logsContainer.current.scrollHeight,
+        behavior: "smooth"
+      })
+     }
+    })
+  }
 
   useEffect(() => {
     if (!data) return
@@ -97,6 +111,7 @@ export function RuntimeEnvironment({ data, isLoading = false }: RuntimeEnvironme
 
   useEffect(() => {
     if (!runtimeLogs.length) return
+    scrollLogs()
     const timeout = setTimeout(() => {
       logsStream?.close()
       setLogsStream(null)
@@ -288,7 +303,7 @@ export function RuntimeEnvironment({ data, isLoading = false }: RuntimeEnvironme
                 <p className="text-xs text-muted-foreground/70 mt-1">Try adjusting your search or filter criteria</p>
               </div>
             ) : (
-              <div className="p-0 font-mono text-sm">
+              <div className="p-0 font-mono text-sm" ref={logsContainer}>
                 {filteredLogs.map((log, index) => {
                   const logContent = (
                     <div 
