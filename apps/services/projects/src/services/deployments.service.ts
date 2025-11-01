@@ -15,7 +15,7 @@ export class DeploymentsService {
     private _asyncErrHandler: ReturnType<typeof createAsyncErrHandler>  
     private _deploymentProducer : DeploymentEventProducerService;
     private _deletableStatuses = ["FAILED","INACTIVE"];
-    private _redeployableStatuses = ["INACTIVE","FAILED"];
+    private _redeployableStatuses = ["INACTIVE","FAILED","PRODUCTION"];
 
     constructor() {
         this._errHandler = createGrpcErrorHandler({subServiceName:"DEPLOYMENT_SERVICE",logger});

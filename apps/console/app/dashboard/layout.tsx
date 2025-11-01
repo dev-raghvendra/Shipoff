@@ -19,6 +19,7 @@ import {
   SidebarRail,
   SidebarSeparator,
   SidebarTrigger,
+  useSidebar
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -132,7 +133,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <Sidebar variant="inset" collapsible="icon" className="sticky max-h-screen overflow-y-auto">
         <SidebarHeader>
           <Link href="/dashboard/overview" className="flex items-center gap-2 px-2">
-            <Logo />
+
+               <Logo className="h-7 group-data-[collapsible=icon]:hidden" />
+               <Logo className="h-12 group-data-[collapsible=icon]:block hidden" externalSrc="/meta/logo-mark-vector.svg" />
+
           </Link>
         </SidebarHeader>
 

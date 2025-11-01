@@ -159,7 +159,7 @@ export default function DeploymentDetailPage() {
                     <Skeleton className="h-4 w-64 mt-1" />
                   ) : (
                     <p className="text-sm text-muted-foreground truncate">
-                      {deployment.repository.githubRepoFullName}
+                      {deployment.repository?.githubRepoFullName || "Not linked"}
                     </p>
                   )}
                 </div>
@@ -174,7 +174,7 @@ export default function DeploymentDetailPage() {
                     <Skeleton className="h-4 w-32 mt-1" />
                   ) : (
                     <p className="text-sm text-muted-foreground">
-                      {deployment.repository.branch}
+                      {deployment.repository?.branch || "-"}
                     </p>
                   )}
                 </div>

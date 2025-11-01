@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "../ui/spinner";
 import { InferResponse } from "@shipoff/types";
 import { DeploymentResponse } from "@shipoff/proto";
-import { formatDistanceToNow } from "date-fns";
+import { formatDate } from "@/utils/date-time";
 import Image from "next/image";
 import projectService from "@/services/projects.service";
 import { toast } from "sonner";
@@ -46,14 +46,7 @@ export default function DeploymentCard({ d, onUpdate }: { d: Deployment; onUpdat
   const [isDeleting, setIsDeleting] = React.useState(false)
   const [isRedeploying, setIsRedeploying] = React.useState(false)
 
-  const formatDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString)
-      return formatDistanceToNow(date, { addSuffix: true })
-    } catch {
-      return dateString
-    }
-  }
+  
 
   const calculateTimeTook = () => {
     if (!d.completedAt || !d.lastDeployedAt) return null
@@ -177,7 +170,7 @@ export default function DeploymentCard({ d, onUpdate }: { d: Deployment; onUpdat
             <div className="flex items-center gap-3 text-sm min-w-0">
               <div className="flex items-center gap-1.5">
                 <GitBranch className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                <span className="font-medium truncate">{d.repository.branch}</span>
+                <span className="font-medium truncate">{d.repository?.branch}</span>
               </div>
               <div className="flex items-center gap-1.5 min-w-0">
                 <GitCommit className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
@@ -197,7 +190,7 @@ export default function DeploymentCard({ d, onUpdate }: { d: Deployment; onUpdat
               {/* Branch - Fixed Width */}
               <div className="flex items-center gap-1.5 text-sm w-24 shrink-0">
                 <GitBranch className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                <span className="font-medium truncate">{d.repository.branch}</span>
+                <span className="font-medium truncate">{d.repository?.branch}</span>
               </div>
 
               {/* Commit Info - Flexible */}

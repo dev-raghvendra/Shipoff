@@ -365,14 +365,14 @@ export function ProjectOverview({ projectOverviewData, isLoading }: ProjectOverv
                   <CalendarClock className="h-4 w-4" aria-hidden="true" />
                   Created
                 </span>
-                <span>{projectOverviewData.createdAt || "—"}</span>
+                <span>{new Date(projectOverviewData.createdAt).toLocaleString() || "—"}</span>
               </li>
               <li className="flex items-center justify-between">
                 <span className="text-muted-foreground inline-flex items-center gap-2">
                   <CalendarClock className="h-4 w-4" aria-hidden="true" />
                   Updated
                 </span>
-                <span>{projectOverviewData.updatedAt || "—"}</span>
+                <span>{new Date(projectOverviewData.updatedAt).toLocaleString() || "—"}</span>
               </li>
             </ul>
           </CardContent>

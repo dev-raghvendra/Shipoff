@@ -8,7 +8,6 @@ export const authorizationMiddleware :MiddlewareFunction = async(info,next) => {
        info.req.user = (await verifyJwt<{authUserData:{}}>(token || "")).authUserData
        return next();
    } catch (e:any) {
-       console.error("Authorization error:", e);
        if(e instanceof JsonWebTokenError) return next({code:401,message:"Unauthorized"});
        else return next({code:500,message:"Internal Server Error"});
    }
