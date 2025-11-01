@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Globe, ChevronDown, ChevronRight, Copy, Download, Filter, Check } from "lucide-react"
@@ -38,7 +37,7 @@ export function RuntimeEnvironment({ data, isLoading = false }: RuntimeEnvironme
   const [runtimeSearchQuery, setRuntimeSearchQuery] = useState("")
   const [logLevelFilter, setLogLevelFilter] = useState<string>("ALL")
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null)
-  const [logsContainer, setLogsContainer] = useRef<HTMLDivElement | null>(null)
+  const logsContainer = useRef<HTMLDivElement | null>(null)
   const statusesToKeepAlive = ["PRODUCTION"]
   const isMobile = useIsMobile()
 
