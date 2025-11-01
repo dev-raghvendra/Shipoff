@@ -204,7 +204,7 @@ export default function NewProjectWizardPage() {
         githubRepoId: selectedRepo!.githubRepoId,
         branch,
         rootDir,
-        domain: `${domainPrefix}.on.shipoff.in`,
+        domain: `${domainPrefix}on.shipoff.in`,
         environmentVars: envVars.map(ev => ({ name: ev.name, value: ev.value })),
         githubRepoFullName: selectedRepo!.githubRepoFullName,
         githubRepoURI: selectedRepo!.githubRepoURI
