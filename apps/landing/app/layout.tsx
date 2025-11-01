@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     images: [
       {
-        url: 'https://shipoff.in/og-image.webp',
+        url: 'https://shipoff.in/meta/og-image.webp',
         width: 1200,
         height: 630,
         alt: 'Shipoff – From Code to Cloud in Seconds',
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     description:
       'Deploy your web apps directly from Git to a global CDN in seconds. Zero setup, infinite scalability.',
     creator: '@shipoff',
-    images: ['https://shipoff.in/og-image.webp'],
+    images: ['https://shipoff.in/meta/og-image.webp'],
   },
   icons: {
     icon: '/meta/favicon.ico',
