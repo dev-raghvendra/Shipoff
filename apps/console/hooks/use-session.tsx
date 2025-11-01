@@ -1,6 +1,6 @@
 import { authService } from "@/services/auth.service"
 import { createErrHandler } from "@/utils/error.utils"
-import { useSession as useNextSession } from "next-auth/react"
+import { signOut, useSession as useNextSession } from "next-auth/react"
 import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 
@@ -28,6 +28,7 @@ export function useSession(){
             setStatus("authenticated")
         } catch (e:any) {
             if(e.code===401) return window.location.href = "/signin"
+            if(e.code===404) signOut({callbackUrl:"/login"})
             errHandler(e,"GET_USER",false,false)
             setStatus("unauthenticated")
             setError(e.message || "An unexpected error occurred. Please try again.")
