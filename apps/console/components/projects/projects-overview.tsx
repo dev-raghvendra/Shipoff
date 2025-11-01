@@ -310,7 +310,7 @@ export function ProjectOverview({ projectOverviewData, isLoading }: ProjectOverv
               {projectOverviewData.repository?.branch ? (
                 <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                   <GitBranch className="h-3 w-3" aria-hidden="true" />
-                  {projectOverviewData.repository.branch}
+                  {projectOverviewData.repository?.branch}
                 </span>
               ) : null}
             </div>

@@ -123,6 +123,7 @@ message ProjectUpdates {
      string domain = 2;
      FrameworkUpdates framework = 3;
      string outDir = 4;
+     string description = 5;
 }
 
 // Requests

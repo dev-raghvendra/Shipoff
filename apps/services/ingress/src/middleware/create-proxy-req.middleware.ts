@@ -11,7 +11,7 @@ export function createProxyReqMiddleware(req:PopulatedRequest,_:Response,next:Ne
         path:req.destination?.pathname+req.destination?.search!,
         headers:{
             ...req.headers,
-            host:(req.project.projectType === "DYNAMIC" ? req.project.domain : req.destination?.host) || ''
+            host:(req.project!.projectType === "DYNAMIC" ? req.project!.domain : req.destination?.host) || ''
         }
     }
     req.proxyReqOptions = options

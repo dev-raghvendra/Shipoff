@@ -1,4 +1,3 @@
-import { dbService } from "@/db/db-service";
 import {optionalArray, optionalObject, optionalString, optNumWithDefaultValue, RequestMetaSchema, UserSchema} from "@shipoff/types"
 import z from "zod";
 
@@ -48,6 +47,7 @@ export const GetAllUserProjectsRequestSchema = z.object({
 
 export const updatesSchema = z.object({
     name: optionalString(),
+    description: optionalString(),
     domain: DomainSchema.transform(val=>val ? val.toLowerCase() : undefined).optional(),
     prodCommand: optionalString(),
     buildCommand: optionalString(),

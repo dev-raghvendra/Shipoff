@@ -198,6 +198,14 @@ export class K8Service {
                         name:containerId,
                         image,
                         env,
+                        resources:{
+                            requests:{
+                                memory:"300Mi"
+                            },
+                            limits:{
+                                memory:"760Mi"
+                            }
+                        },
                         ...(CONFIG.ENV==="DEVELOPMENT" ? {
                             volumeMounts:[{
                                 name:"app-logs",

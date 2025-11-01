@@ -1,7 +1,7 @@
 #!/bin/bash
 
 graceful_shutdown(){
-     local reason="UNKNOWN"
+     local reason="INACTIVE_FOR_15_MINUTES"
      if [[ -f /tmp/shutdown_reason ]]; then
         reason=$(cat /tmp/shutdown_reason)
         rm -f /tmp/shutdown_reason
