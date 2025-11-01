@@ -57,9 +57,6 @@ export class LogsService {
             let buildKeys = buildEnvId ? (await this._bucketService.getAllLogKeys(buildEnvId)).Contents ?? [] : [];
             let runtimeKeys = runtimeEnvId ? (await this._bucketService.getAllLogKeys(runtimeEnvId)).Contents ?? [] : [];
 
-
-
-            const allKeys = [...buildKeys, ...runtimeKeys];
             const downloadURLs: string[] = [];
             await Promise.all([...buildKeys.map(async (k,i) => {
                 const url = await this._bucketService.getLogPresignedUrl(k.Key as string, 30, { ResponseContentDisposition: `attachment; filename="${this._getLogName(k.Key || "build-log", i+1)}"` });

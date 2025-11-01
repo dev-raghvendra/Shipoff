@@ -30,8 +30,8 @@ const DOMAIN_SUFFIX = "on.shipoff.in"
   // Sync state when initial props change
   useEffect(() => {
     if (initialPrefix !== undefined) {
-      setOriginalDomainPrefix(initialPrefix)
-      setEditedDomainPrefix(initialPrefix)
+      setOriginalDomainPrefix(initialPrefix.split(".")[0])
+      setEditedDomainPrefix(initialPrefix.split(".")[0])
     }
   }, [initialPrefix])
 

@@ -23,7 +23,6 @@ export async function resolveDestinationMiddleware(req:PopulatedRequest, res:Res
      } 
      else {
        req.destination = new URL(`http://${project.projectId}.${SECRETS.DYNAMIC_APPS_CLUSTER_BASE_HOST}${url}`)
-       req.destination.host = req.host
      }
 
      next()
