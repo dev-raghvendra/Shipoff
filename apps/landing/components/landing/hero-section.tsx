@@ -74,7 +74,7 @@ export function HeroSection() {
             transition={{ duration: 0.6, delay: 0.5 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
           >
-            <Link href="/login">
+            <Link href="https://console.shipoff.in/signin">
               <Button size="lg" className="gap-2 group px-8 h-12 text-base shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all">
                 Create your first project
                 <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
