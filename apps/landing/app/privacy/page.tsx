@@ -19,11 +19,21 @@ export const metadata: Metadata = {
     description: 'Shipoff Privacy Policy - Learn how we collect, use, and protect your data.',
     url: 'https://shipoff.in/privacy',
     type: 'website',
+    siteName: 'Shipoff',
+    images: [
+      {
+        url: 'https://shipoff.in/meta/og-image.webp',
+        width: 1200,
+        height: 630,
+        alt: 'Privacy Policy | Shipoff',
+      },
+    ],
   },
   twitter: {
     card: 'summary',
     title: 'Privacy Policy | Shipoff',
     description: 'Shipoff Privacy Policy - Learn how we collect, use, and protect your data.',
+    images: ['https://shipoff.in/meta/og-image.webp'],
   },
   alternates: {
     canonical: 'https://shipoff.in/privacy',

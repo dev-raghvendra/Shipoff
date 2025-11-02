@@ -19,11 +19,21 @@ export const metadata: Metadata = {
     description: 'Shipoff Terms of Service - Read our terms and conditions for using our platform.',
     url: 'https://shipoff.in/terms',
     type: 'website',
+    siteName: 'Shipoff',
+    images: [
+      {
+        url: 'https://shipoff.in/meta/og-image.webp',
+        width: 1200,
+        height: 630,
+        alt: 'Terms of Service | Shipoff',
+      },
+    ],
   },
   twitter: {
     card: 'summary',
     title: 'Terms of Service | Shipoff',
     description: 'Shipoff Terms of Service - Read our terms and conditions for using our platform.',
+    images: ['https://shipoff.in/meta/og-image.webp']
   },
   alternates: {
     canonical: 'https://shipoff.in/terms',

@@ -20,12 +20,21 @@ export const metadata: Metadata = {
     title: 'About | Shipoff',
     description: 'Learn about Shipoff - A modern Platform-as-a-Service built with cutting-edge technologies.',
     url: 'https://shipoff.in/about',
+    images: [
+      {
+        url: 'https://shipoff.in/meta/og-image.webp',
+        width: 1200,
+        height: 630,
+        alt: 'Shipoff – From Code to Cloud in Seconds',
+      },
+    ],
     type: 'website',
   },
   twitter: {
     card: 'summary',
     title: 'About | Shipoff',
     description: 'Learn about Shipoff - A modern Platform-as-a-Service built with cutting-edge technologies.',
+    images:[ 'https://shipoff.in/meta/og-image.webp' ],
   },
   alternates: {
     canonical: 'https://shipoff.in/about',

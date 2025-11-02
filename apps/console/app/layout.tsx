@@ -20,23 +20,24 @@ export async function generateMetadata(): Promise<Metadata> {
   const reqPath = headersList.get('x-req-path') || ''
 
   const isAuthPage = reqPath === '/signin' || reqPath === '/login'
+  
+  const title = isAuthPage
+    ? 'Sign In – Shipoff Console'
+    : 'Shipoff Console – From Code to Cloud in Seconds'
+  
+  const description = isAuthPage
+    ? 'Sign in to your Shipoff account to access your projects and deployments.'
+    : 'Deploy, monitor, and scale your web apps effortlessly — all from one powerful console.'
 
   return {
-    title: isAuthPage
-      ? 'Sign In – Shipoff Console'
-      : 'Shipoff Console – From Code to Cloud in Seconds',
-
-    description: isAuthPage
-      ? 'Sign in to your Shipoff account to access your projects and deployments.'
-      : 'Deploy, monitor, and scale your web apps effortlessly — all from one powerful console.',
-
+    title,
+    description,
     applicationName: 'Shipoff Console',
     authors: [{ name: 'Shipoff', url: 'https://shipoff.in' }],
 
     openGraph: {
-      title: 'Shipoff Console – From Code to Cloud in Seconds',
-      description:
-        'Deploy, monitor, and scale your apps effortlessly with Shipoff — from code to cloud in seconds.',
+      title,
+      description,
       url: 'https://console.shipoff.in',
       siteName: 'Shipoff Console',
       type: 'website',
@@ -45,16 +46,15 @@ export async function generateMetadata(): Promise<Metadata> {
           url: 'https://shipoff.in/meta/og-image.webp',
           width: 1200,
           height: 630,
-          alt: 'Shipoff Console – From Code to Cloud in Seconds',
+          alt: title,
         },
       ],
     },
 
     twitter: {
       card: 'summary_large_image',
-      title: 'Shipoff Console – From Code to Cloud in Seconds',
-      description:
-        'Deploy, monitor, and scale your apps effortlessly with Shipoff — from code to cloud in seconds.',
+      title,
+      description,
       images: ['https://shipoff.in/meta/og-image.webp'],
     },
 

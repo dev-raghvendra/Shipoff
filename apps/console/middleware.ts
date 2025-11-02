@@ -11,9 +11,19 @@ export default withAuth(
         const isAuthPage = AUTH_PAGES.includes(pathname);
         const isAuthenticated = token && !token.error;
 
+        // Always set the x-req-path header for metadata generation
+        const headers = new Headers(req.headers);
+        const url = new URL(req.url);
+        headers.set('x-req-path', url.pathname);
+
         if (!isAuthenticated) {
             if (isAuthPage) {
-                return NextResponse.next();
+                // Allow unauthenticated users to access auth pages, but set header for metadata
+                return NextResponse.next({
+                    request: {
+                        headers
+                    }
+                });
             }
             const loginUrl = new URL("/login", req.url);
             loginUrl.searchParams.set("callbackUrl", req.url);
@@ -30,15 +40,14 @@ export default withAuth(
             return response;
         }
 
-
+        // Authenticated users
         if (isAuthPage) {
             return NextResponse.redirect(new URL("/dashboard/overview", req.url));
         }
-        const headers = new Headers(req.headers);
-        const url = new URL(req.url);
-        headers.set('x-req-path', url.pathname);
+        
+        // Authenticated users on dashboard pages - set header for metadata
         return NextResponse.next({
-            request:{
+            request: {
                 headers
             }
         });
