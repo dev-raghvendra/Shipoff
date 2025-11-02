@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Logo } from '@/components/ui/logo'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { CONFIG } from '../config/config'
+import { CONFIG } from '@/app/config/config'
 const frameworks = [
   { name: 'Next.js', type: 'Static/Dynamic', runtime: 'Node.js', build: 'npm run build', outDir: '.next' },
   { name: 'React', type: 'Static', runtime: 'Node.js', build: 'npm run build', outDir: 'build' },
