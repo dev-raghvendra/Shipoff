@@ -8,6 +8,28 @@ import { CONFIG } from '../config/config'
 export const metadata: Metadata = {
   title: 'About | Shipoff',
   description: 'Learn about Shipoff - A modern Platform-as-a-Service built with cutting-edge technologies.',
+  keywords: [
+    'About Shipoff',
+    'Platform-as-a-Service',
+    'PaaS platform',
+    'deployment platform',
+    'Shipoff creator',
+    'dev-raghvendra',
+  ],
+  openGraph: {
+    title: 'About | Shipoff',
+    description: 'Learn about Shipoff - A modern Platform-as-a-Service built with cutting-edge technologies.',
+    url: 'https://shipoff.in/about',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'About | Shipoff',
+    description: 'Learn about Shipoff - A modern Platform-as-a-Service built with cutting-edge technologies.',
+  },
+  alternates: {
+    canonical: 'https://shipoff.in/about',
+  },
 }
 
 export default function AboutPage() {

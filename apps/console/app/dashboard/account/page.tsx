@@ -29,6 +29,16 @@ import {
   ChevronRight,
   Sparkles
 } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import {FaGoogle as GoogleIcon} from "react-icons/fa"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { githubService } from "@/services/github.service"
@@ -80,6 +90,7 @@ export default function AccountPage(){
   const [ghLoading, setGhLoading] = React.useState(true)
   const [installation, setInstallation] = React.useState<InferResponse<GithubInstallationResponse>["res"] | null>(null)
   const [isDeleting, setIsDeleting] = React.useState(false)
+  const [showRemoveDialog, setShowRemoveDialog] = React.useState(false)
 
   const handleChangePlan = async (type: string) => {
     try{
@@ -346,13 +357,55 @@ export default function AccountPage(){
                 )}
                 <Button 
                   variant="ghost" 
-                  onClick={()=>window.location.href=`https://github.com/settings/installations/${installation.githubInstallationId}`}
+                  onClick={() => setShowRemoveDialog(true)}
                   disabled={isDeleting}
                   className="gap-2 text-destructive hover:text-destructive hover:bg-destructive/10 ml-auto"
                 >
                   <Trash2 className="h-4 w-4" />
                   Remove
                 </Button>
+                
+                <AlertDialog open={showRemoveDialog} onOpenChange={setShowRemoveDialog}>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="flex items-center gap-2">
+                        <AlertCircle className="h-5 w-5 text-destructive" />
+                        Remove GitHub Installation?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription className="space-y-3 pt-2">
+                        <p>
+                          Removing the GitHub installation will result in the <strong>unlinking or deletion</strong> of all 
+                          repositories that you have linked to any of your projects.
+                        </p>
+                        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 mt-4">
+                          <p className="text-sm font-semibold text-destructive mb-1">⚠️ Important Warning:</p>
+                          <p className="text-sm">
+                            This action will cause <strong>all further deployments</strong> of projects that are linked to 
+                            GitHub repositories to <strong>fail</strong>. You will need to reconnect your GitHub account and 
+                            relink repositories to restore deployment functionality.
+                          </p>
+                        </div>
+                        <p className="text-sm pt-2">
+                          Are you sure you want to proceed? You can manage your installation settings on GitHub instead.
+                        </p>
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel onClick={() => setShowRemoveDialog(false)}>
+                        Cancel
+                      </AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => {
+                          setShowRemoveDialog(false)
+                          window.location.href = `https://github.com/settings/installations/${installation?.githubInstallationId}`
+                        }}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Remove Installation
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </div>
           ) : (

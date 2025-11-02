@@ -8,6 +8,26 @@ import { CONFIG } from '../config/config'
 export const metadata: Metadata = {
   title: 'Privacy Policy | Shipoff',
   description: 'Shipoff Privacy Policy - Learn how we collect, use, and protect your data.',
+  keywords: [
+    'Privacy Policy',
+    'Shipoff privacy',
+    'data protection',
+    'user privacy',
+  ],
+  openGraph: {
+    title: 'Privacy Policy | Shipoff',
+    description: 'Shipoff Privacy Policy - Learn how we collect, use, and protect your data.',
+    url: 'https://shipoff.in/privacy',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Privacy Policy | Shipoff',
+    description: 'Shipoff Privacy Policy - Learn how we collect, use, and protect your data.',
+  },
+  alternates: {
+    canonical: 'https://shipoff.in/privacy',
+  },
 }
 
 export default function PrivacyPolicyPage() {

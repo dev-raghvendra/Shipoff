@@ -8,6 +8,26 @@ import { CONFIG } from '../config/config'
 export const metadata: Metadata = {
   title: 'Terms of Service | Shipoff',
   description: 'Shipoff Terms of Service - Read our terms and conditions for using our platform.',
+  keywords: [
+    'Terms of Service',
+    'Shipoff terms',
+    'terms and conditions',
+    'user agreement',
+  ],
+  openGraph: {
+    title: 'Terms of Service | Shipoff',
+    description: 'Shipoff Terms of Service - Read our terms and conditions for using our platform.',
+    url: 'https://shipoff.in/terms',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Terms of Service | Shipoff',
+    description: 'Shipoff Terms of Service - Read our terms and conditions for using our platform.',
+  },
+  alternates: {
+    canonical: 'https://shipoff.in/terms',
+  },
 }
 
 export default function TermsOfServicePage() {
