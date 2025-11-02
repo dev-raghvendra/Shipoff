@@ -18,18 +18,6 @@ export function serviceResIntercepter(this:BaseService){
            await getAccessToken.apply(this)
            return this._axiosInstance.request(res.config!)
        }
-       if((res.response?.data as any)?.message){
-           return Promise.reject({
-             ...res,
-             response:{
-                ...res.response,
-                data:{
-                     ...(res.response?.data as any),
-                     message:(res.response?.data as any).message.replace(/^\d+\s+[A-Z_]+\s*:\s*/, '') || "An error occurred"
-                }
-             }
-           })
-       }
        return Promise.reject(res);
     }
 }
