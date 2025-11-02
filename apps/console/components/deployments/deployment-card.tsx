@@ -212,7 +212,7 @@ export default function DeploymentCard({ d, onUpdate }: { d: Deployment; onUpdat
       {/* Actions Overlay for eligible deployments */}
       {(canRedeploy || canDelete) && (
         <div
-          className="absolute inset-0 bg-gradient-to-l from-black/80 via-black/50 via-50% to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-end px-6 pointer-events-none group-hover:pointer-events-auto"
+          className="absolute inset-0 bg-gradient-to-l dark:from-black/80 dark:via-black/50 via-50% to-transparent opacity-0 group-hover:opacity-100 from-gray-400 via-50% to-transparent transition-opacity flex items-center justify-end px-6 pointer-events-none group-hover:pointer-events-auto"
         >
           <div className="flex items-center  gap-2">
             {canRedeploy && (
