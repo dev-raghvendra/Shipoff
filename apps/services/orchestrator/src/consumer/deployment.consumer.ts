@@ -6,6 +6,7 @@ import { logger } from "@/libs/winston";
 import { ContainerProducer } from "@/producer/container.producer";
 import { ProjectExternalService } from "@/externals/project.external.service";
 import { createSyncErrHandler } from "@shipoff/services-commons";
+import { NodeMetricesServiceClient } from "@/services/node-metrices.service";
 
 
 type IDeploymentConsumer =  {
@@ -66,6 +67,22 @@ export class DeploymentConsumer implements IDeploymentConsumer {
              if(!this.allowedEvents.includes(evt.event.event)){
                this._errHandler({},"PROCCESSING_EVENT",evt.event.requestId,`WHILE_PROCESSING_UNSUPPORTED_EVENT_TYPE_${evt.event.event}_FOR_PROJECT_ID_${evt.event.projectId}_IN_DEPLOYMENT_CONSUMER_AT_${this._consumer._serviceName}`);
                continue;
+             }
+             if(evt.event.event === "CREATED" || evt.event.event === "REQUESTED"){
+                const usage = await NodeMetricesServiceClient.checkMemoryUsage()
+                if(usage && usage >= 90){
+                    this._errHandler({},"PROCCESSING_EVENT",evt.event.requestId,`HIGH_NODE_MEMORY_USAGE_${usage}_PERCENT_WHILE_PROCESSING_EVENT_TYPE_${evt.event.event}_FOR_PROJECT_ID_${evt.event.projectId}_IN_DEPLOYMENT_CONSUMER_AT_${this._consumer._serviceName}`);
+                    this._producer.publishContainerEvent({
+                        event:"FAILED",
+                        projectId:evt.event.projectId,
+                        deploymentId:evt.event.deploymentId,
+                        containerId:"N/A",
+                        requestId:evt.event.requestId,
+                        runtimeId:"N/A",
+                        builId:"N/A",
+                        projectType:evt.event.projectType
+                    });
+                }
              }
              const res = await this[evt.event.event](evt.event)
              if(res) {await evt.ackMessage();continue}

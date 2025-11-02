@@ -16,7 +16,9 @@ import {
   Github,
   Unlink,
   Loader2,
-  X
+  X,
+  Cpu,
+  HardDrive
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import DeploymentCard from "../deployments/deployment-card"
@@ -31,6 +33,7 @@ import { teamsService } from "@/services/teams.service"
 import { toast } from "sonner"
 import { useLoadMore } from "@/hooks/use-load-more"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { useSession } from "@/context/session.context"
 
 export interface ProjectOverviewProps {projectOverviewData: InferResponse<ProjectResponse>["res"],isLoading?:boolean}
 
@@ -55,10 +58,12 @@ const isStatic = value === "STATIC"
 }
 
 export function ProjectOverview({ projectOverviewData, isLoading }: ProjectOverviewProps) {
-  
-  
+  const { data: session } = useSession()
   // Linked teams state
     const { data: linkedTeams, isLoading: isLoadingLinkedTeams, refetch: refetchLinkedTeams } = useLinkedTeams({ projectId:projectOverviewData?.projectId ,enabled:!isLoading })
+  
+  const memoryLimitMB = session?.user?.subscription?.perks?.memoryLimitMB || 512
+  const cpuLimitPercent = session?.user?.subscription?.perks?.cpuLimitPercent || 10
   
   // Link team dialog state
   const [isLinkTeamDialogOpen, setIsLinkTeamDialogOpen] = React.useState(false)
@@ -484,6 +489,24 @@ export function ProjectOverview({ projectOverviewData, isLoading }: ProjectOverv
                 <span className="font-mono relative block">
                   {isLoading && <Skeleton className="absolute inset-0 h-4" />}
                   {projectOverviewData.prodCommand || "—"}</span>
+              </li>
+              <li className="flex items-center justify-between">
+                <span className="text-muted-foreground inline-flex items-center gap-2">
+                  <HardDrive className="h-4 w-4" aria-hidden="true" />
+                  Memory Limit
+                </span>
+                <span className="font-mono relative block">
+                  {isLoading && <Skeleton className="absolute inset-0 h-4" />}
+                  {memoryLimitMB}MB</span>
+              </li>
+              <li className="flex items-center justify-between">
+                <span className="text-muted-foreground inline-flex items-center gap-2">
+                  <Cpu className="h-4 w-4" aria-hidden="true" />
+                  CPU Limit
+                </span>
+                <span className="font-mono relative block">
+                  {isLoading && <Skeleton className="absolute inset-0 h-4" />}
+                  0.{cpuLimitPercent}</span>
               </li>
             </ul>
           </CardContent>

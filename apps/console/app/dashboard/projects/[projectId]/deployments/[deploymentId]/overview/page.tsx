@@ -13,7 +13,9 @@ import {
   Globe,
   Code,
   Terminal,
-  AlertTriangle
+  AlertTriangle,
+  Cpu,
+  HardDrive
 } from "lucide-react"
 import { useDeployment } from "@/hooks/use-deployment"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -27,6 +29,7 @@ import { useParams } from "next/navigation"
 import { logsService } from "@/services/logs.service"
 import { downloadFiles } from "@/utils/misc.client.utils"
 import { useRouter } from "next/navigation"
+import { useSession } from "@/context/session.context"
 
 export default function DeploymentDetailPage() {
   const {projectId,deploymentId} = useParams()
@@ -37,6 +40,10 @@ export default function DeploymentDetailPage() {
   const {data:deployment,isLoading,error,isError} = useDeployment({projectId:projectId as string,deploymentId:deploymentId as string})
   const statusesToMountRuntimeEnvironment = ["PRODUCTION","FAILED","INACTIVE"]
   const router = useRouter()
+  const { data: session } = useSession()
+  
+  const memoryLimitMB = session?.user?.subscription?.perks?.memoryLimitMB || 512
+  const cpuLimitPercent = session?.user?.subscription?.perks?.cpuLimitPercent || 10
 
   const handleExportLogs = async () => {
     if(isLoading) return
@@ -230,6 +237,36 @@ export default function DeploymentDetailPage() {
                   ) : (
                     <p className="text-sm text-muted-foreground truncate">
                       {deployment.author}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Memory Limit */}
+              <div className="flex items-center gap-2">
+                <HardDrive className="h-4 w-4 text-muted-foreground" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">Memory Limit</p>
+                  {isLoading ? (
+                    <Skeleton className="h-4 w-32 mt-1" />
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      {memoryLimitMB}MB
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* CPU Limit */}
+              <div className="flex items-center gap-2">
+                <Cpu className="h-4 w-4 text-muted-foreground" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">CPU Limit</p>
+                  {isLoading ? (
+                    <Skeleton className="h-4 w-24 mt-1" />
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      0.{cpuLimitPercent}
                     </p>
                   )}
                 </div>

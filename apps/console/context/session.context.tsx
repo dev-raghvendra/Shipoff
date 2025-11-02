@@ -1,6 +1,6 @@
 // contexts/SessionContext.tsx
 import { createContext, useContext, ReactNode } from 'react'
-import { useSession as useNextSession } from "next-auth/react"
+import { signOut, useSession as useNextSession } from "next-auth/react"
 import { authService } from "@/services/auth.service"
 import { createErrHandler } from "@/utils/error.utils"
 import { useEffect, useRef, useState, useCallback } from "react"
@@ -35,6 +35,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
             setStatus("authenticated")
             hasUserFetched.current = true
         } catch (e: any) {
+            if (e.code === 401 || e.code === 404) {
+                await signOut({ callbackUrl: "/signin" })
+                return window.location.href = "/signin"
+            }
             errHandler(e, "GET_USER", false, false)
             setStatus("unauthenticated")
         } finally {

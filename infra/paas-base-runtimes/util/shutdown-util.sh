@@ -1,7 +1,6 @@
 #!/bin/bash
 
 graceful_shutdown(){
-     local reason="INACTIVE_FOR_15_MINUTES"
      if [[ -f /tmp/shutdown_reason ]]; then
         reason=$(cat /tmp/shutdown_reason)
         rm -f /tmp/shutdown_reason
@@ -24,7 +23,7 @@ graceful_shutdown(){
             send_webhook "STATE_CHANGED" "$FAILED_WEBHOOK"
             ;;
         *)
-            log "SYSTEM" "INFO" "Graceful shutdown initiated: $reason"
+            log "SYSTEM" "INFO" "Application inactive or terminated, initiating graceful shutdown"
             send_webhook "STATE_CHANGED" "$TERMINATED_WEBHOOK"
             ;;
     esac

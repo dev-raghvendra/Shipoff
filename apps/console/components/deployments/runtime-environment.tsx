@@ -40,6 +40,8 @@ export function RuntimeEnvironment({ data, isLoading = false }: RuntimeEnvironme
   const logsContainer = useRef<HTMLDivElement | null>(null)
   const statusesToKeepAlive = ["PRODUCTION"]
   const isMobile = useIsMobile()
+  const userHasScrolledRef = useRef(false)
+  const isScrollingRef = useRef(false)
 
   const getLogsStream = useCallback(async () => {
     try {
@@ -57,16 +59,26 @@ export function RuntimeEnvironment({ data, isLoading = false }: RuntimeEnvironme
   }, [data])
 
   function scrollLogs(){
+    if (isScrollingRef.current) return
     requestAnimationFrame(() => {
-     if (logsContainer.current) {
-      const hasUserScrolled =  Math.abs(logsContainer.current.scrollHeight - logsContainer.current.clientHeight - logsContainer.current.scrollTop) > 2
-      if(hasUserScrolled) return
+     if (logsContainer.current && !userHasScrolledRef.current) {
+      isScrollingRef.current = true
       logsContainer.current.scrollTo({
         top: logsContainer.current.scrollHeight,
         behavior: "smooth"
       })
+      setTimeout(() => {
+        isScrollingRef.current = false
+      }, 300)
      }
     })
+  }
+
+  const handleLogsScroll = () => {
+    if (!logsContainer.current) return
+    const { scrollHeight, clientHeight, scrollTop } = logsContainer.current
+    const isAtBottom = Math.abs(scrollHeight - clientHeight - scrollTop) <= 5
+    userHasScrolledRef.current = !isAtBottom
   }
 
   useEffect(() => {
@@ -121,6 +133,11 @@ export function RuntimeEnvironment({ data, isLoading = false }: RuntimeEnvironme
       if (timeoutId) clearTimeout(timeoutId)
     }
   }, [runtimeLogs.length])
+  
+  // Reset scroll tracking when new logs start
+  useEffect(() => {
+    userHasScrolledRef.current = false
+  }, [data?.runtimeId])
 
   useEffect(() => {
     if (!data) return
@@ -287,7 +304,7 @@ export function RuntimeEnvironment({ data, isLoading = false }: RuntimeEnvironme
             </div>
           </div>
 
-          <div className="h-96 overflow-y-auto bg-zinc-50 dark:bg-zinc-950">
+          <div className="h-96 overflow-y-auto bg-zinc-50 dark:bg-zinc-950" ref={logsContainer} onScroll={handleLogsScroll}>
             {runtimeLogs.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center p-8">
                 <div className="p-4 rounded-full bg-muted/50 mb-4">
@@ -302,7 +319,7 @@ export function RuntimeEnvironment({ data, isLoading = false }: RuntimeEnvironme
                 <p className="text-xs text-muted-foreground/70 mt-1">Try adjusting your search or filter criteria</p>
               </div>
             ) : (
-              <div className="p-0 font-mono text-sm" ref={logsContainer}>
+              <div className="p-0 font-mono text-sm">
                 {filteredLogs.map((log, index) => {
                   const logContent = (
                     <div 

@@ -13,8 +13,10 @@ run_filtered_build() {
     fi
 
     if [ -z "$build_command" ]; then
-        error_exit "BUILD" "No build command specified"
+        error_exit "SYSTEM" "No build command specified"
     fi
+
+    log "SYSTEM" "INFO" "Starting build with: $build_command"
 
     echo "#!/bin/bash
     $build_command
@@ -57,23 +59,23 @@ run_filtered_build() {
 
     # Check if build failed and exit with same code
     if [ $build_exit_code -ne 0 ]; then
-        error_exit "BUILD" "Build failed with exit code $build_exit_code"
+        error_exit "SYSTEM" "Build failed with exit code $build_exit_code"
     fi
 
     if [ "$app_type" = "STATIC" ] && [ ! -d "$out_dir" ]; then
-        error_exit "BUILD" "Output directory $out_dir does not exist"
+        error_exit "SYSTEM" "Output directory $out_dir does not exist"
     fi
 
     if [ "$app_type" = "STATIC" ] && [ -d "$artifacts_dir" ]; then
-        cp -r "$out_dir/." "$artifacts_dir/" || error_exit "BUILD" "Failed to copy artifacts from $out_dir to $artifacts_dir"
+        cp -r "$out_dir/." "$artifacts_dir/" || error_exit "SYSTEM" "Failed to copy artifacts from $out_dir to $artifacts_dir"
 
         # Check if build was successful
         if [ ! "$(ls -A $artifacts_dir 2>/dev/null)" ]; then
-            error_exit "BUILD" "Build failed - no artifacts generated in $artifacts_dir"
+            error_exit "SYSTEM" "Build failed - no artifacts generated in $artifacts_dir"
         fi
     fi
 
-    log "BUILD" "SUCCESS" "Build completed successfully with filtered environment"
+    log "SYSTEM" "SUCCESS" "Build completed successfully"
 }
 
 validate_orchestrator_response() {
@@ -143,7 +145,7 @@ enforce_build_time_limit() {
 backup_artifacts() {
     mkdir -p "$ROLLBACK_DIR"
     if ! aws s3 sync "$BUCKET_URI" "$ROLLBACK_DIR" --endpoint-url "$BUCKET_ENDPOINT" 2>/var/log/aws.log; then
-        error_exit "BUILD" "Failed to fetch existing artifacts"
+        error_exit "SYSTEM" "Failed to fetch existing artifacts"
     fi
 }
 

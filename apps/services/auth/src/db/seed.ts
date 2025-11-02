@@ -7,10 +7,15 @@ async function seedSubscriptions(){
     const freeSub : FreePerks = {
         perkId : generateId("PERK",{PERK:"perk"}),
         staticProjects:4,
-        dynamicProjects:2
+        dynamicProjects:1,
+        memoryLimitMB:512,
+        cpuLimitPercent:10
     }
     const proSub : ProPerks = {
-        ...freeSub,
+        staticProjects:20,
+        dynamicProjects:10,
+        memoryLimitMB:2048,
+        cpuLimitPercent:90,
         perkId:generateId("PERK",{PERK:"perk"})
     }
 

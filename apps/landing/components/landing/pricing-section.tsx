@@ -108,6 +108,13 @@ export function PricingSection() {
                 </div>
                 <p className="text-xs text-muted-foreground ml-6">Free certificates that auto-renew</p>
               </div>
+              <div>
+                <div className="flex items-center gap-2 text-sm font-medium mb-0.5">
+                  <Check className="size-4 text-primary shrink-0" />
+                  <span>512MB Memory & 0.1 CPU</span>
+                </div>
+                <p className="text-xs text-muted-foreground ml-6">Per project with auto-scaling</p>
+              </div>
             </div>
 
             <Link href="/login" className="block">

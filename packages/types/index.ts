@@ -27,7 +27,9 @@ export const LogBodySchema = z.object({
 export const PerkSchema = z.object({
         perkId:z.string().min(4),
         staticProjects:z.number().min(2),
-        dynamicProjects:z.number().min(1)
+        dynamicProjects:z.number().min(1),
+        memoryLimitMB:z.number().min(128),
+        cpuLimitPercent:z.number().min(10).max(100)
 }).strict()
 
 export const SubscriptionSchema = z.object({

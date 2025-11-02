@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { InferResponse } from "@/types/response"
+import { InferResponse } from "@shipoff/types"
 import { GithubRepoResponse } from "@shipoff/proto"
 import { useGithubRepos } from "@/hooks/use-github-repos"
 import { githubService } from "@/services/github.service"
@@ -398,7 +398,7 @@ export function RepositorySettings({ projectId,intialGithubRepoURI, initialGithu
                 <AlertDialogHeader>
                   <AlertDialogTitle>Change repository?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This will disconnect <strong>{linkedRepo?.name}</strong> and allow you to link a different repository. Your current deployment configuration will be removed.
+                    This will disconnect <strong>{linkedRepo?.name}</strong> and allow you to link a different repository. Your current deployment configutation will be lost and any deployments 
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

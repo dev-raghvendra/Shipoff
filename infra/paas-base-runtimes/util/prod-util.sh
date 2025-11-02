@@ -15,15 +15,16 @@ run_filtered_prod() {
     env_cmd="$env_cmd WORKING_DIR=$working_dir"
 
     if [ -z "$prod_command" ]; then
-        error_exit "RUNTIME" "No production command specified"
+        error_exit "SYSTEM" "No production command specified"
     fi
+
+    log "SYSTEM" "INFO" "Starting production with command: $prod_command"
+
     echo  "
     #!/bin/bash
     $prod_command
     " > /tmp/prod_command.sh
     chmod +x /tmp/prod_command.sh
-
-    log "RUNTIME" "INFO" "Starting production with command: $prod_command"
 
     mkfifo /tmp/prod_stdout /tmp/prod_stderr
 

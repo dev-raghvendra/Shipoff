@@ -107,6 +107,8 @@ model FreePerks {
   perkId           String @id @default(uuid())
   staticProjects   Int    @default(4)
   dynamicProjects  Int    @default(1)
+  memoryLimitMB    Int    @default(512)
+  cpuLimitPercent  Int   @default(10)
 
   subscription           Subscription[]
 }
@@ -115,6 +117,8 @@ model ProPerks {
   perkId           String @id @default(uuid())
   staticProjects   Int    @default(20)
   dynamicProjects  Int    @default(10)
+  memoryLimitMB    Int    @default(2048)
+  cpuLimitPercent  Int   @default(90)
 
   subscription           Subscription[]
 }

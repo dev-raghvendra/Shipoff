@@ -182,7 +182,8 @@ export class DeploymentsService {
             });
             const crrStatus = await this._dbService.findUniqueDeploymentById(deploymentId);
             if(!this._redeployableStatuses.includes(crrStatus.status))throw new GrpcAppError(status.FAILED_PRECONDITION,"Deployment is not in a redeployable state, only deployments in INACTIVE or FAILED state can be redeployed");
-            
+            if(!crrStatus.repository) throw new GrpcAppError(status.FAILED_PRECONDITION,"The repository this depployment was created from has been removed. Cannot redeploy.");
+
             const deployment = await this._dbService.updateDeploymentById(deploymentId,projectId,{
                 status:"QUEUED",
                 lastDeployedAt:new Date()

@@ -26,6 +26,8 @@ message SubscriptionPerks {
   string perkId = 1;
   int32  staticProjects = 2;
   int32  dynamicProjects = 3;
+  int32  memoryLimitMB = 4;
+  double cpuLimitPercent = 5;
 }
 
 message RequestMeta {

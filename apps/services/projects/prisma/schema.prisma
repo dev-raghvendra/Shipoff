@@ -74,7 +74,7 @@ model Repository {
 
   deployments            Deployment[]
   project                Project @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
-  githubInstallation     GithubInstallation @relation(fields: [githubInstallationId], references: [githubInstallationId], onDelete:setNull)
+  githubInstallation     GithubInstallation @relation(fields: [githubInstallationId], references: [githubInstallationId], onDelete:SetNull)
 }
 
 

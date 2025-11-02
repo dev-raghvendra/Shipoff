@@ -4,12 +4,14 @@ import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Combobox, ComboboxOption } from "@/components/ui/combobox"
-import {  Loader2 } from "lucide-react"
+import {  Loader2, AlertTriangle } from "lucide-react"
 import { useFrameworks } from "@/hooks/use-project"
 import projectService from "@/services/projects.service"
 import { toast } from "sonner"
 import { Skeleton } from "@/components/ui/skeleton"
 import { FrameworkIcon } from "@/components/ui/framework-icon"
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
+import { useSession } from "@/context/session.context"
 
 interface FrameworkSettingsProps {
   projectId: string
@@ -23,12 +25,14 @@ interface FrameworkSettingsProps {
 }
 
 export function FrameworkSettings({ projectId, initialFrameworkId, initialBuildCommand, initialProdCommand, initialOutDir, refetchProject, isLoading  }: FrameworkSettingsProps) {
-
+  const { data: session } = useSession()
   const [originalFrameworkId, setOriginalFrameworkId] = useState(initialFrameworkId || "")
   const [originalProdCommand, setOriginalProdCommand] = useState(initialProdCommand || "")
   const [originalOutDir, setOriginalOutDir] = useState(initialOutDir || "")
   const [originalBuildCommand, setOriginalBuildCommand] = useState(initialBuildCommand || "")
   const [fetchNow, setFetchNow] = useState(false)
+  
+  const isFreeTier = session?.user?.subscription?.type === "FREE"
 
 
   const [selectedFrameworkId, setSelectedFrameworkId] = useState(initialFrameworkId || "")
@@ -138,6 +142,15 @@ export function FrameworkSettings({ projectId, initialFrameworkId, initialBuildC
 
   return (
     <div className="space-y-6">
+      {isFreeTier && (
+        <Alert variant="default" className="border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/30">
+          <AlertTriangle className="text-amber-600 dark:text-amber-400" />
+          <AlertTitle className="text-amber-900 dark:text-amber-100">Free Tier Limits</AlertTitle>
+          <AlertDescription className="text-amber-800 dark:text-amber-200">
+            For heavy projects on the free tier, build your artifacts locally and commit them to avoid memory limit errors during build or runtime. Free tier projects get 512MB memory and 0.1 CPU per deployment.
+          </AlertDescription>
+        </Alert>
+      )}
       <div className="grid gap-6 max-w-2xl">
         <div className="space-y-3">
           <label htmlFor="framework" className="text-sm font-medium">

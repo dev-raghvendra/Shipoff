@@ -107,7 +107,7 @@ export class ContainerConfigUtil {
                 value:commitHash
             },{
                 name:"SOFT_MEMORY_LIMIT",
-                value:`${750*1024*1024}`
+                value:`${CONFIG.FREE_TIER_MEMORY_LIMIT_BYTES}`
             },{
                 name:"BUILD_ID",
                 value:buildId

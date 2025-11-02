@@ -2,6 +2,9 @@ import { Input } from "@/components/ui/input"
 import { Combobox } from "@/components/ui/combobox"
 import { Skeleton } from "@/components/ui/skeleton"
 import { FrameworkIcon } from "@/components/ui/framework-icon"
+import { useSession } from "@/context/session.context"
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
+import { AlertTriangle } from "lucide-react"
 
 interface Framework {
   frameworkId: string
@@ -38,11 +41,24 @@ export function FrameworkStep({
   onProdCommandChange,
   onOutDirChange,
 }: FrameworkStepProps) {
+
+  const {data} = useSession()
+  const isFreeTier = data?.user?.subscription?.type === "FREE"
+
   return (
     <div className="space-y-3">
-      <div>
+      {isFreeTier && (
+        <Alert variant="default" className="border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/30">
+          <AlertTriangle className="text-amber-600 dark:text-amber-400" />
+          <AlertTitle className="text-amber-900 dark:text-amber-100">Free Tier Limits</AlertTitle>
+          <AlertDescription className="text-amber-800 dark:text-amber-200">
+            For heavy projects on the free tier, build your artifacts locally and commit them to avoid memory limit errors during build or runtime. Free tier projects get 512MB memory and 0.1 CPU per deployment.
+          </AlertDescription>
+        </Alert>
+      )}
+      <div> 
         <label className="text-xs text-muted-foreground">
-          Framework <span className="text-red-500">*</span>
+          Framework
         </label>
         {isLoadingFrameworks && <Skeleton className="mt-1 h-10 w-44" />}
         <Combobox

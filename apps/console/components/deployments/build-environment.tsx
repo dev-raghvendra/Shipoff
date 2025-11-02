@@ -41,6 +41,8 @@ export function BuildEnvironment({ data, isLoading = false }: BuildEnvironmentPr
   const statusesToKeepAlive = ["BUILDING", "PROVISIONING"]
   const isMobile = useIsMobile()
   const logsContainer = useRef<HTMLDivElement | null>(null)
+  const userHasScrolledRef = useRef(false)
+  const isScrollingRef = useRef(false)
 
   const getLogsStream = useCallback(async () => {
     try {
@@ -97,16 +99,26 @@ export function BuildEnvironment({ data, isLoading = false }: BuildEnvironmentPr
   }, [wsLogsBuffer])
 
   function scrollLogs(){
+    if (isScrollingRef.current) return
     requestAnimationFrame(() => {
-     if (logsContainer.current) {
-      const hasUserScrolled =  Math.abs(logsContainer.current.scrollHeight - logsContainer.current.clientHeight - logsContainer.current.scrollTop) > 2
-      if(hasUserScrolled) return
+     if (logsContainer.current && !userHasScrolledRef.current) {
+      isScrollingRef.current = true
       logsContainer.current.scrollTo({
         top: logsContainer.current.scrollHeight,
         behavior: "smooth"
       })
+      setTimeout(() => {
+        isScrollingRef.current = false
+      }, 300)
      }
     })
+  }
+
+  const handleLogsScroll = () => {
+    if (!logsContainer.current) return
+    const { scrollHeight, clientHeight, scrollTop } = logsContainer.current
+    const isAtBottom = Math.abs(scrollHeight - clientHeight - scrollTop) <= 5
+    userHasScrolledRef.current = !isAtBottom
   }
 
   useEffect(() => {
@@ -122,6 +134,11 @@ export function BuildEnvironment({ data, isLoading = false }: BuildEnvironmentPr
       if (timeoutId) clearTimeout(timeoutId)
     }
   }, [buildLogs])
+  
+  // Reset scroll tracking when new logs start
+  useEffect(() => {
+    userHasScrolledRef.current = false
+  }, [data?.buildId])
 
   useEffect(() => {
     if (!data) return
@@ -284,7 +301,7 @@ export function BuildEnvironment({ data, isLoading = false }: BuildEnvironmentPr
             </div>
           </div>
 
-          <div className="h-96 overflow-y-auto bg-zinc-50 dark:bg-zinc-950">
+          <div className="h-96 overflow-y-auto bg-zinc-50 dark:bg-zinc-950" ref={logsContainer} onScroll={handleLogsScroll}>
             {buildLogs.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center p-8">
                 <div className="p-4 rounded-md bg-muted/50 mb-4">
@@ -299,7 +316,7 @@ export function BuildEnvironment({ data, isLoading = false }: BuildEnvironmentPr
                 <p className="text-xs text-muted-foreground/70 mt-1">Try adjusting your search or filter criteria</p>
               </div>
             ) : (
-              <div className="p-0 font-mono text-sm" ref={logsContainer}>
+              <div className="p-0 font-mono text-sm">
                 {filteredLogs.map((log, index) => {
                   const logContent = (
                     <div 

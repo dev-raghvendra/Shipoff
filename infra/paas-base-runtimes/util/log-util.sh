@@ -9,9 +9,9 @@ log(){
     case $phase in
        SYSTEM)
         if [ "$ENVIRONMENT_TYPE" = "DEVELOPMENT" ]; then
-            echo "[$CURR_ENV_ID] [$timestamp] [SYSTEM] [$type]: $message" >> /logs/user-static-apps/app.log
+            echo "[$CURR_ENV_ID] [$timestamp] [SYSTEM] [$type]: => $message" >> /logs/user-static-apps/app.log
         else
-            echo "[$CURR_ENV_ID] [$timestamp] [SYSTEM] [$type]: $message"
+            echo "[$CURR_ENV_ID] [$timestamp] [SYSTEM] [$type]: => $message"
         fi
         ;;
        BUILD)

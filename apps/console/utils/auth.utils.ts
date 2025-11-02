@@ -114,8 +114,10 @@ export function returnErrorFromOAuth({name}:{name:string}):User{
             type:"FREE",
             perks:{
                 perkId:"FREE_PERKS",
-                staticProjects:2,
-                dynamicProjects:1
+                staticProjects:0,
+                dynamicProjects:0,
+                memoryLimitMB:0,
+                cpuLimitPercent:0
             },
             startedAt:"2024-01-01T00:00:00.000Z"
         },

@@ -268,6 +268,13 @@ export class K8Service {
             return false
         }
      }
+
+     getConfig(){
+        return this._k8Config;
+     }
+    getCoreApi(){
+            return this._coreApi;
+        }
 }
 
 export const K8ServiceClient = new K8Service();

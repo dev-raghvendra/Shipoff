@@ -45,6 +45,7 @@ const PLANS = [
     features: [
       { label: "4 Static Projects", icon: Globe, description: "Deploy React, Vue, Next.js static exports, and more" },
       { label: "1 Dynamic Project", icon: Zap, description: "Full-stack apps with server-side rendering and APIs" },
+      { label: "512MB Memory & 0.1 CPU", icon: Activity, description: "Per project with auto-scaling" },
       { label: "On-Demand Scaling", icon: Activity, description: "Automatically scales based on traffic" },
       { label: "Always-Up Static Sites", icon: Globe, description: "Static sites never sleep, available 24/7" },
       { label: "24hr Log Retention", icon: Activity, description: "Extend with persistent storage add-on" },
@@ -112,19 +113,6 @@ export default function AccountPage(){
       setEditing(false)
     }catch(e:any){
       toast.error(e?.message || "Failed to update name")
-    }
-  }
-
-  const handleDeleteInstallation = async () => {
-    try {
-      setIsDeleting(true)
-      // Implementation would go here
-      toast.success("GitHub installation removed successfully")
-      setInstallation(null)
-    } catch (e: any) {
-      toast.error(e?.message || "Failed to remove installation")
-    } finally {
-      setIsDeleting(false)
     }
   }
 
@@ -358,7 +346,7 @@ export default function AccountPage(){
                 )}
                 <Button 
                   variant="ghost" 
-                  onClick={handleDeleteInstallation}
+                  onClick={()=>window.location.href=`https://github.com/settings/installations/${installation.githubInstallationId}`}
                   disabled={isDeleting}
                   className="gap-2 text-destructive hover:text-destructive hover:bg-destructive/10 ml-auto"
                 >

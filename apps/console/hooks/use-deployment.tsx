@@ -5,8 +5,10 @@ import { useEffect, useRef } from "react"
 
 // Exponential backoff configuration
 const BASE_INTERVAL = 5000 // 5 seconds
-const MAX_INTERVAL = 60000 // 60 seconds
-const MAX_BACKOFF_MULTIPLIER = 12 // Cap at 60s (2^12 * 5s would be huge, but we cap at MAX_INTERVAL)
+const MAX_INTERVAL_INFINITE = 60000 // 60 seconds for infinite deployments list
+const MAX_BACKOFF_MULTIPLIER_INFINITE = 12 // Cap at 60s (2^12 * 5s would be huge, but we cap at MAX_INTERVAL)
+const MAX_INTERVAL_DETAIL = 20000 // 20 seconds for single deployment detail
+const MAX_BACKOFF_MULTIPLIER_DETAIL = 4 // Cap at 20s (2^4 * 5s = 20s)
 
 // Helper to create status signature from deployments
 function getStatusSignature(deployments: any[]): string {
@@ -59,14 +61,14 @@ export function useInfiniteDeployments({projectId}:{projectId:string}) {
                 // Status unchanged, increase backoff (exponential, capped)
                 backoffRef.current.multiplier = Math.min(
                     backoffRef.current.multiplier * 2,
-                    MAX_BACKOFF_MULTIPLIER
+                    MAX_BACKOFF_MULTIPLIER_INFINITE
                 )
             }
             
             // Calculate interval with exponential backoff
             const interval = Math.min(
                 BASE_INTERVAL * backoffRef.current.multiplier,
-                MAX_INTERVAL
+                MAX_INTERVAL_INFINITE
             )
             
             return interval
@@ -160,14 +162,14 @@ export function useDeployment({projectId,deploymentId}:{projectId:string,deploym
                 // Status unchanged, increase backoff (exponential, capped)
                 backoffRef.current.multiplier = Math.min(
                     backoffRef.current.multiplier * 2,
-                    MAX_BACKOFF_MULTIPLIER
+                    MAX_BACKOFF_MULTIPLIER_DETAIL
                 )
             }
             
             // Calculate interval with exponential backoff
             const interval = Math.min(
                 BASE_INTERVAL * backoffRef.current.multiplier,
-                MAX_INTERVAL
+                MAX_INTERVAL_DETAIL
             )
             
             return interval
