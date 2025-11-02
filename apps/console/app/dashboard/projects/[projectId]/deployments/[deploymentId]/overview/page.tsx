@@ -186,6 +186,21 @@ export default function DeploymentDetailPage() {
                   )}
                 </div>
               </div>
+
+              {/* CPU Limit */}
+              <div className="flex items-center gap-2">
+                <Cpu className="h-4 w-4 text-muted-foreground" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">CPU Limit</p>
+                  {isLoading ? (
+                    <Skeleton className="h-4 w-24 mt-1" />
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      0.{cpuLimitPercent}
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Right Column */}
@@ -252,21 +267,6 @@ export default function DeploymentDetailPage() {
                   ) : (
                     <p className="text-sm text-muted-foreground">
                       {memoryLimitMB}MB
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* CPU Limit */}
-              <div className="flex items-center gap-2">
-                <Cpu className="h-4 w-4 text-muted-foreground" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">CPU Limit</p>
-                  {isLoading ? (
-                    <Skeleton className="h-4 w-24 mt-1" />
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
-                      0.{cpuLimitPercent}
                     </p>
                   )}
                 </div>

@@ -40,7 +40,10 @@ cd "$REPO_DIR"
 
 log "SYSTEM" "INFO" "Checking out commit: $COMMIT_HASH"
 
-git checkout "$COMMIT_HASH"
+if ! git checkout "$COMMIT_HASH" 2>/var/log/git.log; then
+   error_exit "BUILD" "Invalid commit hash: $COMMIT_HASH, repository this deployment was associated to must have changed since the deployment was triggered" 
+fi
+
 run_filtered_build "$REPO_DIR" "$BUILD_COMMAND" "$OUT_DIR"
 
 log "SYSTEM" "INFO" "Deploying artifacts to: $DOMAIN"
