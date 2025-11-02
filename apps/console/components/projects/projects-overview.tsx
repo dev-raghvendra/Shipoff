@@ -304,15 +304,15 @@ export function ProjectOverview({ projectOverviewData, isLoading }: ProjectOverv
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3">
           <div>
-            <h1 className="text-xl font-semibold text-balance">{projectOverviewData.name}</h1>
+            <h1 className="text-xl font-semibold text-balance">{projectOverviewData?.name}</h1>
             <div className="mt-1 flex flex-wrap items-center gap-2">
               <Badge variant="secondary" className="flex items-center gap-1">
                 <span className="sr-only">Framework:</span>
-                <FrameworkIcon src={projectOverviewData.framework.keywordName} alt="" className="h-4 w-4" />
-                {projectOverviewData.framework.displayName}
+                <FrameworkIcon src={projectOverviewData?.framework.keywordName} alt="" className="h-4 w-4" />
+                {projectOverviewData?.framework.displayName}
               </Badge>
-              <RuntimeBadge value={projectOverviewData.framework.applicationType} />
-              {projectOverviewData.repository?.branch ? (
+              <RuntimeBadge value={projectOverviewData?.framework.applicationType} />
+              {projectOverviewData?.repository?.branch ? (
                 <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                   <GitBranch className="h-3 w-3" aria-hidden="true" />
                   {projectOverviewData.repository?.branch}
@@ -323,9 +323,9 @@ export function ProjectOverview({ projectOverviewData, isLoading }: ProjectOverv
         </div>
 
         <div className="flex items-center gap-2">
-          {projectOverviewData.repository?.githubRepoURI ? (
+          {projectOverviewData?.repository?.githubRepoURI ? (
             <Button asChild size="sm" variant="outline">
-              <Link href={projectOverviewData.repository.githubRepoURI} target="_blank" rel="noopener noreferrer">
+              <Link href={projectOverviewData?.repository?.githubRepoURI} target="_blank" rel="noopener noreferrer">
                 <Github className="mr-2 h-4 w-4" aria-hidden="true" />
                 Open repo
               </Link>
@@ -356,28 +356,28 @@ export function ProjectOverview({ projectOverviewData, isLoading }: ProjectOverv
                   <Users className="h-4 w-4" aria-hidden="true" />
                   Name
                 </span>
-                <span className="max-w-[60%] text-right font-medium">{projectOverviewData.name}</span>
+                <span className="max-w-[60%] text-right font-medium">{projectOverviewData?.name}</span>
               </li>
               <li className="flex items-start justify-between">
                 <span className="text-muted-foreground inline-flex items-center gap-2">
                   <ServerCog className="h-4 w-4" aria-hidden="true" />
                   Description
                 </span>
-                <span className="max-w-[60%] text-right text-muted-foreground">{projectOverviewData.description || "—"}</span>
+                <span className="max-w-[60%] text-right text-muted-foreground">{projectOverviewData?.description || "—"}</span>
               </li>
               <li className="flex items-center justify-between">
                 <span className="text-muted-foreground inline-flex items-center gap-2">
                   <CalendarClock className="h-4 w-4" aria-hidden="true" />
                   Created
                 </span>
-                <span>{new Date(projectOverviewData.createdAt).toLocaleString() || "—"}</span>
+                <span>{new Date(projectOverviewData?.createdAt).toLocaleString() || "—"}</span>
               </li>
               <li className="flex items-center justify-between">
                 <span className="text-muted-foreground inline-flex items-center gap-2">
                   <CalendarClock className="h-4 w-4" aria-hidden="true" />
                   Updated
                 </span>
-                <span>{new Date(projectOverviewData.updatedAt).toLocaleString() || "—"}</span>
+                <span>{new Date(projectOverviewData?.updatedAt).toLocaleString() || "—"}</span>
               </li>
             </ul>
           </CardContent>
@@ -391,11 +391,11 @@ export function ProjectOverview({ projectOverviewData, isLoading }: ProjectOverv
           <CardContent className="text-sm relative">
             {isLoading && <Skeleton className="absolute inset-0 h-4" />}
             <div className="space-y-3">
-              {projectOverviewData.domain ? (
+              {projectOverviewData?.domain ? (
                 <div className="flex items-center justify-between">
                   <span className="inline-flex items-center gap-2">
                     <Globe className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                    <span>{projectOverviewData.domain}</span>
+                    <span>{projectOverviewData?.domain}</span>
                   </span>
                   <Badge variant="outline">Primary</Badge>
                 </div>
@@ -419,7 +419,7 @@ export function ProjectOverview({ projectOverviewData, isLoading }: ProjectOverv
                   Branch
                 </span>
                 {isLoading && <Skeleton className="absolute inset-0 h-4" />}
-                <span>{projectOverviewData.repository?.branch || "—"}</span>
+                <span>{projectOverviewData?.repository?.branch || "—"}</span>
               </li>
               <li className="flex items-center mt-2 justify-between sm:col-span-2 relative">
                 <span className="text-muted-foreground inline-flex items-center gap-2">
@@ -427,14 +427,14 @@ export function ProjectOverview({ projectOverviewData, isLoading }: ProjectOverv
                   Repo
                 </span>
                 {isLoading && <Skeleton className="absolute inset-0 h-4" />}
-                {projectOverviewData.repository?.githubRepoFullName ? (
+                {projectOverviewData?.repository?.githubRepoFullName ? (
                   <Link
-                    href={projectOverviewData.repository?.githubRepoURI}
+                    href={projectOverviewData?.repository?.githubRepoURI}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="truncate text-right underline underline-offset-4"
                   >
-                    {projectOverviewData.repository?.githubRepoFullName}
+                    {projectOverviewData?.repository?.githubRepoFullName}
                   </Link>
                 ) : (
                   <span>—</span>
@@ -460,8 +460,8 @@ export function ProjectOverview({ projectOverviewData, isLoading }: ProjectOverv
                 <span className="inline-flex items-center gap-2 relative">
                   {isLoading && <Skeleton className="absolute inset-0 h-4" />}
                   <Badge variant="secondary">
-                  <FrameworkIcon src={projectOverviewData.framework.keywordName} alt={projectOverviewData.framework.displayName} className="h-4 w-4" />{projectOverviewData.framework.displayName}</Badge>
-                  <RuntimeBadge value={projectOverviewData.framework.applicationType} />
+                  <FrameworkIcon src={projectOverviewData?.framework?.keywordName} alt={projectOverviewData?.framework?.displayName} className="h-4 w-4" />{projectOverviewData?.framework?.displayName}</Badge>
+                  <RuntimeBadge value={projectOverviewData?.framework?.applicationType} />
                 </span>
               </li>
               <li className="flex items-center justify-between">
@@ -471,7 +471,7 @@ export function ProjectOverview({ projectOverviewData, isLoading }: ProjectOverv
                 </span>
                 <span className="font-mono relative block">
                   {isLoading && <Skeleton className="absolute inset-0 h-4" />}
-                  {projectOverviewData.outDir || "—"}</span>
+                  {projectOverviewData?.outDir || "—"}</span>
               </li>
               <li className="flex items-center justify-between">
                 <span className="text-muted-foreground inline-flex items-center gap-2">
@@ -479,7 +479,7 @@ export function ProjectOverview({ projectOverviewData, isLoading }: ProjectOverv
                   Build command
                 </span>
                 <span className="font-mono block relative">{isLoading && <Skeleton className="absolute inset-0 h-4" />}
-                  {projectOverviewData.buildCommand || "—"}</span>
+                  {projectOverviewData?.buildCommand || "—"}</span>
               </li>
               <li className="flex items-center justify-between">
                 <span className="text-muted-foreground inline-flex items-center gap-2">
@@ -488,7 +488,7 @@ export function ProjectOverview({ projectOverviewData, isLoading }: ProjectOverv
                 </span>
                 <span className="font-mono relative block">
                   {isLoading && <Skeleton className="absolute inset-0 h-4" />}
-                  {projectOverviewData.prodCommand || "—"}</span>
+                  {projectOverviewData?.prodCommand || "—"}</span>
               </li>
               <li className="flex items-center justify-between">
                 <span className="text-muted-foreground inline-flex items-center gap-2">
@@ -592,7 +592,7 @@ export function ProjectOverview({ projectOverviewData, isLoading }: ProjectOverv
           <CardContent className="text-sm space-y-3 relative">
             {isLoading && <Skeleton className="absolute inset-0 h-4" />}
             {(() => {
-              const latest = (projectOverviewData.deployments || [])[0]
+              const latest = (projectOverviewData?.deployments || [])[0]
               if (!latest) {
                 return <p className="text-muted-foreground">No deployments yet.</p>
               }
