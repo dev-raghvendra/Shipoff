@@ -38,8 +38,9 @@ import { useSession } from "@/context/session.context"
 export interface ProjectOverviewProps {projectOverviewData: InferResponse<ProjectResponse>["res"],isLoading?:boolean}
 
 function RuntimeBadge({ value, className }: { value: ProjectOverviewProps["projectOverviewData"]["framework"]["applicationType"]; className?: string }) {
+  if (!value) return null
   
-const isStatic = value === "STATIC"
+  const isStatic = value === "STATIC"
 
   return (
     <Badge
@@ -104,85 +105,6 @@ export function ProjectOverview({ projectOverviewData, isLoading }: ProjectOverv
     } finally {
       setIsLinking(false)
     }
-  }
-
-  // Show loading state if data is still loading
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-start gap-3 flex-1">
-            <div className="flex-1 space-y-2">
-              <Skeleton className="h-8 w-64" />
-              <div className="flex gap-2">
-                <Skeleton className="h-5 w-24" />
-                <Skeleton className="h-5 w-20" />
-                <Skeleton className="h-5 w-16" />
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Skeleton className="h-9 w-32" />
-            <Skeleton className="h-9 w-32" />
-            <Skeleton className="h-9 w-36" />
-          </div>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card>
-            <CardHeader className="pb-3">
-              <Skeleton className="h-5 w-24" />
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="flex justify-between">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-4 w-32" />
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <Skeleton className="h-5 w-40" />
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="flex justify-between">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-4 w-40" />
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card>
-            <CardHeader className="pb-3">
-              <Skeleton className="h-5 w-32" />
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} className="h-20 w-full" />
-              ))}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <Skeleton className="h-5 w-32" />
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {Array.from({ length: 2 }).map((_, i) => (
-                <Skeleton key={i} className="h-16 w-full" />
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -304,41 +226,65 @@ export function ProjectOverview({ projectOverviewData, isLoading }: ProjectOverv
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3">
           <div>
-            <h1 className="text-xl font-semibold text-balance">{projectOverviewData?.name}</h1>
+            {isLoading ? (
+              <Skeleton className="h-7 w-64 mb-2" />
+            ) : (
+              <h1 className="text-xl font-semibold text-balance">{projectOverviewData?.name}</h1>
+            )}
             <div className="mt-1 flex flex-wrap items-center gap-2">
-              <Badge variant="secondary" className="flex items-center gap-1">
-                <span className="sr-only">Framework:</span>
-                <FrameworkIcon src={projectOverviewData?.framework.keywordName} alt="" className="h-4 w-4" />
-                {projectOverviewData?.framework.displayName}
-              </Badge>
-              <RuntimeBadge value={projectOverviewData?.framework.applicationType} />
-              {projectOverviewData?.repository?.branch ? (
-                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                  <GitBranch className="h-3 w-3" aria-hidden="true" />
-                  {projectOverviewData.repository?.branch}
-                </span>
-              ) : null}
+              {isLoading ? (
+                <>
+                  <Skeleton className="h-5 w-24" />
+                  <Skeleton className="h-5 w-20" />
+                  <Skeleton className="h-5 w-16" />
+                </>
+              ) : (
+                <>
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <span className="sr-only">Framework:</span>
+                    <FrameworkIcon src={projectOverviewData?.framework.keywordName} alt="" className="h-4 w-4" />
+                    {projectOverviewData?.framework.displayName}
+                  </Badge>
+                  <RuntimeBadge value={projectOverviewData?.framework.applicationType} />
+                  {projectOverviewData?.repository?.branch ? (
+                    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                      <GitBranch className="h-3 w-3" aria-hidden="true" />
+                      {projectOverviewData.repository?.branch}
+                    </span>
+                  ) : null}
+                </>
+              )}
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          {projectOverviewData?.repository?.githubRepoURI ? (
-            <Button asChild size="sm" variant="outline">
-              <Link href={projectOverviewData?.repository?.githubRepoURI} target="_blank" rel="noopener noreferrer">
-                <Github className="mr-2 h-4 w-4" aria-hidden="true" />
-                Open repo
-              </Link>
-            </Button>
-          ) : null}
-          <Button size="sm" variant="outline" onClick={() => setIsLinkTeamDialogOpen(true)}>
-            <Link2 className="mr-2 h-4 w-4" />
-            Link Team
-          </Button>
-          <Button size="sm" variant="outline">
-            <Users2 className="mr-2 h-4 w-4" />
-            Invite Member
-          </Button>
+          {isLoading ? (
+            <>
+              <Skeleton className="h-9 w-32" />
+              <Skeleton className="h-9 w-32" />
+              <Skeleton className="h-9 w-36" />
+            </>
+          ) : (
+            <>
+              {projectOverviewData?.repository?.githubRepoURI ? (
+                <Button asChild size="sm" variant="outline">
+                  <Link href={projectOverviewData?.repository?.githubRepoURI} target="_blank" rel="noopener noreferrer">
+                    <Github className="mr-2 h-4 w-4" aria-hidden="true" />
+                    Open repo
+                  </Link>
+                </Button>
+              ) : null}
+              <Button size="sm" variant="outline" onClick={() => setIsLinkTeamDialogOpen(true)}>
+                <Link2 className="mr-2 h-4 w-4" />
+                Link Team
+              </Button>
+              <Button size="sm" variant="outline">
+                <Users2 className="mr-2 h-4 w-4" />
+                Invite Member
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
@@ -356,28 +302,44 @@ export function ProjectOverview({ projectOverviewData, isLoading }: ProjectOverv
                   <Users className="h-4 w-4" aria-hidden="true" />
                   Name
                 </span>
-                <span className="max-w-[60%] text-right font-medium">{projectOverviewData?.name}</span>
+                {isLoading ? (
+                  <Skeleton className="h-4 w-32" />
+                ) : (
+                  <span className="max-w-[60%] text-right font-medium">{projectOverviewData?.name}</span>
+                )}
               </li>
               <li className="flex items-start justify-between">
                 <span className="text-muted-foreground inline-flex items-center gap-2">
                   <ServerCog className="h-4 w-4" aria-hidden="true" />
                   Description
                 </span>
-                <span className="max-w-[60%] text-right text-muted-foreground">{projectOverviewData?.description || "—"}</span>
+                {isLoading ? (
+                  <Skeleton className="h-4 w-40" />
+                ) : (
+                  <span className="max-w-[60%] text-right text-muted-foreground">{projectOverviewData?.description || "—"}</span>
+                )}
               </li>
               <li className="flex items-center justify-between">
                 <span className="text-muted-foreground inline-flex items-center gap-2">
                   <CalendarClock className="h-4 w-4" aria-hidden="true" />
                   Created
                 </span>
-                <span>{new Date(projectOverviewData?.createdAt).toLocaleString() || "—"}</span>
+                {isLoading ? (
+                  <Skeleton className="h-4 w-40" />
+                ) : (
+                  <span>{new Date(projectOverviewData?.createdAt).toLocaleString() || "—"}</span>
+                )}
               </li>
               <li className="flex items-center justify-between">
                 <span className="text-muted-foreground inline-flex items-center gap-2">
                   <CalendarClock className="h-4 w-4" aria-hidden="true" />
                   Updated
                 </span>
-                <span>{new Date(projectOverviewData?.updatedAt).toLocaleString() || "—"}</span>
+                {isLoading ? (
+                  <Skeleton className="h-4 w-40" />
+                ) : (
+                  <span>{new Date(projectOverviewData?.updatedAt).toLocaleString() || "—"}</span>
+                )}
               </li>
             </ul>
           </CardContent>
@@ -388,56 +350,72 @@ export function ProjectOverview({ projectOverviewData, isLoading }: ProjectOverv
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Domains & Repository</CardTitle>
           </CardHeader>
-          <CardContent className="text-sm relative">
-            {isLoading && <Skeleton className="absolute inset-0 h-4" />}
+          <CardContent className="text-sm">
             <div className="space-y-3">
-              {projectOverviewData?.domain ? (
-                <div className="flex items-center justify-between">
-                  <span className="inline-flex items-center gap-2">
-                    <Globe className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                    <span>{projectOverviewData?.domain}</span>
-                  </span>
-                  <Badge variant="outline">Primary</Badge>
-                </div>
-              ) : null}
+              {isLoading ? (
+                <>
+                  <div className="flex items-center justify-between">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-5 w-16" />
+                  </div>
+                </>
+              ) : (
+                <>
+                  {projectOverviewData?.domain ? (
+                    <div className="flex items-center justify-between">
+                      <span className="inline-flex items-center gap-2">
+                        <Globe className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                        <span>{projectOverviewData?.domain}</span>
+                      </span>
+                      <Badge variant="outline">Primary</Badge>
+                    </div>
+                  ) : null}
 
-              {(Array.isArray(projectOverviewData.domain) ? projectOverviewData.domain : []).map((d) => (
-                <div key={d} className="flex items-center justify-between">
-                  <span className="inline-flex items-center gap-2">
-                    <LinkIcon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                    <span>{d}</span>
-                  </span>
-                </div>
-              ))}
-
-               
+                  {(Array.isArray(projectOverviewData.domain) ? projectOverviewData.domain : []).map((d) => (
+                    <div key={d} className="flex items-center justify-between">
+                      <span className="inline-flex items-center gap-2">
+                        <LinkIcon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                        <span>{d}</span>
+                      </span>
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
             <div className="mt-6">
-              <li className="flex items-center  justify-between relative">
+              <li className="flex items-center justify-between">
                 <span className="text-muted-foreground inline-flex items-center gap-2">
                   <GitBranch className="h-4 w-4" aria-hidden="true" />
                   Branch
                 </span>
-                {isLoading && <Skeleton className="absolute inset-0 h-4" />}
-                <span>{projectOverviewData?.repository?.branch || "—"}</span>
+                {isLoading ? (
+                  <Skeleton className="h-4 w-32" />
+                ) : (
+                  <span>{projectOverviewData?.repository?.branch || "—"}</span>
+                )}
               </li>
-              <li className="flex items-center mt-2 justify-between sm:col-span-2 relative">
+              <li className="flex items-center mt-2 justify-between sm:col-span-2">
                 <span className="text-muted-foreground inline-flex items-center gap-2">
                   <Github className="h-4 w-4" aria-hidden="true" />
                   Repo
                 </span>
-                {isLoading && <Skeleton className="absolute inset-0 h-4" />}
-                {projectOverviewData?.repository?.githubRepoFullName ? (
-                  <Link
-                    href={projectOverviewData?.repository?.githubRepoURI}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="truncate text-right underline underline-offset-4"
-                  >
-                    {projectOverviewData?.repository?.githubRepoFullName}
-                  </Link>
+                {isLoading ? (
+                  <Skeleton className="h-4 w-48" />
                 ) : (
-                  <span>—</span>
+                  <>
+                    {projectOverviewData?.repository?.githubRepoFullName ? (
+                      <Link
+                        href={projectOverviewData?.repository?.githubRepoURI}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="truncate text-right underline underline-offset-4"
+                      >
+                        {projectOverviewData?.repository?.githubRepoFullName}
+                      </Link>
+                    ) : (
+                      <span>—</span>
+                    )}
+                  </>
                 )}
               </li>
             </div>
@@ -457,56 +435,71 @@ export function ProjectOverview({ projectOverviewData, isLoading }: ProjectOverv
                   <ServerCog className="h-4 w-4" aria-hidden="true" />
                   Framework
                 </span>
-                <span className="inline-flex items-center gap-2 relative">
-                  {isLoading && <Skeleton className="absolute inset-0 h-4" />}
-                  <Badge variant="secondary">
-                  <FrameworkIcon src={projectOverviewData?.framework?.keywordName} alt={projectOverviewData?.framework?.displayName} className="h-4 w-4" />{projectOverviewData?.framework?.displayName}</Badge>
-                  <RuntimeBadge value={projectOverviewData?.framework?.applicationType} />
-                </span>
+                {isLoading ? (
+                  <Skeleton className="h-5 w-40" />
+                ) : (
+                  <span className="inline-flex items-center gap-2">
+                    <Badge variant="secondary">
+                      <FrameworkIcon src={projectOverviewData?.framework?.keywordName} alt={projectOverviewData?.framework?.displayName} className="h-4 w-4" />{projectOverviewData?.framework?.displayName}
+                    </Badge>
+                    <RuntimeBadge value={projectOverviewData?.framework?.applicationType} />
+                  </span>
+                )}
               </li>
               <li className="flex items-center justify-between">
                 <span className="text-muted-foreground inline-flex items-center gap-2">
                   <Folder className="h-4 w-4" aria-hidden="true" />
                   Output directory
                 </span>
-                <span className="font-mono relative block">
-                  {isLoading && <Skeleton className="absolute inset-0 h-4" />}
-                  {projectOverviewData?.outDir || "—"}</span>
+                {isLoading ? (
+                  <Skeleton className="h-4 w-32" />
+                ) : (
+                  <span className="font-mono">{projectOverviewData?.outDir || "—"}</span>
+                )}
               </li>
               <li className="flex items-center justify-between">
                 <span className="text-muted-foreground inline-flex items-center gap-2">
                   <Terminal className="h-4 w-4" aria-hidden="true" />
                   Build command
                 </span>
-                <span className="font-mono block relative">{isLoading && <Skeleton className="absolute inset-0 h-4" />}
-                  {projectOverviewData?.buildCommand || "—"}</span>
+                {isLoading ? (
+                  <Skeleton className="h-4 w-48" />
+                ) : (
+                  <span className="font-mono">{projectOverviewData?.buildCommand || "—"}</span>
+                )}
               </li>
               <li className="flex items-center justify-between">
                 <span className="text-muted-foreground inline-flex items-center gap-2">
                   <Terminal className="h-4 w-4" aria-hidden="true" />
                   Production command
                 </span>
-                <span className="font-mono relative block">
-                  {isLoading && <Skeleton className="absolute inset-0 h-4" />}
-                  {projectOverviewData?.prodCommand || "—"}</span>
+                {isLoading ? (
+                  <Skeleton className="h-4 w-48" />
+                ) : (
+                  <span className="font-mono">{projectOverviewData?.prodCommand || "—"}</span>
+                )}
               </li>
               <li className="flex items-center justify-between">
                 <span className="text-muted-foreground inline-flex items-center gap-2">
                   <HardDrive className="h-4 w-4" aria-hidden="true" />
                   Memory Limit
                 </span>
-                <span className="font-mono relative block">
-                  {isLoading && <Skeleton className="absolute inset-0 h-4" />}
-                  {memoryLimitMB}MB</span>
+                {isLoading ? (
+                  <Skeleton className="h-4 w-24" />
+                ) : (
+                  <span className="font-mono">{memoryLimitMB}MB</span>
+                )}
               </li>
               <li className="flex items-center justify-between">
                 <span className="text-muted-foreground inline-flex items-center gap-2">
                   <Cpu className="h-4 w-4" aria-hidden="true" />
                   CPU Limit
                 </span>
-                <span className="font-mono relative block">
-                  {isLoading && <Skeleton className="absolute inset-0 h-4" />}
-                  0.{cpuLimitPercent}</span>
+                {isLoading ? (
+                  <Skeleton className="h-4 w-16" />
+                ) : (
+                  <span className="font-mono">0.{cpuLimitPercent}</span>
+                )}
               </li>
             </ul>
           </CardContent>
@@ -589,15 +582,20 @@ export function ProjectOverview({ projectOverviewData, isLoading }: ProjectOverv
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Latest deployment</CardTitle>
           </CardHeader>
-          <CardContent className="text-sm space-y-3 relative">
-            {isLoading && <Skeleton className="absolute inset-0 h-4" />}
-            {(() => {
-              const latest = (projectOverviewData?.deployments || [])[0]
-              if (!latest) {
-                return <p className="text-muted-foreground">No deployments yet.</p>
-              }
-              return <DeploymentCard d={{...latest,project:projectOverviewData}} />
-            })()}
+          <CardContent className="text-sm space-y-3">
+            {isLoading ? (
+              <Skeleton className="h-24 w-full rounded-lg" />
+            ) : (
+              <>
+                {(() => {
+                  const latest = (projectOverviewData?.deployments || [])[0]
+                  if (!latest) {
+                    return <p className="text-muted-foreground">No deployments yet.</p>
+                  }
+                  return <DeploymentCard d={{...latest,project:projectOverviewData}} />
+                })()}
+              </>
+            )}
             <div>
               <Button asChild size="sm" variant="ghost" className="px-0">
                 <Link href={`./deployments`}>View all deployments</Link>
