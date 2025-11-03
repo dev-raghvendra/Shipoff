@@ -20,18 +20,7 @@ export function serviceResIntercepter(this:BaseService){
        }
        if((res.response?.data as any)?.message){
          const msg = (res.response?.data as any).message.match(/^[0-9]+\s+[A-Z_]+:\s*(.*)$/)?.[1]
-         if (msg) return Promise.reject(
-            {
-              ...res,
-              response:{
-                ...res.response,
-                data:{
-                  ...(res.response?.data as object),
-                  message:msg
-                }
-              }
-            }
-         )
+         if(msg) res.response!.data = { ...(res.response!.data as object), message: msg }
        }
        return Promise.reject(res);
     }
