@@ -97,7 +97,7 @@ export default function DeploymentDetailPage() {
           ) : (
             statusBadge(deployment.status)
           )}
-          {!isLoading && ["PRODUCTION","FAILED","QUEUED"].includes(deployment.status) && (
+          {!isLoading && ["PRODUCTION","FAILED","INACTIVE"].includes(deployment.status) && (
             <Button
               size="sm"
               variant="outline"
