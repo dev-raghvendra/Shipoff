@@ -3,7 +3,6 @@ import Link from 'next/link'
 import { ArrowLeft, Github, Rocket, Code2, Database, Zap, Users, Settings, Book } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Logo } from '@/components/ui/logo'
-import { CONFIG } from '../config/config'
 
 export const metadata: Metadata = {
   title: 'About | Shipoff',
@@ -22,7 +21,7 @@ export const metadata: Metadata = {
     url: 'https://shipoff.in/about',
     images: [
       {
-        url: 'https://shipoff.in/meta/og-image.webp',
+        url: 'https://shipoff.in/meta/og-image.webp'
         width: 1200,
         height: 630,
         alt: 'Shipoff – From Code to Cloud in Seconds',
