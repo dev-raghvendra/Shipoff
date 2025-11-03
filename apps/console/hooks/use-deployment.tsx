@@ -136,9 +136,6 @@ export function useDeployment({projectId,deploymentId}:{projectId:string,deploym
     const {isSuccess,data,...rest} = useQuery({
         queryKey:QUERY_KEYS.deployments.detail(projectId,deploymentId),
         queryFn:()=>projectService.getDeployment({projectId,deploymentId}),
-        initialData:()=>{
-            return queryClient.getQueryData(QUERY_KEYS.deployments.detail(projectId,deploymentId))
-        },
         refetchInterval: (query) => {
             const deployment = query.state.data as any
             const currentStatus = deployment?.res?.status || ''
