@@ -95,9 +95,9 @@ export default function DeploymentDetailPage() {
           {isLoading ? (
             <Skeleton className="h-6 w-24" />
           ) : (
-            statusBadge(deployment.status)
+            statusBadge(deployment?.status)
           )}
-          {!isLoading && ["PRODUCTION","FAILED","INACTIVE"].includes(deployment.status) && (
+          {!isLoading && ["PRODUCTION","FAILED","INACTIVE"].includes(deployment?.status) && (
             <Button
               size="sm"
               variant="outline"
@@ -118,7 +118,7 @@ export default function DeploymentDetailPage() {
               <span className="hidden sm:inline">Redeploy</span>
             </Button>
           )}
-          {!isLoading && ["FAILED","INACTIVE"].includes(deployment.status) && (
+          {!isLoading && ["FAILED","INACTIVE"].includes(deployment?.status) && (
             <Button
               size="sm"
               variant="ghost"
@@ -151,7 +151,7 @@ export default function DeploymentDetailPage() {
                     <Skeleton className="h-4 w-48 mt-1" />
                   ) : (
                     <p className="text-sm text-muted-foreground truncate">
-                      {deployment.project.domain}
+                      {deployment?.project.domain}
                     </p>
                   )}
                 </div>
@@ -166,7 +166,7 @@ export default function DeploymentDetailPage() {
                     <Skeleton className="h-4 w-64 mt-1" />
                   ) : (
                     <p className="text-sm text-muted-foreground truncate">
-                      {deployment.repository?.githubRepoFullName || "Not linked"}
+                      {deployment?.repository?.githubRepoFullName || "Not linked"}
                     </p>
                   )}
                 </div>
@@ -181,7 +181,7 @@ export default function DeploymentDetailPage() {
                     <Skeleton className="h-4 w-32 mt-1" />
                   ) : (
                     <p className="text-sm text-muted-foreground">
-                      {deployment.repository?.branch || "-"}
+                      {deployment?.repository?.branch || "-"}
                     </p>
                   )}
                 </div>
@@ -215,12 +215,12 @@ export default function DeploymentDetailPage() {
                   ) : (
                     <div className="flex items-center gap-2 mt-1">
                       <FrameworkIcon 
-                        src={deployment.project.framework.keywordName} 
-                        alt={deployment.project.framework.displayName}
+                        src={deployment?.project.framework.keywordName} 
+                        alt={deployment?.project.framework.displayName}
                         className="h-4 w-4" 
                       />
                       <p className="text-sm text-muted-foreground">
-                        {deployment.project.framework.displayName}
+                        {deployment?.project.framework.displayName}
                       </p>
                     </div>
                   )}
@@ -236,7 +236,7 @@ export default function DeploymentDetailPage() {
                     <Skeleton className="h-4 w-32 mt-1" />
                   ) : (
                     <p className="text-sm text-muted-foreground font-mono truncate">
-                      {deployment.commitHash}
+                      {deployment?.commitHash}
                     </p>
                   )}
                 </div>
@@ -251,7 +251,7 @@ export default function DeploymentDetailPage() {
                     <Skeleton className="h-4 w-48 mt-1" />
                   ) : (
                     <p className="text-sm text-muted-foreground truncate">
-                      {deployment.author}
+                      {deployment?.author}
                     </p>
                   )}
                 </div>
@@ -284,7 +284,7 @@ export default function DeploymentDetailPage() {
                   <Skeleton className="h-4 w-48 mt-1" />
                 ) : (
                   <p className="text-sm text-muted-foreground">
-                    {new Date(deployment.lastDeployedAt).toLocaleString()}
+                    {new Date(deployment?.lastDeployedAt).toLocaleString()}
                   </p>
                 )}
               </div>
