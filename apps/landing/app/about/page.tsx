@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     url: 'https://shipoff.in/about',
     images: [
       {
-        url: 'https://shipoff.in/meta/og-image.webp'
+        url: 'https://shipoff.in/meta/og-image.webp',
         width: 1200,
         height: 630,
         alt: 'Shipoff – From Code to Cloud in Seconds',
