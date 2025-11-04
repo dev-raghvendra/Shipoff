@@ -32,7 +32,7 @@ export class AuthExternalService {
             return res.res;
         } catch (e:any) {
             if (e.code === status.PERMISSION_DENIED){
-                new GrpcAppError(status.PERMISSION_DENIED, errMsg || "You do not have permission to perform this action")
+              throw  new GrpcAppError(status.PERMISSION_DENIED, errMsg || "You do not have permission to perform this action")
           }
           throw new GrpcAppError(status.INTERNAL,"Unexpected error occurred",e)
         }

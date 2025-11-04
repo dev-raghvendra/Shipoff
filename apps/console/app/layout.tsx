@@ -38,7 +38,7 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title,
       description,
-      url: 'https://console.shipoff.in',
+      url: 'https://console.shipoff.in/signin',
       siteName: 'Shipoff Console',
       type: 'website',
       images: [
@@ -67,11 +67,11 @@ export async function generateMetadata(): Promise<Metadata> {
     manifest: '/meta/site.webmanifest',
 
     robots: {
-      index: false,
-      follow: false,
+      index: isAuthPage,
+      follow: isAuthPage,
       googleBot: {
-        index: false,
-        follow: false,
+        index: isAuthPage,
+        follow: isAuthPage,
       },
     },
   }

@@ -1,3 +1,4 @@
+// landing app: app/robots.ts
 import type { MetadataRoute } from 'next'
  
 export default function robots(): MetadataRoute.Robots {
@@ -5,7 +6,6 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: '/private/',
     },
     sitemap: 'https://shipoff.in/sitemap.xml',
   }
