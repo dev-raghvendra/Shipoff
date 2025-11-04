@@ -80,7 +80,7 @@ export function TeamMembersDialog({
       try {
        const res =  await teamsService.inviteTeamMember({teamId:team.teamId,role})
        const base = window.location.origin
-       const link = `${base}dashboard/teams/invite/${res.res.inviteId}`
+       const link = `${base}/dashboard/teams/invite/${res.res.inviteId}`
        setInviteLink(link)
       } catch (error:any) {
           toast.error(error.message || "Failed to generate invite link")

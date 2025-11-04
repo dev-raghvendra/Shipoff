@@ -23,7 +23,6 @@ import { teamsService } from "@/services/teams.service"
 import { toast } from "sonner"
 import { useLoadMore } from "@/hooks/use-load-more"
 import { useQueryClient } from "@tanstack/react-query"
-import { QUERY_KEYS } from "@/lib/tanstack"
 
 export type Team = InferResponse<GetTeamResponse>["res"]
 

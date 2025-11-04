@@ -70,7 +70,7 @@ export function useInfiniteTeamMembers({teamId, limit, fetchNow}:{teamId:string,
         queryKey:QUERY_KEYS.teamMembers.infinite(teamId, limit),
         queryFn:({pageParam=0})=>teamsService.getTeamMembers({teamId, limit, skip:pageParam}),
         getNextPageParam:(lastPage, allPages) => {
-            if(lastPage.res.length < limit) return undefined
+            if(lastPage.res?.length < limit) return undefined
             return (allPages.length * limit)
         },
         initialPageParam:0,
