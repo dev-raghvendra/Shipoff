@@ -31,7 +31,6 @@ export function useLinkedTeams({projectId,enabled}:{projectId:string,enabled?:bo
 }
 
 export function useInfiniteTeams({limit}:{limit:number}) {
-    const queryClient = useQueryClient()
     const {data, isSuccess, ...rest} = useInfiniteQuery({
         queryKey:QUERY_KEYS.teams.infinite(limit),
         queryFn:({pageParam=0})=>teamsService.getAllTeams({limit,skip:pageParam}),
@@ -41,21 +40,6 @@ export function useInfiniteTeams({limit}:{limit:number}) {
         },
         initialPageParam:0,
     })
-
-    useEffect(()=>{
-        if(isSuccess && data && queryClient){
-            try {
-                const allTeams = data.pages.flatMap(page=>page.res)
-                allTeams.forEach(team=>{
-                    queryClient.setQueriesData({queryKey:QUERY_KEYS.teams.detail(team.teamId)},team)
-                })
-            } catch (error) {
-                console.warn('Failed to set queries data for teams:', error)
-            }
-        }
-    },[isSuccess, data, queryClient])
-
-
     
     return {
         data:data?.pages.flatMap(page=>page.res) || [],
@@ -65,30 +49,16 @@ export function useInfiniteTeams({limit}:{limit:number}) {
 }
 
 export function useInfiniteTeamMembers({teamId, limit, fetchNow}:{teamId:string, limit:number, fetchNow?:boolean}) {
-    const queryClient = useQueryClient()
     const {data, isSuccess, ...rest} = useInfiniteQuery({
         queryKey:QUERY_KEYS.teamMembers.infinite(teamId, limit),
         queryFn:({pageParam=0})=>teamsService.getTeamMembers({teamId, limit, skip:pageParam}),
         getNextPageParam:(lastPage, allPages) => {
-            if(lastPage.res?.length < limit) return undefined
+            if(lastPage.res.length < limit) return undefined
             return (allPages.length * limit)
         },
         initialPageParam:0,
         enabled:fetchNow
     })
-
-    useEffect(()=>{
-        if(isSuccess && data && queryClient){
-            try {
-                const allTeamMembers = data.pages.flatMap(page=>page.res)
-                allTeamMembers.forEach(member=>{
-                    queryClient.setQueriesData({queryKey:QUERY_KEYS.teamMembers.detail(teamId, member.userId)},member)
-                })
-            } catch (error) {
-                console.warn('Failed to set queries data for team members:', error)
-            }
-        }
-    },[isSuccess, data, queryClient, teamId])
 
     return {
         data:data?.pages.flatMap(page=>page.res) || [],
