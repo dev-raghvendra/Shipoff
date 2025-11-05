@@ -177,12 +177,7 @@ useEffect(()=>{
                   <Label htmlFor="password" className="text-foreground">
                     Password
                   </Label>
-                  <Link
-                    href="/forgot-password"
-                    className="text-sm text-primary hover:text-primary/80 transition-colors"
-                  >
-                    Forgot password?
-                  </Link>
+                  
                 </div>
                 <Input value={password} onChange={(e) => setPassword(e.target.value)} id="password" type="password" placeholder="Enter your password" className="h-11" />
               </div>
