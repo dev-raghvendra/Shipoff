@@ -363,7 +363,7 @@ export default function DocsPage() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <p className="text-muted-foreground">
-                      Visit <Link href="/login" className="text-primary hover:underline">shipoff.in/login</Link> and create your account. 
+                      Visit <Link href="https://console.shipoff.in/signin" className="text-primary hover:underline">console.shipoff.in/signin</Link> and create your account. 
                       You can sign up with your email or use GitHub OAuth for a faster setup.
                     </p>
                     <div className="bg-muted p-4 rounded-lg">
