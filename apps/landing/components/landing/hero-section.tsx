@@ -34,7 +34,7 @@ export function HeroSection() {
             <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-primary text-primary-foreground">
               New
             </span>
-            <span className="text-foreground/80">Deploy in seconds, scale infinitely</span>
+            <span className="text-foreground/80">Not backed by Y Combinator</span>
             <ArrowRight className="size-3.5 text-primary" />
           </motion.div>
         
