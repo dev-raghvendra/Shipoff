@@ -167,19 +167,7 @@ export class DeploymentConsumer implements IDeploymentConsumer {
 
 
     REQUESTED = async(event:DeploymentEvent<keyof typeof $DeploymentEvent>)=>{
-        let res;
-        const project = await this._projectService.getProjectById(event.projectId,event.requestId)
-        if(!project.deployments.length){
-             this._errHandler({},"PROCCESSING_'REQUESTED'_EVENT",event.requestId,`NO_DEPLOYMENTS_FOUND_FOR_PROJECT_ID_${event.projectId}_IN_DEPLOYMENT_CONSUMER_AT_${this._consumer._serviceName}`);
-             return false
-        }
-        res = await this._k8ServiceClient.tryCreatingFreeTierDeployment({
-            projectId:event.projectId,
-            deploymentId:project.deployments[0].deploymentId,
-            commitHash:project.deployments[0].commitHash,
-            projectType:project.framework.applicationType as "STATIC" | "DYNAMIC",
-            requestId:event.requestId
-        })
+        let res = await this._k8ServiceClient.tryCreatingFreeTierDeployment(event)
         return res ? true : false;
     }
 }

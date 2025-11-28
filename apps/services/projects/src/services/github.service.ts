@@ -18,7 +18,7 @@ export class GithubService {
         this._errHandler = createGrpcErrorHandler({ subServiceName: "GITHUB_SERVICE",logger });
     }
 
-        async getUserGithubRepositories({authUserData, skip, limit, reqMeta}:GetUserGithubRepositoriesRequestBodyType){
+    async getUserGithubRepositories({authUserData, skip, limit, reqMeta}:GetUserGithubRepositoriesRequestBodyType){
             try {
                 const installation = await this._dbService.findUniqueGithubInstallation({
                     where:{
@@ -30,9 +30,9 @@ export class GithubService {
             } catch (e:any) {
                 return this._errHandler(e, "GET-USER-GITHUB-REPOSITORIES",reqMeta.requestId);
             }
-        }
+    }
 
-        async getGithubRepsitoryDetails({authUserData, githubRepoId, reqMeta}:GetGithubRepositoryDetailsRequestBodyType){
+    async getGithubRepsitoryDetails({authUserData, githubRepoId, reqMeta}:GetGithubRepositoryDetailsRequestBodyType){
             try {
                 const installation = await this._dbService.findUniqueGithubInstallation({
                     where:{
@@ -45,24 +45,26 @@ export class GithubService {
                 return this._errHandler(e, "GET-GITHUB-REPOSITORY-DETAILS",reqMeta.requestId);
             }
         }
-
-        async IGetGithubRepoAccessToken({githubRepoId, reqMeta}:GetGithubRepositoryAccessTokenRequestBodyType){
+    async IGetGithubRepoAccessToken({reqMeta,githubRepoId,projectId}:GetGithubRepositoryAccessTokenRequestBodyType){
             try {
-                const repo = await this._dbService.findUniqueRepository({
+                const installation = await this._dbService.findUniqueRepository({
                     where:{
-                        githubRepoId
+                        projectId_githubRepoId:{
+                            projectId,
+                            githubRepoId
+                        }
                     },
                     select:{
-                       githubInstallationId:true
+                        githubInstallationId:true
                     }
                 })
-                const accessToken = await this._githubService.refreshAccessToken(repo.githubInstallationId);
+                const accessToken = await this._githubService.refreshAccessToken(installation.githubInstallationId);
                 return GrpcResponse.OK(accessToken, "Github repository access token fetched successfully");
             } catch (e:any) {
                 return this._errHandler(e, "GET-GITHUB-REPOSITORY-ACCESS-TOKEN",reqMeta.requestId);
             }
         }
-
+ 
         async getGithubInstallation({authUserData:{userId}, reqMeta}:BodyLessRequestBodyType){
             try {
                 const installation = await this._dbService.findUniqueGithubInstallation({

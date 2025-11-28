@@ -29,17 +29,25 @@ message Repository {
     string githubRepoFullName = 4;
     string githubRepoURI = 5;
     string rootDir = 6;
-    string createdAt = 7;
-    string updatedAt = 8;
-    string githubInstallationId = 9;
-    string branch = 10;
+    bool   isConnected = 7;
+    string createdAt = 8;
+    string updatedAt = 9;
+    string githubInstallationId = 10;
+    string branch = 11;
 }
 
 message DeploymentProjectData {
     string name = 1;
-    string domain = 2;
+    string description = 2;
     Framework framework = 3;
+    repeated EnvironmentVariablesKeyValue environmentVariables = 4;
+    string buildCommand = 5;
+    string prodCommand = 6;
+    string domain = 7;
+    string outDir = 8;
+    string rootDir = 9;
 }
+
 
 message Deployment {
     string deploymentId = 1;
@@ -80,7 +88,7 @@ message Project {
     string prodCommand = 7;
     string createdAt = 8;
     string updatedAt = 9;
-    Repository repository = 10;
+    repeated Repository repository = 10;
     string outDir = 11;
     string rootDir = 12;
     repeated EnvironmentVariablesKeyValue environmentVariables = 13;
@@ -153,11 +161,6 @@ message UpdateProjectRequest {
     RequestMeta reqMeta= 4;
 }
 
-message GetRepositoryRequest {
-    User authUserData = 1;
-    string projectId = 2;
-    RequestMeta reqMeta = 3;
-}
 
 message GetAllUserProjectsRequest {
     User authUserData = 1;
@@ -207,6 +210,11 @@ message GetDeploymentRequest {
     RequestMeta reqMeta = 4;
 }
 
+message IGetDeploymentRequest {
+    string deploymentId = 1;
+    RequestMeta reqMeta = 2;
+}
+
 message UpsertEnvVarsRequest {
     User authUserData = 1;
     string projectId = 2;
@@ -221,7 +229,7 @@ message DeleteEnvVarsRequest {
     RequestMeta reqMeta = 4;
 }
 
-message CreateRepositoryRequest {
+message LinkRepositoryRequest {
     User authUserData = 1;
     string githubRepoId = 2;
     string projectId = 3;
@@ -232,7 +240,7 @@ message CreateRepositoryRequest {
     RequestMeta reqMeta = 8;
 }
 
-message DeleteRepositoryRequest {
+message UnlinkRepositoryRequest {
     User authUserData = 1;
     string projectId = 2;
     RequestMeta reqMeta = 3;
@@ -346,7 +354,8 @@ message DeleteEnvVarsResponse {
 
 message IGetGithubRepoAccessTokenRequest {
     string githubRepoId = 1;
-    RequestMeta reqMeta = 2;
+    string projectId = 2;
+    RequestMeta reqMeta = 3;
 }
 
 message IGetGithubRepoAccessTokenResponse {
@@ -396,6 +405,11 @@ message CheckDomainAvailabilityResponse {
     DomainAvailabilityResponseData   res = 3;
 }
 
+message IGetLastDeploymentRequest {
+    string projectId = 1;
+    RequestMeta reqMeta = 2;
+}
+
 message DomainAvailabilityResponseData {
     bool isAvailable = 1;
 }
@@ -424,9 +438,8 @@ service ProjectsService {
     rpc GetEnvVars (GetEnvVarsRequest) returns (EnvVarsResponse);
 
     // Repository
-    rpc GetRepository (GetRepositoryRequest) returns (RepositoryResponse);
-    rpc CreateRepository (CreateRepositoryRequest) returns (RepositoryResponse);
-    rpc DeleteRepository (DeleteRepositoryRequest) returns (RepositoryResponse);
+    rpc LinkRepository (LinkRepositoryRequest) returns (RepositoryResponse);
+    rpc UnlinkRepository (UnlinkRepositoryRequest) returns (RepositoryResponse);
 
     // Github Repository
     rpc GetUserGithubRepos (GetUserGithubReposRequest) returns (AllGithubReposResponse);
@@ -442,6 +455,8 @@ service ProjectsService {
     
     //internal rpcs
     rpc IGetGithubRepoAccessToken (IGetGithubRepoAccessTokenRequest) returns (IGetGithubRepoAccessTokenResponse);
+    rpc IGetDeployment (IGetDeploymentRequest) returns (DeploymentResponse);
+    rpc IGetLastDeployment (IGetLastDeploymentRequest) returns (DeploymentResponse);
     rpc IGetProject (IGetProjectRequest) returns (ProjectResponse);
     rpc IGetStaleEnvironmentIds (InternalEmptyRequest) returns (StaleEnvironmentIdsResponse);
 }

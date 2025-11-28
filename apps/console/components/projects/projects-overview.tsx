@@ -246,10 +246,10 @@ export function ProjectOverview({ projectOverviewData, isLoading }: ProjectOverv
                     {projectOverviewData?.framework.displayName}
                   </Badge>
                   <RuntimeBadge value={projectOverviewData?.framework.applicationType} />
-                  {projectOverviewData?.repository?.branch ? (
+                  {projectOverviewData?.repository?.[0]?.branch ? (
                     <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                       <GitBranch className="h-3 w-3" aria-hidden="true" />
-                      {projectOverviewData.repository?.branch}
+                      {projectOverviewData.repository?.[0].branch}
                     </span>
                   ) : null}
                 </>
@@ -267,9 +267,9 @@ export function ProjectOverview({ projectOverviewData, isLoading }: ProjectOverv
             </>
           ) : (
             <>
-              {projectOverviewData?.repository?.githubRepoURI ? (
+              {projectOverviewData?.repository?.[0]?.githubRepoURI ? (
                 <Button asChild size="sm" variant="outline">
-                  <Link href={projectOverviewData?.repository?.githubRepoURI} target="_blank" rel="noopener noreferrer">
+                  <Link href={projectOverviewData?.repository?.[0]?.githubRepoURI} target="_blank" rel="noopener noreferrer">
                     <Github className="mr-2 h-4 w-4" aria-hidden="true" />
                     Open repo
                   </Link>
@@ -365,7 +365,9 @@ export function ProjectOverview({ projectOverviewData, isLoading }: ProjectOverv
                     <div className="flex items-center justify-between">
                       <span className="inline-flex items-center gap-2">
                         <Globe className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                        <span>{projectOverviewData?.domain}</span>
+                        <Link href={`https://${projectOverviewData?.domain}`} target="_blank" rel="noopener noreferrer">
+                          {projectOverviewData?.domain}
+                        </Link>
                       </span>
                       <Badge variant="outline">Primary</Badge>
                     </div>
@@ -391,7 +393,7 @@ export function ProjectOverview({ projectOverviewData, isLoading }: ProjectOverv
                 {isLoading ? (
                   <Skeleton className="h-4 w-32" />
                 ) : (
-                  <span>{projectOverviewData?.repository?.branch || "—"}</span>
+                  <span>{projectOverviewData?.repository?.[0]?.branch || "—"}</span>
                 )}
               </li>
               <li className="flex items-center mt-2 justify-between sm:col-span-2">
@@ -403,14 +405,14 @@ export function ProjectOverview({ projectOverviewData, isLoading }: ProjectOverv
                   <Skeleton className="h-4 w-48" />
                 ) : (
                   <>
-                    {projectOverviewData?.repository?.githubRepoFullName ? (
+                    {projectOverviewData?.repository?.[0]?.githubRepoFullName ? (
                       <Link
-                        href={projectOverviewData?.repository?.githubRepoURI}
+                        href={projectOverviewData?.repository?.[0]?.githubRepoURI}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="truncate text-right underline underline-offset-4"
                       >
-                        {projectOverviewData?.repository?.githubRepoFullName}
+                        {projectOverviewData?.repository?.[0]?.githubRepoFullName}
                       </Link>
                     ) : (
                       <span>—</span>

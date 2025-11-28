@@ -1,8 +1,7 @@
 import { ServerUnaryCall, sendUnaryData, status } from "@grpc/grpc-js";
-import { CreateRepositoryRequest, DeleteRepositoryRequest, GetRepositoryRequest, RepositoryResponse } from "@shipoff/proto";
+import { LinkRepositoryRequest, UnlinkRepositoryRequest, RepositoryResponse } from "@shipoff/proto";
 import { RepositoriesService } from "services/repositories.service";
-import { DeleteDeploymentRequestBodyType } from "types/deployments";
-import { CreateRepositoryRequestBodyType, GetRepositoryRequestBodyType } from "types/repositories";
+import { LinkRepositoryRequestBodyType, UnlinkRepositoryRequestBodyType } from "types/repositories";
 
 export class RepositoriesHandlers {
     private _repositoriesService: RepositoriesService;
@@ -10,10 +9,10 @@ export class RepositoriesHandlers {
     constructor() {
         this._repositoriesService = new RepositoriesService();
     }
-    
-    async handleGetRepository(call: ServerUnaryCall<GetRepositoryRequest & { body: GetRepositoryRequestBodyType }, RepositoryResponse>, callback: sendUnaryData<RepositoryResponse>) {
+
+    async handleUnlinkRepository(call: ServerUnaryCall<UnlinkRepositoryRequest & { body: UnlinkRepositoryRequestBodyType }, RepositoryResponse>, callback: sendUnaryData<RepositoryResponse>) {
         try {
-            const { code, res, message } = await this._repositoriesService.getRepository(call.request.body);
+            const { code, res, message } = await this._repositoriesService.unlinkRepository(call.request.body);
             if (code !== 0) return callback({ code, message });
             const response = RepositoryResponse.fromObject({ code, message, res });
             return callback(null, response);
@@ -25,23 +24,9 @@ export class RepositoriesHandlers {
         }
     }
 
-    async handleDeleteUniqueRepository(call: ServerUnaryCall<DeleteRepositoryRequest & { body: DeleteDeploymentRequestBodyType }, RepositoryResponse>, callback: sendUnaryData<RepositoryResponse>) {
+    async handleLinkRepository(call: ServerUnaryCall<LinkRepositoryRequest & { body: LinkRepositoryRequestBodyType }, RepositoryResponse>, callback: sendUnaryData<RepositoryResponse>) {
         try {
-            const { code, res, message } = await this._repositoriesService.deleteUniqueRepository(call.request.body);
-            if (code !== 0) return callback({ code, message });
-            const response = RepositoryResponse.fromObject({ code, message, res });
-            return callback(null, response);
-        } catch (e: any) {
-            return callback({
-                code:status.INTERNAL,
-                message: "Internal server error"
-            });
-        }
-    }
-
-    async handleCreateRepository(call: ServerUnaryCall<CreateRepositoryRequest & { body: CreateRepositoryRequestBodyType }, RepositoryResponse>, callback: sendUnaryData<RepositoryResponse>) {
-        try {
-            const { code, res, message } = await this._repositoriesService.createRepository(call.request.body);
+            const { code, res, message } = await this._repositoriesService.linkRepository(call.request.body);
             if (code !== 0) return callback({ code, message });
             const response = RepositoryResponse.fromObject({ code, message, res });
             return callback(null, response);

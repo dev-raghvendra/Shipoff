@@ -2,8 +2,9 @@ import { SECRETS } from "@/config";
 import { CONFIG } from "@/config";
 import { ProjectExternalService } from "@/externals/project.external.service";
 import { STATE_CHANGED } from "@/types/orchestrator";
-import { Project } from "@shipoff/proto";
+import { DeploymentResponse} from "@shipoff/proto";
 import { createJwt, StringValue } from "@shipoff/services-commons";
+import { InferResponse } from "@shipoff/types";
 
 export class ContainerConfigUtil {
     private _projectService: ProjectExternalService;
@@ -12,12 +13,14 @@ export class ContainerConfigUtil {
         this._projectService = new ProjectExternalService();
     };
 
-    async getBuildContainerConfig(projectId: string,deploymentId:string,commitHash:string,requestId:string) {
-            const project = await this._projectService.getProjectById(projectId,requestId);
-            const commonConfig = await this._getCommonConfig(project,"build",deploymentId,commitHash)
+    async getBuildContainerConfig(event:"REQUESTED" | "CREATED",projectId: string,deploymentId:string,commitHash:string,requestId:string) {
+            const deployment =  event === "CREATED"
+            ? await this._projectService.getDeploymentById(deploymentId,requestId)
+            : await this._projectService.getLastDeployment(projectId,requestId)
+            const commonConfig = await this._getCommonConfig(deployment,"build",deploymentId,commitHash)
             commonConfig.envs.push({
                 name: "BUILD_COMMAND",
-                value: project.buildCommand
+                value: deployment.project.buildCommand
             }, {
                 name: "BUCKET_URI",
                 value: `${SECRETS.BUCKET_URI}/${projectId}`
@@ -36,18 +39,20 @@ export class ContainerConfigUtil {
             })
             return commonConfig
     }
-    async getProdContainerConfig(projectId: string,deploymentId:string,commitHash:string,requestId:string) {
-        const project = await this._projectService.getProjectById(projectId,requestId);
-        const commonConfig = await this._getCommonConfig(project,"prod",deploymentId,commitHash)
+    async getProdContainerConfig(event:"REQUESTED" | "CREATED", projectId: string,deploymentId:string,commitHash:string,requestId:string) {
+         const deployment =  event === "CREATED"
+            ? await this._projectService.getDeploymentById(deploymentId,requestId)
+            : await this._projectService.getLastDeployment(projectId,requestId)
+        const commonConfig = await this._getCommonConfig(deployment,"prod",deploymentId,commitHash)
         commonConfig.envs.push({
             name:"PROD_COMMAND",
-            value: project.prodCommand
+            value: deployment?.project?.prodCommand
         })
         return commonConfig
     }
 
-    private async _getCommonConfig(project:Project,type:"build"|"prod",deploymentId:string,commitHash:string){
-        const image = `${CONFIG.BASE_IMAGE_PREFIX}:${project.framework.runtime}-${project.framework.applicationType}`.toLowerCase()
+    private async _getCommonConfig(deployment:InferResponse<DeploymentResponse>["res"],type:"build"|"prod",deploymentId:string,commitHash:string){
+        const image = `${CONFIG.BASE_IMAGE_PREFIX}:${deployment.project.framework.runtime}-${deployment.project.framework.applicationType}`.toLowerCase()
         const containerId = `${type[0]}-${deploymentId}-${Date.now()}`
         const buildId = `build-${deploymentId}-${Date.now()}`
         const runtimeId = `run-${deploymentId}-${Date.now()}`
@@ -56,34 +61,34 @@ export class ContainerConfigUtil {
         // console.log(`http://localhost:8000/apis/v1/log/${project.projectId}/${buildId}`)
         // console.log(`http://localhost:8000/apis/v1/log/${project.projectId}/${runtimeId}`)
         const webhooks = await Promise.all([
-            this._createWebhookToken(project,deploymentId,containerId,buildId,runtimeId,"PROVISIONING","10M"),
-            this._createWebhookToken(project,deploymentId,containerId,buildId,runtimeId,"RUNNING","10M"),
-            this._createWebhookToken(project,deploymentId,containerId,buildId,runtimeId,"PRODUCTION","20M"),
-            this._createWebhookToken(project,deploymentId,containerId,buildId,runtimeId,"TERMINATED","30D"),
-            this._createWebhookToken(project,deploymentId,containerId,buildId,runtimeId,"FAILED","30D")
+            this._createWebhookToken(deployment,deploymentId,containerId,buildId,runtimeId,"PROVISIONING","10M"),
+            this._createWebhookToken(deployment,deploymentId,containerId,buildId,runtimeId,"RUNNING","10M"),
+            this._createWebhookToken(deployment,deploymentId,containerId,buildId,runtimeId,"PRODUCTION","20M"),
+            this._createWebhookToken(deployment,deploymentId,containerId,buildId,runtimeId,"TERMINATED","30D"),
+            this._createWebhookToken(deployment,deploymentId,containerId,buildId,runtimeId,"FAILED","30D")
         ])
-        return {envs:[...project.environmentVariables,
+        return {envs:[...deployment.project.environmentVariables,
             {
                 name:"DOMAIN",
-                value:project.domain
+                value:deployment.project.domain
             },{
                 name:"ORCHESTRATOR_URL",
                 value:CONFIG.ORCHESTRATOR_URL
             },{
                 name:"BUILD_COMMAND",
-                value:project.buildCommand
+                value:deployment.project.buildCommand
             },{
                 name:"WEBHOOK_URI",
                 value:CONFIG.ORCHESTRATOR_WEBHOOK_URI
             },{
                 name:"GITHUB_REPO_FULLNAME",
-                value:project.repository.githubRepoFullName
+                value:deployment.repository.githubRepoFullName
             },{
                 name:"REPO_BRANCH",
-                value:project.repository.branch
+                value:deployment.repository.branch
             },{
                 name:"OUT_DIR",
-                value:project.outDir
+                value:deployment.project.outDir
             },{
                 name:"PROVISIONING_WEBHOOK",
                 value:webhooks[0]
@@ -101,7 +106,7 @@ export class ContainerConfigUtil {
                 value:webhooks[4]
             },{
                 name:"CLONE_TOKEN",
-                value:await createJwt({githubRepoId:project.repository.githubRepoId,githubRepoFullName:project.repository.githubRepoFullName},"20m")
+                value:await createJwt({githubRepoId:deployment.repository.githubRepoId,githubRepoFullName:deployment.repository.githubRepoFullName,projectId:deployment.projectId},"20m")
             },{
                 name:"COMMIT_HASH",
                 value:commitHash
@@ -119,19 +124,19 @@ export class ContainerConfigUtil {
                 value:CONFIG.ENV
             },{
                 name:"PROJECT_TYPE",
-                value:project.framework.applicationType
+                value:deployment.project.framework.applicationType
             }],image,containerId}
     }
 
-    private async _createWebhookToken(project: Project, deploymentId:string, containerId:string,builId:string,runtimeId:string, action: "PROVISIONING" | "RUNNING" | "FAILED" | "TERMINATED" | "PRODUCTION", expiresIn:StringValue){
+    private async _createWebhookToken(deployment: InferResponse<DeploymentResponse>["res"], deploymentId:string, containerId:string,builId:string,runtimeId:string, action: "PROVISIONING" | "RUNNING" | "FAILED" | "TERMINATED" | "PRODUCTION", expiresIn:StringValue){
         return await createJwt<STATE_CHANGED>({
             action,
-            projectId: project.projectId,
+            projectId: deployment.projectId,
             containerId,
             builId,
             runtimeId,
             deploymentId,
-            projectType: project.framework.applicationType as "STATIC" | "DYNAMIC"
+            projectType: deployment.project.framework.applicationType as "STATIC" | "DYNAMIC"
         },expiresIn,SECRETS.ORCHESTRATOR_WEBHOOK_PAYLOAD_SECRET)
     }
 }

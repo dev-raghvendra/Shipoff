@@ -1,10 +1,10 @@
-import { createGrpcErrorHandler, generateId, GrpcResponse } from "@shipoff/services-commons";
+import { createGrpcErrorHandler, generateId, GrpcAppError, GrpcResponse } from "@shipoff/services-commons";
 import { Database, dbService } from "@/db/db-service";
 import authExternalService, { AuthExternalService } from "@/externals/auth.external.service";
 import githubExternalService, { GithubExternalService } from "@/externals/github.external.service";
-import { CreateRepositoryRequestBodyType, DeleteRepositoryRequestBodyType, GetRepositoryRequestBodyType } from "@/types/repositories";
+import { LinkRepositoryRequestBodyType, UnlinkRepositoryRequestBodyType } from "@/types/repositories";
 import { logger } from "@/libs/winston";
-import { console } from "inspector";
+import { status } from "@grpc/grpc-js";
 
 export class RepositoriesService {
     private _dbService : Database;
@@ -19,29 +19,8 @@ export class RepositoriesService {
         this._githubService = githubExternalService
     }
 
-
-    async getRepository({authUserData, projectId,reqMeta}:GetRepositoryRequestBodyType) {
-        try {
-            await this._authService.getPermissions({
-                authUserData,
-                permissions:["READ"],
-                scope:"REPOSITORY",
-                resourceId: projectId,
-                errMsg: "You do not have permission to read this repository",
-                reqMeta
-            })
-            const repository = await this._dbService.findUniqueRepository({
-                where:{
-                    projectId
-                }
-            })
-            return GrpcResponse.OK(repository,"Repository found");
-        } catch (e:any) {
-            return this._errHandler(e,"GET-REPOSITORY",reqMeta.requestId);
-        }
-    }
-
-    async deleteUniqueRepository({authUserData, projectId, reqMeta}:DeleteRepositoryRequestBodyType) {
+    
+    async unlinkRepository({authUserData, projectId, reqMeta}:UnlinkRepositoryRequestBodyType) {
         try {
             await this._authService.getPermissions({
                 authUserData,
@@ -51,18 +30,25 @@ export class RepositoriesService {
                 errMsg: "You do not have permission to delete this repository",
                 reqMeta
             })
-            const repository = await this._dbService.deleteUniqueRepository({
+            const repository = await this._dbService.updateManyRepository({
                 where:{
-                    projectId
+                    projectId,
+                    isConnected:true
+                },
+                data:{
+                    isConnected:false
                 }
             })
+            if(!repository.count) throw new GrpcAppError(status.NOT_FOUND, "This project has no repositories linked", {
+                projectId
+            }); 
             return GrpcResponse.OK(repository,"Repository unlinked");
         } catch (e:any) {
             return this._errHandler(e,"DELETE-REPOSITORY",reqMeta.requestId);
         }
     }
 
-    async createRepository({authUserData,reqMeta,...body}:CreateRepositoryRequestBodyType){
+    async linkRepository({authUserData,reqMeta,...body}:LinkRepositoryRequestBodyType){
        try {
           await this._authService.getPermissions({
             authUserData,
@@ -79,33 +65,16 @@ export class RepositoriesService {
           })
           const ghr = await this._githubService.getRepositoryDetails(githubInstallationId,body.githubRepoId);
           const data = {
-            repositoryId:generateId("Repository",{Repository:"repo"}),
             githubInstallationId,
             projectId:body.projectId,
             githubRepoFullName: ghr.githubRepoFullName,
             githubRepoId: ghr.githubRepoId,
             githubRepoURI: ghr.githubRepoURI,
             branch: body.branch,
-            rootDir: body.rootDir
+            rootDir: body.rootDir,
+            isConnected:true
           }
-          await this._dbService.startTransaction(async(tx)=>{
-            await tx.repository.deleteMany({
-                where:{
-                    projectId:body.projectId
-                }
-            })
-            await tx.repository.create({
-                data
-            })
-            await tx.deployment.updateMany({
-                where:{
-                    projectId:body.projectId
-                },
-                data:{
-                    repositoryId: data.repositoryId
-                }
-            })
-          })
+          await this._dbService.createRepository(data);
           return GrpcResponse.OK(data,"Repository created");
        } catch (e:any) {
             return this._errHandler(e,"CREATE-REPOSITORY",reqMeta.requestId);

@@ -1,7 +1,7 @@
 import { MAIN_BACKEND_API, PROJECTS_API_ROUTES } from "@/config/service-route-config";
 import { BaseService } from "./base.service";
 import { InferRequest } from "@shipoff/types";
-import { AllDeploymentsResponse, AllProjectsResponse, BulkResourceRequest, CreateProjectRequest, CreateRepositoryRequest, DeleteEnvVarsRequest, DeleteEnvVarsResponse, DeleteRepositoryRequest, DeploymentResponse, EnvVarsResponse, FrameworkResponse, GetAllDeploymentsRequest, GetDeploymentRequest, ProjectsLinkedToTeamResponse, GetProjectRequest, GetProjectsLinkedToTeamRequest, ProjectResponse, RepositoryResponse, UpdateProjectRequest, UpsertEnvVarsRequest, CheckDomainAvailabilityRequest, CheckDomainAvailabilityResponse, DeleteDeploymentRequest, RedeployRequest } from "@shipoff/proto";
+import { AllDeploymentsResponse, AllProjectsResponse, BulkResourceRequest, CreateProjectRequest, LinkRepositoryRequest, DeleteEnvVarsRequest, DeleteEnvVarsResponse, DeploymentResponse, EnvVarsResponse, FrameworkResponse, GetAllDeploymentsRequest, GetDeploymentRequest, ProjectsLinkedToTeamResponse, GetProjectRequest, GetProjectsLinkedToTeamRequest, ProjectResponse, RepositoryResponse, UpdateProjectRequest, UpsertEnvVarsRequest, CheckDomainAvailabilityRequest, CheckDomainAvailabilityResponse, DeleteDeploymentRequest, RedeployRequest, UnlinkRepositoryRequest } from "@shipoff/proto";
 import { InferResponse } from "@shipoff/types";
 
 export class ProjectService extends BaseService {
@@ -116,18 +116,18 @@ export class ProjectService extends BaseService {
             return this.handleError(e,undefined,true)
         }
      }
-     async unlinkRepository({projectId}:InferRequest<DeleteRepositoryRequest>){
+     async unlinkRepository({projectId}:InferRequest<UnlinkRepositoryRequest>){
        try {
-        const res = await this._axiosInstance.delete<InferResponse<RepositoryResponse>>(PROJECTS_API_ROUTES.DELETE_REPO({projectId}))
+        const res = await this._axiosInstance.delete<InferResponse<RepositoryResponse>>(PROJECTS_API_ROUTES.UNLINK_REPO({projectId}))
         return res.data
        } catch (e:any) {
            return this.handleError(e,undefined,true)
        }
      }
 
-     async linkRepository({projectId,githubRepoId,branch,githubRepoFullName,githubRepoURI,rootDir}:InferRequest<CreateRepositoryRequest>){
+     async linkRepository({projectId,githubRepoId,branch,githubRepoFullName,githubRepoURI,rootDir}:InferRequest<LinkRepositoryRequest>){
         try {
-            const res = await this._axiosInstance.post(PROJECTS_API_ROUTES.CREATE_REPO({projectId}),{
+            const res = await this._axiosInstance.post(PROJECTS_API_ROUTES.LINK_REPO({projectId}),{
                 githubRepoId,
                 githubRepoFullName,
                 githubRepoURI,

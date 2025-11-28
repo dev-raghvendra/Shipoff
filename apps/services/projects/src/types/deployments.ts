@@ -1,5 +1,5 @@
 import { DeploymentStatus } from "@prisma/index";
-import { optNumWithDefaultValue, RequestMetaSchema, UserSchema } from "@shipoff/types";
+import { InternalEmptyRequestSchema, optNumWithDefaultValue, RequestMetaSchema, UserSchema } from "@shipoff/types";
 import z from "zod";
 
 export const GetDeploymentRequestSchema = z.object({
@@ -48,8 +48,16 @@ export const DeploymentDBSchema = z.object({
 }).strict();
 
 
+export const IGetLastDeploymentRequestSchema = InternalEmptyRequestSchema.extend({
+    projectId: z.string().min(1),
+}).strict();
 
+export const IGetDeploymentRequestSchema = InternalEmptyRequestSchema.extend({
+    deploymentId: z.string().min(1),
+}).strict();
 
+export type IGetLastDeploymentRequestBodyType = z.infer<typeof IGetLastDeploymentRequestSchema>;
+export type IGetDeploymentRequestBodyType = z.infer<typeof IGetDeploymentRequestSchema>;
 export type CreateDeploymentRequestBodyType = z.infer<typeof CreateDeploymentRequestSchema>;
 export type CreateDeploymentRequestDBBodyType = z.infer<typeof DeploymentDBSchema> & {lastDeployedAt?:Date}
 export type RedeployRequestBodyType = z.infer<typeof RedeployRequestSchema>;

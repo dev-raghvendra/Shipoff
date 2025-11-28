@@ -30,6 +30,7 @@ import { logsService } from "@/services/logs.service"
 import { downloadFiles } from "@/utils/misc.client.utils"
 import { useRouter } from "next/navigation"
 import { useSession } from "@/context/session.context"
+import Link from "next/link"
 
 export default function DeploymentDetailPage() {
   const {projectId,deploymentId} = useParams()
@@ -150,9 +151,9 @@ export default function DeploymentDetailPage() {
                   {isLoading ? (
                     <Skeleton className="h-4 w-48 mt-1" />
                   ) : (
-                    <p className="text-sm text-muted-foreground truncate">
+                    <Link href={`https://${deployment?.project.domain}`} className="text-sm text-muted-foreground truncate">
                       {deployment?.project.domain}
-                    </p>
+                    </Link>
                   )}
                 </div>
               </div>
@@ -165,9 +166,9 @@ export default function DeploymentDetailPage() {
                   {isLoading ? (
                     <Skeleton className="h-4 w-64 mt-1" />
                   ) : (
-                    <p className="text-sm text-muted-foreground truncate">
+                    <Link href={`https://github.com/${deployment?.repository?.githubRepoFullName}`} className="text-sm text-muted-foreground truncate">
                       {deployment?.repository?.githubRepoFullName || "Not linked"}
-                    </p>
+                    </Link>
                   )}
                 </div>
               </div>
