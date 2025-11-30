@@ -19,15 +19,6 @@ export default function ProjectCard({ item }: { item: ProjectItem }) {
 
   const theme = useTheme()
 
- function getIcon(frameworkKeyword:string){
-    return theme.resolvedTheme === "dark" 
-    ? `/framework/${frameworkKeyword}-dark.svg`
-    : `/framework/${frameworkKeyword}-light.svg`
-}
-
- function fallbackIcon(keywordName:string){
-  return `/framework/${keywordName}.svg`
-}
 
   // Format the updated date
   const customLocale = {

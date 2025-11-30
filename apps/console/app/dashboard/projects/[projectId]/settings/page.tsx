@@ -61,10 +61,10 @@ export default function ProjectSettingsPage() {
           <RepositorySettings 
             isLoading={isLoading}
             projectId={projectId as string} 
-            initialGithubRepoBranch={project?.repository?.branch || ""} 
-            initialGithubRepoFullName={project?.repository?.githubRepoFullName || ""} 
-            intialGithubRepoURI={project?.repository?.githubRepoURI || ""} 
-            initialGithubRepoRootDir={project?.repository?.rootDir || ""} 
+            initialGithubRepoBranch={project?.repository?.[0]?.branch || ""} 
+            initialGithubRepoFullName={project?.repository?.[0]?.githubRepoFullName || ""} 
+            intialGithubRepoURI={project?.repository?.[0]?.githubRepoURI || ""} 
+            initialGithubRepoRootDir={project?.repository?.[0]?.rootDir || ""} 
             refetchProject={refetch} 
           />
         </section>

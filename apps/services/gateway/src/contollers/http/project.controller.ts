@@ -134,24 +134,19 @@ export async function checkDomainAvailabilityController(req:RequestWithMeta, res
     grpcToHttpResponse.call(res, code, message, data);
 }
 
-export async function getRepositoryController(req:RequestWithMeta, res: Response) {
-    const {projectId} = req.params
-    const body = { ...req.body, projectId, reqMeta:req.meta };
-    const { code, message, res: data } = await projectService.getRepository(body);
-    grpcToHttpResponse.call(res, code, message, data);
-}
 
-export async function createRepositoryController(req:RequestWithMeta, res: Response) {
+
+export async function linkRepositoryController(req:RequestWithMeta, res: Response) {
     const {projectId} = req.params;
     const body = { ...req.body, projectId, reqMeta:req.meta };
-    const { code, message, res: data } = await projectService.createRepository(body);
+    const { code, message, res: data } = await projectService.linkRepository(body);
     grpcToHttpResponse.call(res, code, message, data);
 }
 
-export async function deleteRepositoryController(req:RequestWithMeta, res: Response) {
+export async function unlinkRepositoryController(req:RequestWithMeta, res: Response) {
     const {projectId} = req.params;
     const body = { ...req.body, projectId, reqMeta:req.meta }
-    const { code, message, res: data } = await projectService.deleteRepository(body);
+    const { code, message, res: data } = await projectService.unlinkRepository(body);
     grpcToHttpResponse.call(res, code, message, data);
 }
 

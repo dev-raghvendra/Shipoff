@@ -1,7 +1,7 @@
 import { createAsyncErrHandler, createGrpcErrorHandler, GrpcAppError, GrpcResponse } from "@shipoff/services-commons";
 import { Database, dbService } from "@/db/db-service";
 import authExternalService, { AuthExternalService } from "@/externals/auth.external.service";
-import { DeleteDeploymentRequestBodyType, GetAllDeploymentsRequestBodyType, GetDeploymentRequestBodyType, RedeployRequestBodyType } from "@/types/deployments";
+import { DeleteDeploymentRequestBodyType, GetAllDeploymentsRequestBodyType, GetDeploymentRequestBodyType, IGetLastDeploymentRequestBodyType, RedeployRequestBodyType } from "@/types/deployments";
 import { DeploymentEventProducerService } from "@/producer/deployment.producer";
 import { logger } from "@/libs/winston";
 import { status } from "@grpc/grpc-js";
@@ -40,6 +40,58 @@ export class DeploymentsService {
             return this._errHandler(e, "GET-DEPLOYMENT",reqMeta.requestId);
         }
     }
+
+    async IGetLastDeploymentByProjectId({projectId,reqMeta}:IGetLastDeploymentRequestBodyType) {
+        try {
+            const deployment = await this._dbService.findManyDeployments({
+                where:{
+                    projectId
+                },
+                take:1,
+                orderBy:{
+                    lastDeployedAt:"desc"
+                },
+                include:{
+                    project:{
+                        include:{
+                            framework:true,
+                            environmentVariables:true
+                        }
+                    },
+                    repository:true     
+                }
+            })
+            if(!deployment.length) throw new GrpcAppError(status.NOT_FOUND, "No deployments found for this project");
+            return GrpcResponse.OK(deployment[0], "Production Deployment found");
+        } catch (e:any) {
+            return this._errHandler(e, "GET-PRODUCTION-DEPLOYMENT-BY-PROJECT-ID",reqMeta.requestId);
+        }
+    }
+
+    async IGetDeployment({deploymentId,reqMeta}:{deploymentId:string,reqMeta:{requestId:string}}) {
+        try {
+            const deployment = await this._dbService.findManyDeployments({
+                where:{
+                    deploymentId
+                },
+                take:1,
+                include:{
+                    project:{
+                        include:{
+                            framework:true,
+                            environmentVariables:true
+                        }
+                    },
+                    repository:true     
+                }
+            })
+            if(!deployment.length) throw new GrpcAppError(status.NOT_FOUND, "Deployment not found")
+            return GrpcResponse.OK(deployment[0], "Deployment found");
+        } catch (e:any) {
+            return this._errHandler(e, "GET-DEPLOYMENT",reqMeta.requestId);
+        }
+    }
+
 
     async getAllDeployments({authUserData, projectId, skip, limit,reqMeta}:GetAllDeploymentsRequestBodyType){
         try {
@@ -182,7 +234,7 @@ export class DeploymentsService {
             });
             const crrStatus = await this._dbService.findUniqueDeploymentById(deploymentId);
             if(!this._redeployableStatuses.includes(crrStatus.status))throw new GrpcAppError(status.FAILED_PRECONDITION,"Deployment is not in a redeployable state, only deployments in INACTIVE or FAILED state can be redeployed");
-            if(!crrStatus.repository) throw new GrpcAppError(status.FAILED_PRECONDITION,"The repository this deployment was created from has been removed. Cannot redeploy.");
+            
 
             const deployment = await this._dbService.updateDeploymentById(deploymentId,projectId,{
                 status:"QUEUED",
@@ -202,6 +254,5 @@ export class DeploymentsService {
             return this._errHandler(e, "REDEPLOY-DEPLOYMENT",reqMeta.requestId);
         }
     }
-
 
 }

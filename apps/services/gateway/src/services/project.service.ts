@@ -1,5 +1,5 @@
 import { GetProjectClient } from "@shipoff/grpc-clients";
-import { BodyLessRequest, BulkResourceRequest, CheckDomainAvailabilityRequest, CreateProjectRequest, CreateRepositoryRequest, DeleteDeploymentRequest, DeleteEnvVarsRequest, DeleteProjectRequest, DeleteRepositoryRequest, GetAllDeploymentsRequest, GetAllUserProjectsRequest, GetDeploymentRequest, GetEnvVarsRequest, GetProjectRequest, GetProjectsLinkedToTeamRequest, GetRepositoryRequest, ProjectsServiceClient, RedeployRequest, UpdateProjectRequest, UpsertEnvVarsRequest } from "@shipoff/proto";
+import { BodyLessRequest, BulkResourceRequest, CheckDomainAvailabilityRequest, CreateProjectRequest,  DeleteDeploymentRequest, DeleteEnvVarsRequest, DeleteProjectRequest, GetAllDeploymentsRequest, GetAllUserProjectsRequest, GetDeploymentRequest, GetEnvVarsRequest, GetProjectRequest, GetProjectsLinkedToTeamRequest,  LinkRepositoryRequest,  ProjectsServiceClient, RedeployRequest, UnlinkRepositoryRequest, UpdateProjectRequest, UpsertEnvVarsRequest } from "@shipoff/proto";
 import { promisifyGrpcCall } from "@shipoff/services-commons/utils/rpc-utils";
 
 export class ProjectService {
@@ -169,30 +169,21 @@ export class ProjectService {
         }
     }
 
-    async getRepository(data: any) {
+
+    async unlinkRepository(data: any) {
         try {
-            const req = GetRepositoryRequest.fromObject(data);
-            const response = await promisifyGrpcCall(this._projectService.GetRepository.bind(this._projectService), req);
+            const req = UnlinkRepositoryRequest.fromObject(data);
+            const response = await promisifyGrpcCall(this._projectService.UnlinkRepository.bind(this._projectService), req);
             return response;
         } catch (e:any) {
             return e;
         }
     }
 
-    async deleteRepository(data: any) {
+    async linkRepository(data: any) {
         try {
-            const req = DeleteRepositoryRequest.fromObject(data);
-            const response = await promisifyGrpcCall(this._projectService.DeleteRepository.bind(this._projectService), req);
-            return response;
-        } catch (e:any) {
-            return e;
-        }
-    }
-
-    async createRepository(data: any) {
-        try {
-            const req = CreateRepositoryRequest.fromObject(data);
-            const response = await promisifyGrpcCall(this._projectService.CreateRepository.bind(this._projectService), req);
+            const req = LinkRepositoryRequest.fromObject(data);
+            const response = await promisifyGrpcCall(this._projectService.LinkRepository.bind(this._projectService), req);
             return response;
         } catch (e:any) {
             return e;

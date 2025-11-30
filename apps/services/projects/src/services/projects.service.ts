@@ -22,7 +22,12 @@ export class ProjectsService {
         this._errHandler = createGrpcErrorHandler({subServiceName:"PROJECT_SERVICE",logger});
         this._asyncErrHandler = createAsyncErrHandler({subServiceName:"PROJECT_SERVICE",logger});
         this._selectProjectFeilds = {
-                repository:true,
+                repository:{
+                    take:1,
+                    where:{
+                        isConnected:true
+                    }
+                },
                 framework:true,
                 environmentVariables:{
                     select:{
@@ -110,11 +115,7 @@ export class ProjectsService {
             },
             take:limit,
             skip,
-            include:{
-                framework:true,
-                environmentVariables:this._selectProjectFeilds.environmentVariables,
-                repository:true
-            }})
+            include:this._selectProjectFeilds});
             return GrpcResponse.OK(projects, "Projects found");
         } catch (e:any) {
             return this._errHandler(e,"GET-ALL-USER-PROJECTS",reqMeta.requestId);
@@ -131,11 +132,7 @@ export class ProjectsService {
             orderBy:{
                 createdAt:"desc"
             },
-            include:{
-                framework:true,
-                environmentVariables:this._selectProjectFeilds.environmentVariables,
-                repository:true 
-            }})
+            include:this._selectProjectFeilds})
             return GrpcResponse.OK(projects, "Projects found");
         } catch (e:any) {
             return this._errHandler(e,"GET-LATEST-USER-PROJECTS",reqMeta.requestId);

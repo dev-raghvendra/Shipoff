@@ -1,7 +1,7 @@
 import { ServerUnaryCall, sendUnaryData, status } from "@grpc/grpc-js";
-import {  AllDeploymentsResponse, DeleteDeploymentRequest, DeploymentResponse, GetAllDeploymentsRequest, GetDeploymentRequest, RedeployRequest } from "@shipoff/proto";
+import { AllDeploymentsResponse, DeleteDeploymentRequest, DeploymentResponse, GetAllDeploymentsRequest, GetDeploymentRequest, IGetDeploymentRequest, IGetLastDeploymentRequest, RedeployRequest } from "@shipoff/proto";
 import { DeploymentsService } from "services/deployments.service";
-import { DeleteDeploymentRequestBodyType, GetAllDeploymentsRequestBodyType, GetDeploymentRequestBodyType, RedeployRequestBodyType } from "types/deployments";
+import { DeleteDeploymentRequestBodyType, GetAllDeploymentsRequestBodyType, GetDeploymentRequestBodyType, IGetDeploymentRequestBodyType, IGetLastDeploymentRequestBodyType, RedeployRequestBodyType } from "types/deployments";
 
 export class DeploymentsHandlers {
     private _deploymentsService: DeploymentsService;
@@ -69,6 +69,34 @@ export class DeploymentsHandlers {
     async handleRedeploy(call: ServerUnaryCall<RedeployRequest & { body: RedeployRequestBodyType }, DeploymentResponse>, callback: sendUnaryData<DeploymentResponse>) {
         try {
             const { code, res, message } = await this._deploymentsService.redeploy(call.request.body);
+            if (code !== 0) return callback({ code, message });
+            const response = DeploymentResponse.fromObject({ code, message, res });
+            return callback(null, response);
+        } catch (e:any) {
+            return callback({
+                code: status.INTERNAL,
+                message: "Internal server error"
+            });
+        }
+    }
+
+    async handleIGetLastDeployment(call:ServerUnaryCall<IGetLastDeploymentRequest & {body:IGetLastDeploymentRequestBodyType},DeploymentResponse>,callback:sendUnaryData<DeploymentResponse>){
+        try {
+            const { code, res, message } = await this._deploymentsService.IGetLastDeploymentByProjectId(call.request.body);
+            if (code !== 0) return callback({ code, message });
+            const response = DeploymentResponse.fromObject({ code, message, res });
+            return callback(null, response);
+        } catch (e:any) {
+            return callback({
+                code: status.INTERNAL,
+                message: "Internal server error"
+            });
+        }
+    }
+
+    async handleIGetDeployment(call:ServerUnaryCall<IGetDeploymentRequest & {body:IGetDeploymentRequestBodyType},DeploymentResponse>,callback:sendUnaryData<DeploymentResponse>){
+        try {
+            const { code, res, message } = await this._deploymentsService.IGetDeployment(call.request.body);
             if (code !== 0) return callback({ code, message });
             const response = DeploymentResponse.fromObject({ code, message, res });
             return callback(null, response);

@@ -26,7 +26,7 @@ model Project {
   framework              Framework   @relation(fields: [frameworkId], references: [frameworkId])
   outDir                 String      
 
-  repository             Repository ?
+  repository             Repository []
   deployments            Deployment[]
   environmentVariables   EnvironmentVariable[]
 }
@@ -60,22 +60,22 @@ model Framework {
 
 model Repository {
   repositoryId           String      @id @default(uuid())
-  githubInstallationId   String
-  githubRepoId           String      @unique
-  githubRepoFullName     String      @unique
-  githubRepoURI          String      @unique 
-   
-  projectId              String      @unique
+  githubInstallationId   String      
+  githubRepoId           String      
+  githubRepoFullName     String      
+  githubRepoURI          String      
+  projectId              String      
   branch                 String?     @default("main")
   rootDir                String?     @default("/")
   createdAt              DateTime?   @default(now())
   updatedAt              DateTime?   @updatedAt
+  isConnected            Boolean     @default(true)
 
 
-
+ @@unique([projectId, githubRepoId])  
   deployments            Deployment[]
   project                Project @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
-  githubInstallation     GithubInstallation  @relation(fields: [githubInstallationId], references: [githubInstallationId], onDelete:Cascade)
+  githubInstallation     GithubInstallation  @relation(fields: [githubInstallationId], references: [githubInstallationId], onDelete:SetNull)
 }
 
 
@@ -89,13 +89,13 @@ model Deployment {
   commitMessage   String
   author          String
   projectId       String
-  repositoryId    String ?
+  repositoryId    String 
   lastDeployedAt  DateTime?
 
   buildEnvironment  BuildEnvironment[]
   runtimeEnvironment  RuntimeEnvironment[]
   project         Project          @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
-  repository      Repository ?      @relation(fields: [repositoryId], references: [repositoryId], onDelete: SetNull)
+  repository      Repository       @relation(fields: [repositoryId], references: [repositoryId], onDelete: Cascade)
 }
 
 model BuildEnvironment{

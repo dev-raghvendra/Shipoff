@@ -1,4 +1,4 @@
-import { checkDomainAvailabilityController, createOrUpdateEnvironmentVariableController, createProjectController, createRepositoryController, deleteDeploymentController, deleteEnvironmentVariableController, deleteProjectController, deleteRepositoryController, getAllDeploymentsController, getAllUserProjectsController, getDeploymentController, getEnvironmentVariablesController, getFrameworksController, getLatestDeploymentsController, getLatestProjectsController, getProjectController, getProjectsLinkedToTeamController, getRepositoryController, redeployController, updateProjectController } from "@/contollers/http/project.controller";
+import { checkDomainAvailabilityController, createOrUpdateEnvironmentVariableController, createProjectController, deleteDeploymentController, deleteEnvironmentVariableController, deleteProjectController, getAllDeploymentsController, getAllUserProjectsController, getDeploymentController, getEnvironmentVariablesController, getFrameworksController, getLatestDeploymentsController, getLatestProjectsController, getProjectController, getProjectsLinkedToTeamController, linkRepositoryController, redeployController, unlinkRepositoryController, updateProjectController } from "@/contollers/http/project.controller";
 import { authorizationMiddleware } from "@/middlewares/http/authorization.middleware";
 import { Router } from "express";
 const projectRouter = Router();
@@ -20,9 +20,8 @@ projectRouter.put("/:projectId/env-vars",authorizationMiddleware,createOrUpdateE
 projectRouter.delete("/:projectId/env-vars/",authorizationMiddleware,deleteEnvironmentVariableController);
 projectRouter.get("/domain/:domain",authorizationMiddleware,checkDomainAvailabilityController);
 projectRouter.get("/all/deployments/latest",authorizationMiddleware, getLatestDeploymentsController);
-projectRouter.get("/link/team/:teamId", authorizationMiddleware, getProjectsLinkedToTeamController);
-projectRouter.get("/:projectId/repository",authorizationMiddleware, getRepositoryController);
-projectRouter.post("/:projectId/repository",authorizationMiddleware, createRepositoryController);
-projectRouter.delete("/:projectId/repository",authorizationMiddleware, deleteRepositoryController);
+projectRouter.get("/link/team/:teamId", authorizationMiddleware, getProjectsLinkedToTeamController)
+projectRouter.post("/:projectId/repository",authorizationMiddleware, linkRepositoryController);
+projectRouter.delete("/:projectId/repository",authorizationMiddleware, unlinkRepositoryController);
 
 export default projectRouter;

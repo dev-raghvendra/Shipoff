@@ -4,7 +4,7 @@ import { CreateProjectRequestDBBodyType, DeleteEnvVarsRequestDBBodyType, GetEnvV
 import {status} from "@grpc/grpc-js";
 import { DefaultArgs, PrismaClientKnownRequestError } from "@prisma/runtime/library";
 import { CreateDeploymentRequestDBBodyType } from "types/deployments";
-import { CreateRepositoryRequestDBBodyType } from "types/repositories";
+import { LinkRepositoryRequestDBBodyType } from "types/repositories";
 
 const MODEL_MAP = {
     Project:"prj",
@@ -38,6 +38,7 @@ export class Database {
                     githubRepoURI:body.githubRepoURI,
                     branch:body.branch,
                     rootDir:body.rootDir,
+                    isConnected:true,
                     githubInstallationId:body.githubInstallationId
                 }
             },
@@ -329,10 +330,20 @@ export class Database {
         }
     }
 
-    async createRepository(body:CreateRepositoryRequestDBBodyType){
+    async createRepository(body:LinkRepositoryRequestDBBodyType){
         try {
-            const res = await this._client.repository.create({
-                data:{
+            const res = await this._client.repository.upsert({
+                where:{
+                    projectId_githubRepoId:{
+                        projectId:body.projectId,
+                        githubRepoId:body.githubRepoId
+                    }
+                },
+                update:{
+                    ...body,
+                    isConnected:true
+                },
+                create:{
                     repositoryId:generateId("Repository",MODEL_MAP),
                     githubRepoId:body.githubRepoId,
                     projectId:body.projectId,
@@ -343,19 +354,10 @@ export class Database {
             })
             return res;
         } catch (e:any) {
-             if(e instanceof PrismaClientKnownRequestError) {
+            if(e instanceof PrismaClientKnownRequestError) {
             if(e.code === "P2002") {
-                if((e.meta?.target as string[]).includes("projectId")){
-                    throw new GrpcAppError(status.ALREADY_EXISTS, "Project is already linked to a repository", {
-                    domain:body.projectId
-                });
-                }
-                else{
-                    throw new GrpcAppError(status.ALREADY_EXISTS, "Project with this github repository already exists", {
-                    domain:body.githubRepoId
-                });
-                }
-                }
+               throw new GrpcAppError(status.ALREADY_EXISTS, "This Github Repository is already linked to a project");
+            }
             }
             throw new GrpcAppError(status.INTERNAL, "Failed to create repository", e);
         }
@@ -368,46 +370,15 @@ export class Database {
             args
         });
     }
-    
-    async deleteUniqueRepository(args:Prisma.RepositoryDeleteArgs){
-        try {
-            const res = await this._client.repository.delete(args);
-            return res;
-        } catch (e:any) {
-            if(e instanceof PrismaClientKnownRequestError) {
-                if(e.code === "P2025") {
-                    throw new GrpcAppError(status.NOT_FOUND, "Repository not found for project", {
-                            repositoryId: args.where.projectId
-                    });
-                }
-            }
-            throw new GrpcAppError(status.INTERNAL, "Unexpected error occurred", {
-                error: e
-            });
-        }
-    }
 
-    async deleteManyRepositories(args:Prisma.RepositoryDeleteManyArgs){
-        try {
-            const res = await this._client.repository.deleteMany(args);
-            if(res.count === 0) {
-                throw new GrpcAppError(status.NOT_FOUND, "No repositories found for the given criteria", {
-                    where: args.where
-                });
-            }
-            return res;
-        } catch (e:any) {
-            if(e instanceof PrismaClientKnownRequestError) {
-                if(e.code === "P2025") {
-                    throw new GrpcAppError(status.NOT_FOUND, "Repositories not found for project", {
-                        where: args.where
-                    });
-                }
-            }
-            throw new GrpcAppError(status.INTERNAL, "Unexpected error occurred", {
-                error: e
-            });
-        }
+    async findManyRepository<T extends Prisma.RepositoryFindManyArgs>(args:T):Promise<Prisma.RepositoryGetPayload<T>[]>{
+        const res = await this._client.repository.findMany(args);
+        return res as Prisma.RepositoryGetPayload<T>[];
+    }
+    
+    async updateManyRepository(args:Prisma.RepositoryUpdateManyArgs){
+        const res = await this._client.repository.updateMany(args);
+        return res;
     }
 
     async createGithubInstallation(args:Prisma.GithubInstallationCreateArgs){

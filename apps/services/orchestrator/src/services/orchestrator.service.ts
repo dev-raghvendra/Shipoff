@@ -52,8 +52,8 @@ export class OrchestratorService {
 
     async IGetCloneURI({jwt,reqMeta}:GetCloneURIRequestBodyType){
         try {
-            const {githubRepoId,githubRepoFullName} = await verifyJwt<{githubRepoId:string,githubRepoFullName:string}>(jwt)
-            const accessToken = await this._projectService.getRepositoryAccessToken(githubRepoId,reqMeta.requestId);
+            const {githubRepoId,projectId,githubRepoFullName} = await verifyJwt<{githubRepoId:string,projectId:string,githubRepoFullName:string}>(jwt)
+            const accessToken = await this._projectService.getGithubRepoAccessToken(projectId,githubRepoId,reqMeta.requestId);
             const REPO_CLONE_URI = `https://x-access-token:${accessToken}@github.com/${githubRepoFullName}` 
             return GrpcResponse.OK({REPO_CLONE_URI},"Clone URI fetched");
         } catch (e:any) {

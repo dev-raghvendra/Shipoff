@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { optionalObject, optionalString, optNumWithDefaultValue, RequestMetaSchema, UserSchema } from "@shipoff/types";
+import { LinkRepositoryRequest } from "@shipoff/proto";
 
 
 export const GetRepositoryRequestSchema = z.object({
@@ -8,7 +9,7 @@ export const GetRepositoryRequestSchema = z.object({
     reqMeta:RequestMetaSchema
 }).strict();
 
-export const CreateRepositoryRequestSchema = z.object({
+export const LinkRepositoryRequestSchema = z.object({
     authUserData: UserSchema,
     projectId: z.string().min(1),
     githubRepoId:z.string().min(1),
@@ -19,7 +20,7 @@ export const CreateRepositoryRequestSchema = z.object({
     reqMeta:RequestMetaSchema
 }).strict();
 
-export const DeleteRepositoryRequestSchema = z.object({
+export const UnlinkRepositoryRequestSchema = z.object({
     authUserData: UserSchema,
     projectId: z.string().min(1),
     reqMeta:RequestMetaSchema
@@ -44,8 +45,9 @@ export const UpdateRepositoryRequestSchema = z.object({
 
 export const GetGithubRepositoryAccessTokenRequestSchema = z.object({
     githubRepoId: z.string().min(1),
+    projectId:z.string().min(1),
     reqMeta:RequestMetaSchema
-}).strict();
+}).strict()
 
 
 
@@ -72,7 +74,7 @@ export type GetUserGithubRepositoriesRequestBodyType = z.infer<typeof GetUserGit
 export type GetUserGithubRepositoriesRequestDBBodyType = Omit<GetUserGithubRepositoriesRequestBodyType, "authUserData" | "reqMeta">;
 export type GetRepositoryRequestBodyType = z.infer<typeof GetRepositoryRequestSchema>;
 export type GetRepositoryRequestDBBodyType = Omit<GetRepositoryRequestBodyType, "authUserData" | "reqMeta">;
-export type CreateRepositoryRequestBodyType = Omit<z.infer<typeof CreateRepositoryRequestSchema>,"githubRepoFullName" | "githubRepoURI">;
-export type CreateRepositoryRequestDBBodyType = Omit<z.infer<typeof CreateRepositoryRequestSchema> & {githubInstallationId:string}, "authUserData" | "reqMeta">;
-export type DeleteRepositoryRequestBodyType = z.infer<typeof DeleteRepositoryRequestSchema>;
-export type DeleteRepositoryRequestDBBodyType = Omit<DeleteRepositoryRequestBodyType, "authUserData" | "reqMeta">;
+export type LinkRepositoryRequestBodyType = Omit<z.infer<typeof LinkRepositoryRequestSchema>,"githubRepoFullName" | "githubRepoURI">;
+export type LinkRepositoryRequestDBBodyType = Omit<z.infer<typeof LinkRepositoryRequestSchema> & {githubInstallationId:string}, "authUserData" | "reqMeta">;
+export type UnlinkRepositoryRequestBodyType = z.infer<typeof UnlinkRepositoryRequestSchema>;
+export type UnlinkRepositoryRequestDBBodyType = Omit<UnlinkRepositoryRequestBodyType, "authUserData" | "reqMeta">;

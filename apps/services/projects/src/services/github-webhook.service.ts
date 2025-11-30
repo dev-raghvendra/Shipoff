@@ -22,9 +22,10 @@ export class GithubWebhookService {
        try {
           await verifySignature(payload, signature);
           const parsedPayload = JSON.parse(payload) as DeploymentWebhookPayload;
-          const repo = await this._dbService.findUniqueRepository({
+          const repo = await this._dbService.findManyRepository({
             where:{
-                githubRepoId:parsedPayload.repository.id.toString()
+                githubRepoId:parsedPayload.repository.id.toString(),
+                isConnected:true
             },
             select:{
                 repositoryId:true,
@@ -38,20 +39,20 @@ export class GithubWebhookService {
                 branch:true
             }
           })
-          if(parsedPayload.ref.replace("refs/heads/","") !== repo.branch) return GrpcResponse.OK(null, "No new deployment, branch is same as last deployment");
+          if(parsedPayload.ref.replace("refs/heads/","") !== repo[0].branch) return GrpcResponse.OK(null, "No new deployment, branch is same as last deployment");
               const deploymentData  : CreateDeploymentRequestDBBodyType = {
-              projectId:repo.projectId,
+              projectId:repo[0].projectId,
               commitHash:parsedPayload.head_commit?.id || "unknown",
               status:"QUEUED",
               commitMessage:parsedPayload.head_commit?.message || "no commit message",
               author:parsedPayload.head_commit?.author.name || "unknown",
-              repositoryId:repo.repositoryId,
+              repositoryId:repo[0].repositoryId,
               lastDeployedAt:new Date()
           }
             const deployment = await this._dbService.startTransaction(async(tx)=>{
                await tx.deployment.updateMany({
                     where:{
-                        projectId:repo.projectId,
+                        projectId:repo[0].projectId,
                         status:"QUEUED"
                     },
                     data:{
@@ -68,11 +69,11 @@ export class GithubWebhookService {
             });
             await this._deploymentProducer.publishDeploymentRequested({
                 event:$DeploymentEvent.CREATED,
-                projectId:repo.projectId,
-                domain:repo.project.domain,
+                projectId:repo[0].projectId,
+                domain:repo[0].project.domain,
                 deploymentId:deployment.deploymentId,
                 commitHash:deployment.commitHash,
-                projectType:repo.project.framework.applicationType,
+                projectType:repo[0].project.framework.applicationType,
                 requestId
             });
 
@@ -86,9 +87,12 @@ export class GithubWebhookService {
         try {
             await verifySignature(payload, signature);
             const body = JSON.parse(payload) as {repository: {id: number, full_name: string}};
-            const repo = await this._dbService.deleteUniqueRepository({
+            const repo = await this._dbService.updateManyRepository({
                 where: {
                     githubRepoId: body.repository.id.toString(),
+                },
+                data: {
+                    isConnected: false,
                 }
             });
             return GrpcResponse.OK(repo, "Repository deleted successfully");
@@ -115,13 +119,17 @@ export class GithubWebhookService {
     private async repositoryRemovedFromInstallation(payload:string, signature:string, requestId:string) {
         try {
             await verifySignature(payload, signature);
-            const body = JSON.parse(payload) as {repositories: {id: number}[]};
-            const res =await this._dbService.deleteManyRepositories({
-                where: {
-                     githubRepoId:{
-                        in: body.repositories.map(repo => repo.id.toString())
-                     }
-                    }
+            const body = JSON.parse(payload) as {installation: {id: number}, repositories_removed: Array<{id: number}>};
+            const res =await this._dbService.updateManyRepository({
+                where:{
+                    githubRepoId:{
+                        in:body.repositories_removed.map(r=>r.id.toString())
+                    },
+                    githubInstallationId:body.installation.id.toString()
+                },
+                data:{
+                    isConnected:false
+                }
             });
             return GrpcResponse.OK(res, "Repositories removed from installation");
         } catch (e:any) {

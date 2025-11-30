@@ -35,9 +35,8 @@ server.addService(UnimplementedProjectsServiceService.definition, {
     UpdateProject: validateRPCBody("UpdateProject", projectsHandlers.handleUpdateProject.bind(projectsHandlers)),
     GetProjectsLinkedToTeam: validateRPCBody("GetProjectsLinkedToTeam", projectsHandlers.handleGetProjectsLinkedToTeam.bind(projectsHandlers)),
     CheckDomainAvailability: validateRPCBody("CheckDomainAvailability", projectsHandlers.handleCheckDomainAvailability.bind(projectsHandlers)),
-    GetRepository: validateRPCBody("GetRepository", repositoriesHandlers.handleGetRepository.bind(repositoriesHandlers)),
-    CreateRepository: validateRPCBody("CreateRepository", repositoriesHandlers.handleCreateRepository.bind(repositoriesHandlers)),
-    DeleteRepository: validateRPCBody("DeleteRepository", repositoriesHandlers.handleDeleteUniqueRepository.bind(repositoriesHandlers)),
+    LinkRepository: validateRPCBody("LinkRepository", repositoriesHandlers.handleLinkRepository.bind(repositoriesHandlers)),
+    UnlinkRepository: validateRPCBody("UnlinkRepository", repositoriesHandlers.handleUnlinkRepository.bind(repositoriesHandlers)),
 
     GetGithubRepo: validateRPCBody("GetGithubRepo", githubHandlers.handleGetGithubRepo.bind(githubHandlers)),
     GetUserGithubRepos: validateRPCBody("GetUserGithubRepos", githubHandlers.handleGetUserGithubRepositories.bind(githubHandlers)),
@@ -52,12 +51,14 @@ server.addService(UnimplementedProjectsServiceService.definition, {
     DeleteEnvVars: validateRPCBody("DeleteEnvVars", projectsHandlers.handleDeleteProjectEnvironmentVariables.bind(projectsHandlers)),
     GetEnvVars: validateRPCBody("GetEnvVars", projectsHandlers.handleGetProjectEnvironmentVariables.bind(projectsHandlers)),
     GetFrameworks: validateRPCBody("GetFrameworks", projectsHandlers.handleGetFrameworks.bind(projectsHandlers)),
-    IGetProject: validateRPCBody("IGetProject", projectsHandlers.handleIGetProject.bind(projectsHandlers)),
     GithubWebhook: validateRPCBody("GithubWebhook", githubWebhookHandlers.handleGithubWebhook.bind(githubWebhookHandlers)),
     CreateGithubInstallation: validateRPCBody("CreateGithubInstallation", githubHandlers.handleCreateGithubInstallation.bind(githubHandlers)),
     GetGithubInstallation:validateRPCBody("GetGithubInstallation", githubHandlers.handleGetGithubInstallation.bind(githubHandlers)),
+    IGetProject: validateRPCBody("IGetProject", projectsHandlers.handleIGetProject.bind(projectsHandlers)),
     IGetGithubRepoAccessToken: validateRPCBody("IGetGithubRepoAccessToken", githubHandlers.handleIGithubRepoAccessToken.bind(githubHandlers)),
     IGetStaleEnvironmentIds: validateRPCBody("IGetStaleEnvironmentIds", projectsHandlers.handleIGetStaleEnvironmentIds.bind(projectsHandlers)),
+    IGetDeployment:validateRPCBody("IGetDeployment", deploymentsHandlers.handleIGetDeployment.bind(deploymentsHandlers)),
+    IGetLastDeployment:validateRPCBody("IGetLastDeployment",deploymentsHandlers.handleIGetLastDeployment.bind(deploymentsHandlers)),
 });
 
 containerConsumer.startConsumer().then(() => {

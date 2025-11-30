@@ -35,7 +35,7 @@ export class K8Service {
     async createFreeTierStaticDeployment({projectId,deploymentId,commitHash,requestId}:{projectId:string,deploymentId:string,commitHash:string,requestId:string}){
         let manifest : FreeTierK8DeploymentManifest
         try {
-            manifest = await this._getFreeTierDeploymentManifest(projectId,deploymentId,commitHash,requestId,"user-static-apps")
+            manifest = await this._getFreeTierDeploymentManifest(projectId,deploymentId,commitHash,requestId,"CREATED","user-static-apps")
         } catch (e:any) {
             return this._errHandler(e,"GET-FREE-TIER-STATIC-MANIFEST",requestId);
         }
@@ -52,7 +52,7 @@ export class K8Service {
     async createFreeTierDynamicDeployment({projectId,deploymentId,commitHash,requestId}:{projectId:string,deploymentId:string,commitHash:string,requestId:string}){
         let manifest : FreeTierK8DeploymentManifest
         try {
-            manifest = await this._getFreeTierDeploymentManifest(projectId,deploymentId,commitHash,requestId,"user-dynamic-apps")
+            manifest = await this._getFreeTierDeploymentManifest(projectId,deploymentId,commitHash,requestId,"CREATED","user-dynamic-apps")
         } catch (e:any) {
             return this._errHandler(e,"GET-FREE-TIER-DYNAMIC-MANIFEST",requestId);
         }
@@ -102,7 +102,7 @@ export class K8Service {
     async tryCreatingFreeTierDeployment({projectId,deploymentId,commitHash,projectType,requestId}:{projectId:string,deploymentId:string,commitHash:string,projectType:"STATIC"|"DYNAMIC",requestId:string}){
         let manifest : FreeTierK8DeploymentManifest
         try {
-            manifest = await this._getFreeTierDeploymentManifest(projectId,deploymentId,commitHash,requestId,projectType==="STATIC"?"user-static-apps":"user-dynamic-apps")
+            manifest = await this._getFreeTierDeploymentManifest(projectId,deploymentId,commitHash,requestId,"REQUESTED",projectType==="STATIC"?"user-static-apps":"user-dynamic-apps")
         } catch (e:any) {
             return this._errHandler(e,"GET-FREE-TIER-DEPLOYMENT-MANIFEST",requestId);
         }
@@ -173,10 +173,10 @@ export class K8Service {
         }
      }
 
-     private async _getFreeTierDeploymentManifest(projectId:string,deploymentId:string,commitHash:string,requestId:string,namespace="user-dynamic-apps"):Promise<FreeTierK8DeploymentManifest>{
+     private async _getFreeTierDeploymentManifest(projectId:string,deploymentId:string,commitHash:string,requestId:string,event:"CREATED" | "REQUESTED",namespace="user-dynamic-apps"):Promise<FreeTierK8DeploymentManifest>{
            const {envs:env,image,containerId} = namespace==="user-dynamic-apps"
-           ? await this._containerConfUtil.getProdContainerConfig(projectId,deploymentId,commitHash,requestId)
-           : await this._containerConfUtil.getBuildContainerConfig(projectId,deploymentId,commitHash,requestId);
+           ? await this._containerConfUtil.getProdContainerConfig(event,projectId,deploymentId,commitHash,requestId)
+           : await this._containerConfUtil.getBuildContainerConfig(event,projectId,deploymentId,commitHash,requestId);
             env.push({
             name:"CONTAINER_ID",
             value:containerId

@@ -53,8 +53,8 @@ export const PROJECTS_API_ROUTES = {
     UPSERT_ENV_VAR:({projectId}:{projectId:string})=>`${projectId}/env-vars`,
     DELETE_ENV_VARS:({projectId}:{projectId:string})=>`${projectId}/env-vars`,
     GET_REPO:({projectId}:{projectId:string})=>`${projectId}/repository`,
-    CREATE_REPO:({projectId}:{projectId:string})=>`${projectId}/repository`,
-    DELETE_REPO:({projectId}:{projectId:string})=>`${projectId}/repository`
+    LINK_REPO:({projectId}:{projectId:string})=>`${projectId}/repository`,
+    UNLINK_REPO:({projectId}:{projectId:string})=>`${projectId}/repository`
 } as const
 
 
