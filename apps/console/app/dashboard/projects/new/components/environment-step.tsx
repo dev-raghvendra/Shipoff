@@ -1,15 +1,19 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { InfoIcon, AlertCircle } from "lucide-react"
+import { Textarea } from "@/components/ui/textarea"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { InfoIcon, AlertCircle, Clipboard } from "lucide-react"
 import { toast } from "sonner"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
+import { parseEnvVarsFromText } from "@/utils/env-var-parser"
 
 export type EnvVar = { id: string; name: string; value: string }
 
 interface EnvironmentStepProps {
   envVars: EnvVar[]
   onAddEnvVar: () => void
+  onAddEnvVarsBatch?: (vars: Array<{ name: string; value: string }>) => void
   onUpdateEnvVar: (id: string, field: "name" | "value", value: string) => void
   onRemoveEnvVar: (id: string) => void
   isDynamic?: boolean
@@ -18,10 +22,13 @@ interface EnvironmentStepProps {
 export function EnvironmentStep({
   envVars,
   onAddEnvVar,
+  onAddEnvVarsBatch,
   onUpdateEnvVar,
   onRemoveEnvVar,
   isDynamic = false,
 }: EnvironmentStepProps) {
+  const [pasteDialogOpen, setPasteDialogOpen] = useState(false)
+  const [pasteText, setPasteText] = useState("")
   const hasPortVar = envVars.some(v => v.name.trim().toUpperCase() === "PORT")
   
   // Detect duplicate keys
@@ -55,6 +62,56 @@ export function EnvironmentStep({
     }
     
     onRemoveEnvVar(id)
+  }
+
+  const handlePasteEnvVars = async () => {
+    try {
+      // Try to read from clipboard if pasteText is empty
+      let textToParse = pasteText
+      if (!textToParse.trim()) {
+        textToParse = await navigator.clipboard.readText()
+      }
+
+      if (!textToParse.trim()) {
+        toast.error("No text found in clipboard")
+        return
+      }
+
+      const parsedVars = parseEnvVarsFromText(textToParse)
+      
+      if (parsedVars.length === 0) {
+        toast.error("No valid environment variables found. Please use KEY=value format.")
+        return
+      }
+
+      // Use batch add if available, otherwise add one by one
+      if (onAddEnvVarsBatch) {
+        onAddEnvVarsBatch(parsedVars)
+        toast.success(`Added ${parsedVars.length} environment variable${parsedVars.length > 1 ? 's' : ''}`)
+      } else {
+        // Fallback: add them one by one (shouldn't happen if parent provides batch function)
+        parsedVars.forEach((env) => {
+          onAddEnvVar()
+          // Note: This fallback won't work perfectly as we don't know the new ID
+          // But it's better than nothing
+        })
+        toast.success(`Added ${parsedVars.length} environment variable${parsedVars.length > 1 ? 's' : ''}. Please fill in the values.`)
+      }
+
+      setPasteText("")
+      setPasteDialogOpen(false)
+    } catch (error: any) {
+      toast.error(error.message || "Failed to parse environment variables from clipboard")
+    }
+  }
+
+  const handlePasteFromClipboard = async () => {
+    try {
+      const text = await navigator.clipboard.readText()
+      setPasteText(text)
+    } catch (error: any) {
+      toast.error("Failed to read from clipboard. Please paste manually.")
+    }
   }
   
   return (
@@ -134,9 +191,57 @@ export function EnvironmentStep({
           )
         })
         )}
-        <Button type="button" variant="outline" onClick={onAddEnvVar}>
-          Add variable
-        </Button>
+        <div className="flex gap-2">
+          <Button type="button" variant="outline" onClick={onAddEnvVar}>
+            Add variable
+          </Button>
+          <Dialog open={pasteDialogOpen} onOpenChange={setPasteDialogOpen}>
+            <DialogTrigger asChild>
+              <Button type="button" variant="outline" onClick={handlePasteFromClipboard}>
+                <Clipboard className="mr-2 h-4 w-4" />
+                Paste from clipboard
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle>Paste Environment Variables</DialogTitle>
+                <DialogDescription>
+                  Paste your environment variables in KEY=value format (one per line). 
+                  You can paste from a .env file or any text containing environment variables.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <Textarea
+                  placeholder={`API_KEY=your_api_key
+DATABASE_URL=postgres://...
+SECRET_KEY=your_secret
+PORT=3000`}
+                  value={pasteText}
+                  onChange={(e) => setPasteText(e.target.value)}
+                  className="font-mono text-sm min-h-[200px]"
+                  onPaste={async (e) => {
+                    // Auto-populate on paste
+                    const pastedText = e.clipboardData.getData('text')
+                    if (pastedText) {
+                      setPasteText(pastedText)
+                    }
+                  }}
+                />
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => {
+                  setPasteText("")
+                  setPasteDialogOpen(false)
+                }}>
+                  Cancel
+                </Button>
+                <Button onClick={handlePasteEnvVars} disabled={!pasteText.trim()}>
+                  Import Variables
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
     </div>
   )

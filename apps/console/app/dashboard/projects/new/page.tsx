@@ -177,6 +177,15 @@ export default function NewProjectWizardPage() {
     setEnvVars(v => [...v, { id: Date.now().toString(), name: "", value: "" }])
   }
 
+  const addEnvVarsBatch = (vars: Array<{ name: string; value: string }>) => {
+    const newVars = vars.map(v => ({
+      id: Date.now().toString() + Math.random().toString(36).substring(2, 15),
+      name: v.name,
+      value: v.value
+    }))
+    setEnvVars(v => [...v, ...newVars])
+  }
+
   const updateEnvVar = (id: string, field: "name" | "value", val: string) => {
     setEnvVars(v => v.map(e => e.id === id ? { ...e, [field]: val } : e))
   }
@@ -297,6 +306,7 @@ export default function NewProjectWizardPage() {
           <EnvironmentStep
             envVars={envVars}
             onAddEnvVar={addEnvVar}
+            onAddEnvVarsBatch={addEnvVarsBatch}
             onUpdateEnvVar={updateEnvVar}
             onRemoveEnvVar={removeEnvVar}
             isDynamic={frameworks.find(f => f.frameworkId === framework)?.applicationType === "DYNAMIC"}
