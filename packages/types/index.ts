@@ -13,7 +13,7 @@ export type ProvidersType = z.infer<typeof Providers>;
 export type RuntimesType = z.infer<typeof Runtimes>;
 export const optNumWithDefaultValue = (defaultNum:number)=>z.number().int().nonnegative().transform(val => val == 0 ? undefined : val ).optional().default(defaultNum);
 export const optionalString = ()=> z.string().transform(str=>str.trim() ? str : undefined).optional()
-export const optionalArray = <T extends ZodRawShape>(schema:T)=>z.array(z.object(schema)).transform(arr => arr.length==1 ? Object.entries(arr[0]).some(([_, v])=>v === "") ? undefined : arr : undefined).optional()
+export const optionalArray = <T extends ZodRawShape>(schema:T)=>z.array(z.object(schema)).transform(arr => arr.length ? Object.entries(arr[0]).some(([_, v])=>v === "") ? undefined : arr : undefined).optional()
 export const optionalObject = <T extends ZodRawShape>(schema:T)=>z.object(schema).transform(obj=>Object.entries(obj).some(([_, v])=>v === "")?undefined:obj).optional()
 
 export const LogBodySchema = z.object({

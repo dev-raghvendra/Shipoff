@@ -75,7 +75,7 @@ model Repository {
  @@unique([projectId, githubRepoId])  
   deployments            Deployment[]
   project                Project @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
-  githubInstallation     GithubInstallation  @relation(fields: [githubInstallationId], references: [githubInstallationId], onDelete:SetNull)
+  githubInstallation     GithubInstallation  @relation(fields: [githubInstallationId], references: [githubInstallationId], onDelete:Cascade)
 }
 
 

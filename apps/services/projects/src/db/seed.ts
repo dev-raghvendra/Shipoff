@@ -210,56 +210,82 @@ async function seedFrameworks() {
 }
 
 async function setOneActiveRepoPerProjectTrigger() {
-    await dbService.getClient().$executeRawUnsafe(`CREATE OR REPLACE FUNCTION ensure_single_active_repo_per_project()
-        RETURNS TRIGGER AS $$
-        BEGIN 
-         IF (NEW.isConnected = true) THEN
-           UPDATE "Repository" 
-           SET "isConnected" = false
-           WHERE "projectId" = NEW."projectId"
-           AND "repositoryId" <> NEW."repositoryId"
-           AND "isConnected" = true
-         END IF;
-         RETURN NEW;
-        END;
-        $$ LANGUAGE plpgsql;
-        
-        CREATE TRIGGER single_active_repo_per_project
-        BEFORE INSERT OR UPDATE ON "Repository"
-        FOR EACH ROW EXECUTE FUNCTION ensure_single_active_repo_per_project();
-       `);
+  // remove existing trigger & function if present (single-statement calls)
+  await dbService.getClient().$executeRawUnsafe(`
+    DROP TRIGGER IF EXISTS single_active_repo_per_project ON "Repository";
+  `);
+
+  await dbService.getClient().$executeRawUnsafe(`
+    DROP FUNCTION IF EXISTS ensure_single_active_repo_per_project();
+  `);
+
+  // create function (single statement)
+  await dbService.getClient().$executeRawUnsafe(`
+    CREATE OR REPLACE FUNCTION ensure_single_active_repo_per_project()
+    RETURNS TRIGGER AS $$
+    BEGIN
+      IF (NEW."isConnected" = true) THEN
+        UPDATE "Repository"
+        SET "isConnected" = false
+        WHERE "projectId" = NEW."projectId"
+          AND "repositoryId" <> NEW."repositoryId"
+          AND "isConnected" = true;
+      END IF;
+      RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql;
+  `);
+
+  // create trigger (single statement)
+  await dbService.getClient().$executeRawUnsafe(`
+    CREATE TRIGGER single_active_repo_per_project
+    BEFORE INSERT OR UPDATE ON "Repository"
+    FOR EACH ROW EXECUTE FUNCTION ensure_single_active_repo_per_project();
+  `);
 }
-
 async function setRepoCleanupTrigger() {
-    await dbService.getClient().$executeRawUnsafe(`
-  CREATE OR REPLACE FUNCTION delete_repo_if_no_deployments_and_inactive()
-  RETURNS TRIGGER AS $$
-  DECLARE
-    remaining_deployments INT;
-    repo_active BOOLEAN;
-  BEGIN
-    SELECT COUNT(*) INTO remaining_deployments
-    FROM "Deployment"
-    WHERE "repositoryId" = OLD."repositoryId";
+  // Drop existing trigger & function if present
+  await dbService.getClient().$executeRawUnsafe(`
+    DROP TRIGGER IF EXISTS delete_repo_after_deployment_delete ON "Deployment";
+  `);
 
-    SELECT "isConnected" INTO repo_active
-    FROM "Repository"
-    WHERE "repositoryId" = OLD."repositoryId";
+  await dbService.getClient().$executeRawUnsafe(`
+    DROP FUNCTION IF EXISTS delete_repo_if_no_deployments_and_inactive();
+  `);
 
-    IF remaining_deployments = 0 AND repo_active = false THEN
-      DELETE FROM "Repository"
+  // Create function (single statement)
+  await dbService.getClient().$executeRawUnsafe(`
+    CREATE OR REPLACE FUNCTION delete_repo_if_no_deployments_and_inactive()
+    RETURNS TRIGGER AS $$
+    DECLARE
+      remaining_deployments INT;
+      repo_active BOOLEAN;
+    BEGIN
+      SELECT COUNT(*) INTO remaining_deployments
+      FROM "Deployment"
       WHERE "repositoryId" = OLD."repositoryId";
-    END IF;
 
-    RETURN OLD;
-  END;
-  $$ LANGUAGE plpgsql;
+      SELECT "isConnected" INTO repo_active
+      FROM "Repository"
+      WHERE "repositoryId" = OLD."repositoryId";
 
-  CREATE TRIGGER delete_repo_after_deployment_delete
-  AFTER DELETE ON "Deployment"
-  FOR EACH ROW
-  EXECUTE FUNCTION delete_repo_if_no_deployments_and_inactive();
-`);
+      IF remaining_deployments = 0 AND repo_active = false THEN
+        DELETE FROM "Repository"
+        WHERE "repositoryId" = OLD."repositoryId";
+      END IF;
+
+      RETURN OLD;
+    END;
+    $$ LANGUAGE plpgsql;
+  `);
+
+  // Create trigger (single statement)
+  await dbService.getClient().$executeRawUnsafe(`
+    CREATE TRIGGER delete_repo_after_deployment_delete
+    AFTER DELETE ON "Deployment"
+    FOR EACH ROW
+    EXECUTE FUNCTION delete_repo_if_no_deployments_and_inactive();
+  `);
 }
 
 async function seedContraints() {
@@ -290,3 +316,5 @@ async function seed() {
     await seedContraints();
     console.log("Database seeding completed.");
 }
+
+seed()
