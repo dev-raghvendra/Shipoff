@@ -553,3 +553,30 @@
     transform: translateY(0) scale(1);
   }
 }
+
+/* Smooth collapsible expand/collapse animation */
+[data-slot="collapsible-content"] {
+  overflow: hidden;
+}
+[data-slot="collapsible-content"][data-state="open"] {
+  animation: collapsible-slide-down 0.3s ease-out;
+}
+[data-slot="collapsible-content"][data-state="closed"] {
+  animation: collapsible-slide-up 0.3s ease-out forwards;
+}
+@keyframes collapsible-slide-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-collapsible-content-height);
+  }
+}
+@keyframes collapsible-slide-up {
+  from {
+    height: var(--radix-collapsible-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
