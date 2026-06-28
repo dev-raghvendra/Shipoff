@@ -206,6 +206,41 @@ export class GithubExternalService {
         }
     }
 
+    async getLatesCommitOnRepo({repoName,installationId,branch}:{repoName:string,installationId:string,branch:string}){
+        try {
+            const res = await this._axiosInstance.get(`/repos/${repoName}/commits/${branch}`,{headers:{
+                            "X-GitHub-Api-Version":"2022-11-28"
+                        },
+                        installationId
+                    } as GithubAxiosRequestConfig) as {
+                sha:string,
+                commit:{
+                    message:string,
+                    author:{
+                        name:string
+                    }
+                }
+            }
+            return res
+        } catch (e:any) {
+             if(e instanceof AxiosError){
+                if(e.response?.headers["x-ratelimit-remaining"]==0){
+                    throw new GrpcAppError(status.UNAVAILABLE,"User have made too many attempts, please try after sometime");
+                }
+                else if (e.response && e.response.status === 404){
+                    throw new GrpcAppError(status.NOT_FOUND,"User doesn't have any repositories or haven't granted access");
+                }
+                else if (e.response && e.response.status === 403) {
+                    throw new GrpcAppError(status.PERMISSION_DENIED,"User doesn't have permission to access this resource.");
+                }
+            }
+            else if(e instanceof GrpcAppError) {
+                throw e;
+            }
+            throw new GrpcAppError(status.INTERNAL,"Unexpected error occured",e);
+        }
+    }
+    
 }
 
 

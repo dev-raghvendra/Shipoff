@@ -118,6 +118,12 @@ export const DeleteEnvVarsRequestSchema = z.object({
     reqMeta:RequestMetaSchema
 }).strict();
 
+export const ProjectCreatedLocalEvent = {
+    PROJECT_CREATED :  "PROJECT_CREATED"
+} as const
+
+export type ProjectCreatedLocalEventData = {projectId:string,reqId:string,branch:string,githubInstallationId:string,repoName:string,repositoryId:string,domain:string,projectType:"STATIC"|"DYNAMIC"}
+
 export type GetProjectsLinkedToTeamRequestBodyType = z.infer<typeof GetProjectsLinkedToTeamRequestSchema>;
 export type GetProjectsLinkedToTeamRequestDBBodyType = Omit<GetProjectsLinkedToTeamRequestBodyType, "authUserData" | "reqMeta">;
 export type CheckDomainAvailabilityRequestBodyType = z.infer<typeof CheckDomainAvailabilityRequestSchema>;

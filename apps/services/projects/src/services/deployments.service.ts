@@ -6,6 +6,9 @@ import { DeploymentEventProducerService } from "@/producer/deployment.producer";
 import { logger } from "@/libs/winston";
 import { status } from "@grpc/grpc-js";
 import { BulkResourceRequestBodyType } from "@shipoff/types";
+import githubExternalService, { GithubExternalService } from "@/externals/github.external.service";
+import { $DeploymentEvent } from "@shipoff/redis";
+import { ProjectCreatedLocalEventData } from "@/types/projects";
 
 
 export class DeploymentsService {
@@ -16,6 +19,7 @@ export class DeploymentsService {
     private _deploymentProducer : DeploymentEventProducerService;
     private _deletableStatuses = ["FAILED","INACTIVE"];
     private _redeployableStatuses = ["INACTIVE","FAILED","PRODUCTION"];
+    private _githubService:GithubExternalService
 
     constructor() {
         this._errHandler = createGrpcErrorHandler({subServiceName:"DEPLOYMENT_SERVICE",logger});
@@ -23,7 +27,9 @@ export class DeploymentsService {
         this._dbService = dbService;
         this._authService = authExternalService;
         this._deploymentProducer = new DeploymentEventProducerService();
+        this._githubService = githubExternalService
     }
+
     async getDeployment({authUserData, deploymentId,projectId,reqMeta}: GetDeploymentRequestBodyType) {
         try {
             await this._authService.getPermissions({
@@ -203,5 +209,34 @@ export class DeploymentsService {
         }
     }
 
+    async createFirstDeployment( {projectId,reqId,domain,repositoryId,branch,githubInstallationId,repoName,projectType}:ProjectCreatedLocalEventData){
+       try {
+           const commit = await this._githubService.getLatesCommitOnRepo({
+            repoName,
+            installationId:githubInstallationId,
+            branch
+           })
+           const deployment = await this._dbService.createDeployment({
+              commitHash:commit.sha,
+              commitMessage:commit.commit?.message || "unknown",
+              status:"QUEUED",
+              projectId,
+              repositoryId,
+              author:commit.commit?.author?.name || "unknown",
+              lastDeployedAt:new Date()
+           })
+           await this._deploymentProducer.publishDeploymentRequested({
+                           event:$DeploymentEvent.CREATED,
+                           projectId:projectId,
+                           domain,
+                           deploymentId:deployment.deploymentId,
+                           commitHash:deployment.commitHash,
+                           projectType,
+                           requestId:reqId
+                       });
+       } catch (e:any) {
+        this._errHandler(e,"CREATE-FIRST-DEPLOYMENT",reqId)
+       }
+    }
 
 }
