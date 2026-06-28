@@ -174,7 +174,7 @@ export default function NewProjectWizardPage() {
   }
 
   const addEnvVar = (preset?: { name: string; value: string }) => {
-  setEnvVars(v => [...v, { id: Date.now().toString(), name: preset?.name ?? "", value: preset?.value ?? "" }])
+  setEnvVars(v => [...v, { id: crypto.randomUUID(), name: preset?.name ?? "", value: preset?.value ?? "" }])
 }
 
   const updateEnvVar = (id: string, field: "name" | "value", val: string) => {
