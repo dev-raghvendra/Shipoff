@@ -4,11 +4,11 @@ import { GrpcResponse } from "@shipoff/services-commons/utils/rpc-utils";
 import { BodyLessRequestBodyType, BulkResourceRequestBodyType, InternalEmptyRequestBodyType } from "@shipoff/types";
 import { Database, dbService } from "@/db/db-service";
 import authExternalService, { AuthExternalService } from "@/externals/auth.external.service";
-import { CheckDomainAvailabilityRequestBodyType, CreateProjectRequestBodyType, DeleteEnvVarsRequestBodyType, GetEnvVarsRequestBodyType, GetProjectRequestBodyType, GetProjectsLinkedToTeamRequestBodyType, IGetProjectRequestBodyType, UpdateProjectRequestBodyType, UpsertEnvVarsRequestBodyType,ProjectCreatedLocalEvent, ProjectCreatedLocalEventData  } from "@/types/projects";
+import { CheckDomainAvailabilityRequestBodyType, CreateProjectRequestBodyType, DeleteEnvVarsRequestBodyType, GetEnvVarsRequestBodyType, GetProjectRequestBodyType, GetProjectsLinkedToTeamRequestBodyType, IGetProjectRequestBodyType, UpdateProjectRequestBodyType, UpsertEnvVarsRequestBodyType,ProjectCreatedLocalEvent  } from "@/types/projects";
 import { ProjectProducer } from "@/producer/project.producer";
 import { status } from "@grpc/grpc-js";
 import { logger } from "@/libs/winston";
-import { EventEmitter } from "stream";
+import { ProjectCreatedEvent } from "@/events/project.local.event";
 
 
 export class ProjectsService {
@@ -18,7 +18,6 @@ export class ProjectsService {
     private _asyncErrHandler: ReturnType<typeof createAsyncErrHandler>
     private _selectProjectFeilds:Prisma.ProjectSelect
     private _projectProducer: ProjectProducer;
-    private _projectCreatedEventForDeploymentService : NodeJS.EventEmitter
 
     constructor() {
         this._errHandler = createGrpcErrorHandler({subServiceName:"PROJECT_SERVICE",logger});
@@ -45,7 +44,6 @@ export class ProjectsService {
         this._dbService = dbService;
         this._authService = authExternalService;
         this._projectProducer = new ProjectProducer();
-        this._projectCreatedEventForDeploymentService = new EventEmitter()
     }
 
     async createProject({authUserData:{userId},reqMeta,...body}: CreateProjectRequestBodyType) {
@@ -72,16 +70,16 @@ export class ProjectsService {
                requestId:reqMeta.requestId
            }),"CREATE-PROJECT",reqMeta.requestId);
 
-           this._projectCreatedEventForDeploymentService.emit(ProjectCreatedLocalEvent.PROJECT_CREATED,{
+           ProjectCreatedEvent.emit("PROJECT_CREATED",{
                 projectId:project.projectId,
                 projectType:fw.applicationType,
-                repoName:project.repository?.githubRepoFullName,
-                githubInstallationId:project.repository?.githubInstallationId,
-                repositoryId:project.repository?.repositoryId,
-                branch:project.repository?.branch,
+                repoName:project.repository?.githubRepoFullName || "unknown",
+                githubInstallationId:project.repository?.githubInstallationId || "unknown",
+                repositoryId:project.repository?.repositoryId || "unknown",
+                branch:project.repository?.branch || "main",
                 domain:project.domain,
                 reqId:reqMeta.requestId
-           } as ProjectCreatedLocalEventData)
+           })
            return GrpcResponse.OK(project, "Project created");
         } catch (e:any) {
             return this._errHandler(e, "CREATE-PROJECT",reqMeta.requestId);

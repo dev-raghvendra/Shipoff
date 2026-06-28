@@ -8,7 +8,7 @@ const projectsService = new ProjectsService()
 
 const staticExtensions = [
   ".html", ".css", ".js", ".json", ".png", ".jpg", ".jpeg", ".gif",
-  ".svg", ".ico", ".woff", ".woff2", ".ttf", ".eot", ".mp4"
+  ".svg", ".ico", ".woff", ".woff2", ".ttf", ".eot", ".mp4",".mp3"
 ];
 
 export async function resolveDestinationMiddleware(req:PopulatedRequest, res:Response, next:NextFunction) {

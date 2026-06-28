@@ -208,11 +208,7 @@ export class GithubExternalService {
 
     async getLatesCommitOnRepo({repoName,installationId,branch}:{repoName:string,installationId:string,branch:string}){
         try {
-            const res = await this._axiosInstance.get(`/repos/${repoName}/commits/${branch}`,{headers:{
-                            "X-GitHub-Api-Version":"2022-11-28"
-                        },
-                        installationId
-                    } as GithubAxiosRequestConfig) as {
+            const res = await this._axiosInstance.get<{
                 sha:string,
                 commit:{
                     message:string,
@@ -220,8 +216,12 @@ export class GithubExternalService {
                         name:string
                     }
                 }
-            }
-            return res
+            }>(`/repos/${repoName}/commits/${branch}`,{headers:{
+                            "X-GitHub-Api-Version":"2022-11-28"
+                        },
+                        installationId
+                    } as GithubAxiosRequestConfig)  
+            return res.data
         } catch (e:any) {
              if(e instanceof AxiosError){
                 if(e.response?.headers["x-ratelimit-remaining"]==0){

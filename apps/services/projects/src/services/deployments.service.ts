@@ -8,8 +8,7 @@ import { status } from "@grpc/grpc-js";
 import { BulkResourceRequestBodyType } from "@shipoff/types";
 import githubExternalService, { GithubExternalService } from "@/externals/github.external.service";
 import { $DeploymentEvent } from "@shipoff/redis";
-import { ProjectCreatedLocalEventData } from "@/types/projects";
-
+import { ProjectCreatedEvent, ProjectCreatedLocalEventData } from "@/events/project.local.event";
 
 export class DeploymentsService {
     private _dbService: Database;
@@ -28,6 +27,7 @@ export class DeploymentsService {
         this._authService = authExternalService;
         this._deploymentProducer = new DeploymentEventProducerService();
         this._githubService = githubExternalService
+        ProjectCreatedEvent.on("PROJECT_CREATED",this.createFirstDeployment.bind(this))
     }
 
     async getDeployment({authUserData, deploymentId,projectId,reqMeta}: GetDeploymentRequestBodyType) {
@@ -235,7 +235,7 @@ export class DeploymentsService {
                            requestId:reqId
                        });
        } catch (e:any) {
-        this._errHandler(e,"CREATE-FIRST-DEPLOYMENT",reqId)
+        return this._errHandler(e,"CREATE-FIRST-DEPLOYMENT",reqId)
        }
     }
 

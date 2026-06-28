@@ -2,8 +2,10 @@ import Redis from "ioredis";
 import { SECRETS } from "../config/config";
 let RedisClientInstance : Redis | null = null;
 
+
 export const GetRedisClient = () => {
     if(!RedisClientInstance){
+        console.log(SECRETS)
         RedisClientInstance = new Redis({
             host:SECRETS.REDIS_HOST,
             port:SECRETS.REDIS_PORT,
