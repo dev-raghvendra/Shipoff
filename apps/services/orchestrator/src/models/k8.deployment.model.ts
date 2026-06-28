@@ -1,7 +1,7 @@
 import { model, Schema , InferSchemaType} from "mongoose";
 
 export const k8DeploymentSchema = new Schema({
-    status:{type:Schema.Types.String, enum:["PROVISIONING","RUNNING","PRODUCTION","FAILED", "TERMINATED"],required:true},
+    status:{type:Schema.Types.String, enum:["PROVISIONING","RUNTIME_STARTED","BUILDING","PRODUCTION","FAILED", "TERMINATED"],required:true},
     projectId:{type:Schema.Types.String, required:true},
     terminatedAt:{type:Schema.Types.Number, default:null,required:false},
     lastIngressedAt:{type:Schema.Types.Number, default:null,required:false},

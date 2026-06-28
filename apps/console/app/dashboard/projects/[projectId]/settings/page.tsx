@@ -5,6 +5,7 @@ import { RepositorySettings } from "@/components/projects/settings/repository-se
 import { FrameworkSettings } from "@/components/projects/settings/framework-settings"
 import { DomainSettings } from "@/components/projects/settings/domain-settings"
 import { EnvVariablesSettings } from "@/components/projects/settings/env-var-settings"
+import { DeleteProjectSettings } from "@/components/projects/settings/delete-project-settings"
 import { useProject } from "@/hooks/use-project"
 import { useEffect } from "react"
 import { toast } from "sonner"
@@ -119,6 +120,20 @@ export default function ProjectSettingsPage() {
             projectId={projectId as string} 
             initialPrefix={project?.domain?.split(".on")[0]} 
             refetchProject={refetch} 
+          />
+        </section>
+
+        <Separator />
+
+        {/* Danger Zone */}
+        <section className="space-y-6">
+          <div>
+            <h2 className="text-xl font-semibold mb-1 text-destructive">Danger Zone</h2>
+            <p className="text-sm text-muted-foreground">Irreversible and destructive actions</p>
+          </div>
+          <DeleteProjectSettings
+            projectId={projectId as string}
+            projectName={project?.name}
           />
         </section>
       </div>

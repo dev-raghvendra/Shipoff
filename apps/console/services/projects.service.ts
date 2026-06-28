@@ -1,7 +1,7 @@
 import { MAIN_BACKEND_API, PROJECTS_API_ROUTES } from "@/config/service-route-config";
 import { BaseService } from "./base.service";
 import { InferRequest } from "@shipoff/types";
-import { AllDeploymentsResponse, AllProjectsResponse, BulkResourceRequest, CreateProjectRequest, CreateRepositoryRequest, DeleteEnvVarsRequest, DeleteEnvVarsResponse, DeleteRepositoryRequest, DeploymentResponse, EnvVarsResponse, FrameworkResponse, GetAllDeploymentsRequest, GetDeploymentRequest, ProjectsLinkedToTeamResponse, GetProjectRequest, GetProjectsLinkedToTeamRequest, ProjectResponse, RepositoryResponse, UpdateProjectRequest, UpsertEnvVarsRequest, CheckDomainAvailabilityRequest, CheckDomainAvailabilityResponse, DeleteDeploymentRequest, RedeployRequest } from "@shipoff/proto";
+import { AllDeploymentsResponse, AllProjectsResponse, BulkResourceRequest, CreateProjectRequest, CreateRepositoryRequest, DeleteEnvVarsRequest, DeleteEnvVarsResponse, DeleteRepositoryRequest, DeploymentResponse, EnvVarsResponse, FrameworkResponse, GetAllDeploymentsRequest, GetDeploymentRequest, ProjectsLinkedToTeamResponse, GetProjectRequest, GetProjectsLinkedToTeamRequest, ProjectResponse, RepositoryResponse, UpdateProjectRequest, UpsertEnvVarsRequest, CheckDomainAvailabilityRequest, CheckDomainAvailabilityResponse, DeleteDeploymentRequest, RedeployRequest, DeleteProjectRequest } from "@shipoff/proto";
 import { InferResponse } from "@shipoff/types";
 
 export class ProjectService extends BaseService {
@@ -143,6 +143,15 @@ export class ProjectService extends BaseService {
      async createProject(data:InferRequest<CreateProjectRequest>){
         try {
             const res = await this._axiosInstance.post<InferResponse<ProjectResponse>>(PROJECTS_API_ROUTES.CREATE_PROJECT(), data)
+            return res.data
+        } catch (e:any) {
+            return this.handleError(e,undefined,true)
+        }
+     }
+
+     async deleteProject(data:InferRequest<DeleteProjectRequest>){
+        try {
+            const res = await this._axiosInstance.delete<InferResponse<ProjectResponse>>(PROJECTS_API_ROUTES.DELETE_PROJECT({projectId:data.projectId}))
             return res.data
         } catch (e:any) {
             return this.handleError(e,undefined,true)

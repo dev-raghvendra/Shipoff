@@ -18,6 +18,7 @@ run_filtered_prod() {
         error_exit "SYSTEM" "No production command specified"
     fi
 
+    send_webhook "STATE_CHANGED"  "$RUNTIME_STARTED_WEBHOOK"
     log "SYSTEM" "INFO" "Starting production with command: $prod_command"
 
     echo  "

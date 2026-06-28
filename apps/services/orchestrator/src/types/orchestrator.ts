@@ -36,7 +36,7 @@ export type STATE_CHANGED = {
     projectId:string;
     containerId:string;
     deploymentId:string;
-    action:"PROVISIONING"|"RUNNING"|"FAILED"|"TERMINATED"|"PRODUCTION"
+    action:"PROVISIONING"|"BUILDING"|"FAILED"|"TERMINATED"|"PRODUCTION"|"RUNTIME_STARTED"
     projectType:"STATIC" | "DYNAMIC";
     builId:string;
     runtimeId:string;

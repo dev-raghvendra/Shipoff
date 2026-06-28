@@ -57,10 +57,11 @@ export class ContainerConfigUtil {
         // console.log(`http://localhost:8000/apis/v1/log/${project.projectId}/${runtimeId}`)
         const webhooks = await Promise.all([
             this._createWebhookToken(project,deploymentId,containerId,buildId,runtimeId,"PROVISIONING","10M"),
-            this._createWebhookToken(project,deploymentId,containerId,buildId,runtimeId,"RUNNING","10M"),
+            this._createWebhookToken(project,deploymentId,containerId,buildId,runtimeId,"BUILDING","10M"),
             this._createWebhookToken(project,deploymentId,containerId,buildId,runtimeId,"PRODUCTION","20M"),
             this._createWebhookToken(project,deploymentId,containerId,buildId,runtimeId,"TERMINATED","30D"),
-            this._createWebhookToken(project,deploymentId,containerId,buildId,runtimeId,"FAILED","30D")
+            this._createWebhookToken(project,deploymentId,containerId,buildId,runtimeId,"FAILED","30D"),
+            this._createWebhookToken(project,deploymentId,containerId,buildId,runtimeId,"RUNTIME_STARTED","15M")
         ])
         return {envs:[...project.environmentVariables,
             {
@@ -88,7 +89,7 @@ export class ContainerConfigUtil {
                 name:"PROVISIONING_WEBHOOK",
                 value:webhooks[0]
             },{
-                name:"RUNNING_WEBHOOK",
+                name:"BUILDING_WEBHOOK",
                 value:webhooks[1]
             },{
                 name:"PRODUCTION_WEBHOOK",
@@ -99,6 +100,9 @@ export class ContainerConfigUtil {
             },{
                 name:"FAILED_WEBHOOK",
                 value:webhooks[4]
+            },{
+                name:"RUNTIME_STARTED_WEBHOOK",
+                value:webhooks[5]
             },{
                 name:"CLONE_TOKEN",
                 value:await createJwt({githubRepoId:project.repository.githubRepoId,githubRepoFullName:project.repository.githubRepoFullName},"20m")
@@ -123,7 +127,7 @@ export class ContainerConfigUtil {
             }],image,containerId}
     }
 
-    private async _createWebhookToken(project: Project, deploymentId:string, containerId:string,builId:string,runtimeId:string, action: "PROVISIONING" | "RUNNING" | "FAILED" | "TERMINATED" | "PRODUCTION", expiresIn:StringValue){
+    private async _createWebhookToken(project: Project, deploymentId:string, containerId:string,builId:string,runtimeId:string, action: "PROVISIONING" | "BUILDING" | "RUNTIME_STARTED" |"FAILED" | "TERMINATED" | "PRODUCTION", expiresIn:StringValue){
         return await createJwt<STATE_CHANGED>({
             action,
             projectId: project.projectId,

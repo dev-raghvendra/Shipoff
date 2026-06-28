@@ -39,10 +39,11 @@ export enum $AuthEvent {
 
 export enum $ContainerEvent {
     PROVISIONING = "PROVISIONING",  
-    RUNNING = "RUNNING",
+    BUILDING = "BUILDING",
     PRODUCTION = "PRODUCTION",
     FAILED = "FAILED",
     TERMINATED = "TERMINATED",
+    RUNTIME_STARTED="RUNTIME_STARTED"
 }
 
 export enum $DeploymentEvent {

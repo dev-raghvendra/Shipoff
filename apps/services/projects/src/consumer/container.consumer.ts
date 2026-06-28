@@ -12,10 +12,11 @@ export class ContainerConsumer {
     private _consumer:Consumer;
     private _eventToStatusMap : Record<keyof typeof $ContainerEvent,  DeploymentStatus> = {
         "PRODUCTION":DeploymentStatus.PRODUCTION,
-        "RUNNING":DeploymentStatus.BUILDING,
+        "BUILDING":DeploymentStatus.BUILDING,
         "PROVISIONING":DeploymentStatus.PROVISIONING,
         "FAILED":DeploymentStatus.FAILED,
-        "TERMINATED":DeploymentStatus.INACTIVE
+        "TERMINATED":DeploymentStatus.INACTIVE,
+        "RUNTIME_STARTED":DeploymentStatus.BUILDING
     }
     private _errHandler:ReturnType<typeof createSyncErrHandler>
     constructor(serviceName:keyof typeof CONTAINER_TOPIC_CONSUMER_GROUPS){
@@ -45,7 +46,7 @@ export class ContainerConsumer {
                     }
                 })
               }
-              else if(eventStatus === "PRODUCTION" && event.projectType === "DYNAMIC"){
+              else if(event.event === "RUNTIME_STARTED"){
                 await tx.runtimeEnvironment.updateMany({
                     where:{deploymentId:event.deploymentId},
                     data:{active:false}

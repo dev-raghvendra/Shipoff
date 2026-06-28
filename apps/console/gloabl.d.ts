@@ -8,6 +8,7 @@ declare module "next-auth" {
     accessToken: string;
     error?:string
   }
+0.
 
   interface User extends UserData {
      accessToken:string,
