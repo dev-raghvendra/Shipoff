@@ -31,7 +31,7 @@ export function HeroSection() {
             transition={{ duration: 0.5 }}
             className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-primary/20 bg-primary/5 backdrop-blur-sm mb-8 text-sm hover:border-primary/30 transition-colors"
           >
-            <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-orange-500 text-primary-foreground">
+            <span className="p-1 px-2 text-xs font-semibold rounded-full bg-orange-500 text-primary-foreground">
               Y
             </span>
             <span className="text-foreground/80">Not backed by Y Combinator</span>
