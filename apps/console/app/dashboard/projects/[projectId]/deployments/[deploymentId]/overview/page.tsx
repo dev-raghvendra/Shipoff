@@ -38,7 +38,7 @@ export default function DeploymentDetailPage() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const {data:deployment,isLoading,error,isError} = useDeployment({projectId:projectId as string,deploymentId:deploymentId as string})
-  const statusesToMountRuntimeEnvironment = ["PRODUCTION","FAILED","INACTIVE"]
+  const statusesToMountRuntimeEnvironment = ["PRODUCTION","FAILED","INACTIVE","BUILDING"]
   const router = useRouter()
   const { data: session } = useSession()
   
