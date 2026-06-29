@@ -73,7 +73,7 @@ const formatDate = (dateString: string) => {
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold leading-tight text-pretty truncate">{item.name}</h3>
           {item.description && (
-            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{item.description}</p>
+            <p className="text-sm truncate text-muted-foreground mt-1 line-clamp-2">{item.description}</p>
           )}
         </div>
         <ChevronRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-1 flex-shrink-0" />
