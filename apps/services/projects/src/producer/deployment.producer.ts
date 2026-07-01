@@ -8,9 +8,10 @@ import {Redis} from "ioredis";
 
 
 export class DeploymentEventProducerService {
-    private _redisClient : Redis
+    private _redisClient : Redis | any
     constructor(){
-        this._redisClient = GetRedisClient();
+        // this._redisClient = GetRedisClient();
+        this._redisClient = 44;
     }
 
     async publishDeploymentRequested(message:DeploymentEvent<keyof typeof $DeploymentEvent>) {

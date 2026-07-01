@@ -57,8 +57,7 @@ const RBAC_CONFIG: T_RBAC_CONFIG = {
         TEAM_MEMBER: { permissions: ["READ", "CREATE", "DELETE", "UPDATE", "SELF_DELETE", "SELF_UPDATE"] },
         TEAM_LINK: { permissions: ["READ", "CREATE", "DELETE", "UPDATE"] },
         DEPLOYMENT: { permissions: ["READ", "CREATE", "DELETE", "UPDATE"] },
-        REPOSITORY: { permissions: ["READ"] }
-        
+        REPOSITORY: { permissions: ["READ"] }  
     },
     TEAM_ADMIN: {
         PROJECT: { permissions: ["READ", "UPDATE"] },
@@ -77,7 +76,6 @@ const RBAC_CONFIG: T_RBAC_CONFIG = {
         TEAM_LINK: { permissions: ["READ"] },
         DEPLOYMENT: { permissions: ["READ", "CREATE", "UPDATE"] },
         REPOSITORY: { permissions: ["READ"] }
-        
     },
     TEAM_VIEWER: {
         PROJECT: { permissions: ["READ"] },

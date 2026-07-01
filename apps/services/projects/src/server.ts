@@ -22,7 +22,7 @@ const deploymentsHandlers = new DeploymentsHandlers();
 const githubWebhookHandlers = new GithubWebhookHandlers();
 const repositoriesHandlers = new RepositoriesHandlers();
 const githubHandlers = new GithubHandlers();
-const containerConsumer = new ContainerConsumer("PROJECT_SERVICE");
+// const containerConsumer = new ContainerConsumer("PROJECT_SERVICE");
 const errHandler = createSyncErrHandler({ subServiceName: "PROJECTS_SERVER", logger });
 
 
@@ -60,11 +60,11 @@ server.addService(UnimplementedProjectsServiceService.definition, {
     IGetStaleEnvironmentIds: validateRPCBody("IGetStaleEnvironmentIds", projectsHandlers.handleIGetStaleEnvironmentIds.bind(projectsHandlers)),
 });
 
-containerConsumer.startConsumer().then(() => {
-    logger.info("[rid:N/A]: CONTAINER_CONSUMER_STARTED");
-}).catch((err) => {
-    errHandler(err,"CONTAINER_CONSUMER_STARTUP","N/A");
-});
+// containerConsumer.startConsumer().then(() => {
+//     logger.info("[rid:N/A]: CONTAINER_CONSUMER_STARTED");
+// }).catch((err) => {
+//     errHandler(err,"CONTAINER_CONSUMER_STARTUP","N/A");
+// });
 
 server.bindAsync(`${SECRETS.HOST}:${SECRETS.PORT}`,ServerCredentials.createInsecure(),(err)=>{
     if (err) {

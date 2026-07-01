@@ -68,7 +68,7 @@ export class K8Service {
         }
     }
 
-    async createDynamicDeploymentService({projectId,requestId,port}:{projectId:string,requestId:string,port:number}){
+    async ({projectId,requestId,port}:{projectId:string,requestId:string,port:number}){
         const manifest : k8.CoreV1ApiCreateNamespacedServiceRequest = {
             namespace:"user-dynamic-apps",
             body:{

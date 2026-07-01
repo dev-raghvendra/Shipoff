@@ -74,7 +74,7 @@ export class DeploymentConsumer {
                 `[rid:N/A]: UNEXPECTED_ERROR_OCCURED_WHILE_READING_UNACKED_MESSAGES_ON_${TOPICS.DEPLOYMENT_TOPIC}_IN_${this._serviceName}: ${JSON.stringify(e, null, 2)}`
               );
             }
-    }
+      }
 
     private async ackMessage(messageId: string) {
         const groupName = DEPLOYMENT_TOPIC_CONSUMER_GROUPS[this._serviceName];

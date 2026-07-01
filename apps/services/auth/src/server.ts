@@ -19,7 +19,7 @@ const server = new Server({
 const authhandlers = new AuthHandlers();
 const teamHandlers = new TeamHandlers();
 const projectHandlers = new ProjectHandlers();
-const projectConsumer = new ProjectConsumer();
+// const projectConsumer = new ProjectConsumer();
 const errHandler = createSyncErrHandler({subServiceName:"AUTH_SERVER",logger})
 
 server.addService(UnimplementedAuthServiceService.definition, {
@@ -61,11 +61,11 @@ server.bindAsync(`${SECRETS.HOST}:${SECRETS.PORT}`,ServerCredentials.createInsec
       logger.info(`[rid:N/A]: AUTH_GRPC_SERVER_LISTENING_ON ${SECRETS.HOST}:${SECRETS.PORT}`)
 })
 
-projectConsumer.startProjectConsumer().then(() => {
-    logger.info("[rid:N/A]: PROJECT_CONSUMER_STARTED");
-}).catch((err) => {
-    errHandler(err,"PROJECT_CONSUMER_STARTUP","N/A");
-});
+// projectConsumer.startProjectConsumer().then(() => {
+//     logger.info("[rid:N/A]: PROJECT_CONSUMER_STARTED");
+// }).catch((err) => {
+//     errHandler(err,"PROJECT_CONSUMER_STARTUP","N/A");
+// });
 
 process.on("uncaughtException", (err) => {
     errHandler(err,"UNCAUGHT_EXCEPTION","N/A");

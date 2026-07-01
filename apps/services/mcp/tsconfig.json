@@ -1,0 +1,22 @@
+{
+  "extends":"@shipoff/typescript-config/service.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "baseUrl": "./src",
+    "paths": {
+      "@/*":["*"]
+    },
+    "types":["node","express"],
+    "module": "nodenext",
+    "target": "esnext"
+  },
+  "references": [
+    {"path": "../../../packages/services-commons"},
+    {"path": "../../../packages/grpc-clients"},
+    {"path": "../../../packages/types"},
+    {"path": "../../../packages/proto"}
+  ],
+  "include": ["src"],
+  "exclude": ["dist","node_modules"]
+}
