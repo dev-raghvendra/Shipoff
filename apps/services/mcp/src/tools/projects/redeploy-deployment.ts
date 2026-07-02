@@ -1,5 +1,6 @@
 import { getUser } from "@/libs/context";
 import { ProjectService } from "@/services/projects.service";
+import { withIdempotency } from "@/utils/request.utils";
 import { unwrapGrpcResponse } from "@/utils/response.utils";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
 import { z } from "zod";
@@ -22,8 +23,8 @@ Prerequisites:
 - Deployments in any other state cannot be redeployed.
 
 On success, a new deployment is created and begins in QUEUED state.
-Use the returned deploymentId with deployment_status to monitor progress,
-or with deployment_details for full information.
+After a successful redeploy, use monitor_deployment to wait until the new
+deployment reaches a terminal state.
 `,
       inputSchema: {
         deploymentId: z
@@ -35,39 +36,55 @@ or with deployment_details for full information.
           .string()
           .min(1)
           .describe("Identifier of the project that owns the deployment."),
-      },
-    },
-    async (body) => {
-      const user = getUser();
+      
+      idempotencyKey: z
+  .string()
+  .min(1)
+  .describe("Unique key for this operation. Use a UUID generated once per user intent and reuse it on retries. Prevents duplicate operations if the request is retried."),
+    }},
+    async (body,{requestId,sessionId}) => {
+      try {
+        const user = getUser();
 
-      const deployment = unwrapGrpcResponse(
+      const deployment = await withIdempotency(body.idempotencyKey,user.userId,async ()=>{return unwrapGrpcResponse(
         await projectServiceClient.redeploy({
           authUserData: user,
           deploymentId: body.deploymentId,
           projectId: body.projectId,
           reqMeta:{
-            requestId:`${Date.now()}`
+            requestId:`rid-${sessionId}:${requestId}`
           }
         })
-      );
+      )})
+
 
       return {
         content: [
           {
             type: "text",
-            text: JSON.stringify(
-              {
-                deploymentId: deployment.deploymentId,
-                projectId: deployment.projectId,
-                status: deployment.status,
-                createdAt: deployment.createdAt,
-              },
-              null,
-              2
-            ),
+            text: "success",
           },
+          {
+            type:"resource",
+            resource:{
+              mimeType:"application/json",
+              uri:`shipoff://projects/${body.projectId}/deployments/${deployment.result.deploymentId}/`,
+              text:JSON.stringify(deployment,null,2)
+            }
+          }
         ],
       };
+      } catch (e:any) {
+        return {
+                content:[{
+                    type:"text",
+                    text:JSON.stringify({
+                        error:e.message ?? "UNKWNOWN_ERROR"
+                    },null,2)
+                }],
+                isError:true
+        }
+      }
     }
   );
 }

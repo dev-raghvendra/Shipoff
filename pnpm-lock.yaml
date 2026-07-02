@@ -692,6 +692,9 @@ importers:
       express:
         specifier: ^5.1.0
         version: 5.1.0
+      node-cache:
+        specifier: ^5.1.2
+        version: 5.1.2
       zod:
         specifier: ^4.4.3
         version: 4.4.3

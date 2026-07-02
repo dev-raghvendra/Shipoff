@@ -12,18 +12,20 @@ export function registerProjectsResource(server: McpServer) {
       title: "Projects",
       description: `Returns a paginated list of the authenticated user's projects on Shipoff,
 including project ID, name, domain, framework, and current status.
-Use limit and offset for pagination. Fetch this first when the user asks
-about their projects or before creating/deploying a project.`,
+Use limit and offset for pagination. 
+Use this when the user asks about their existing projects or when a project
+ID is needed for another operation.`,
       mimeType: "application/json",
     },
-    async (uri,{limit,offset}) => {
+    async (uri,{limit,offset},{requestId,sessionId}) => {
       const user = getUser();
+      console.log(requestId)
       const projects = unwrapGrpcResponse(await projectServiceClient.getAllUserProjects({
         authUserData:user,
         limit,
         skip:offset,
         reqMeta:{
-            requestId:`${Date.now()}`
+            requestId:`rid-${sessionId}:${requestId}`
         }
       }))
       console.log("Projects",projects)
@@ -42,16 +44,19 @@ about their projects or before creating/deploying a project.`,
     new ResourceTemplate("shipoff://projects/{project_id}",{list:undefined}),
     {
       title: "Project Details",
-      description: "Returns details of a specific project.",
+      description: `Returns the complete configuration and current state of a project,
+including framework, deployment history, environment variables,
+repository configuration, and domain.`,
       mimeType: "application/json",
     },
-    async (uri, { project_id }) => {
-      const user = getUser();
+    async (uri, { project_id },{requestId,sessionId}) => {
+      try {
+        const user = getUser();
       const project = unwrapGrpcResponse(await projectServiceClient.getProject({
         authUserData: user,
         projectId: project_id,
         reqMeta:{
-            requestId:`${Date.now()}`
+            requestId:`rid-${sessionId}:${requestId}`
         }
       }));
       return {
@@ -61,6 +66,18 @@ about their projects or before creating/deploying a project.`,
           text: JSON.stringify(project, null, 2),
         }],
       };
+      } catch (e:any) {
+        return {
+          contents:[{
+             uri:uri.href,
+             mimeType:"application/json",
+             text:JSON.stringify({
+               error:e.message ?? "Faiiled to fetch resource.",
+               errCode:e.code ?? "UNKNOWN_ERROR"
+             },null,2)
+          }],
+        }
+      }
     }
   );
 }

@@ -23,16 +23,17 @@ another domain before invoking the create_project tool.
 `,
       mimeType: "application/json",
     },
-    async (uri, { domain }) => {
-      const user = getUser();
+    async (uri, { domain }, {requestId,sessionId}) => {
+      try {
+       const user = getUser();
 
       const result = unwrapGrpcResponse(
         await projectServiceClient.checkDomainAvailability({
           authUserData: user,
           domain,
           reqMeta:{
-                requestId:`${Date.now()}`
-             }
+             requestId:`rid-${sessionId}:${requestId}`
+          }
         })
       );
 
@@ -44,7 +45,20 @@ another domain before invoking the create_project tool.
             text: JSON.stringify(result, null, 2),
           },
         ],
-      };
+      }; 
+      } catch (e:any) {
+        return {
+          contents:[{
+             uri:uri.href,
+             mimeType:"application/json",
+             text:JSON.stringify({
+               error:e.message ?? "Faiiled to fetch resource.",
+               errCode:e.code ?? "UNKNOWN_ERROR"
+             },null,2)
+          }],
+        }
+      }
+      
     }
   );
 }

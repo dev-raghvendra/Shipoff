@@ -2,7 +2,6 @@ import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mc
 import { getUser } from "../libs/context";
 import { ProjectService } from "@/services/projects.service";
 import { unwrapGrpcResponse } from "@/utils/response.utils";
-import { InferResponse } from "@shipoff/types";
 
 const projectServiceClient = new ProjectService();
 
@@ -15,16 +14,16 @@ export function registerDeploymentsResource(server: McpServer) {
       description: `Returns a paginated list of deployments for a specific project, ordered
 by creation time descending. Each deployment includes its ID, status,
 created time, and trigger. Use this to find a deployment ID before
-calling redeploy_deployment or reading deployment_status.`,
+calling redeploy_deployment or monitor_deployment`,
       mimeType: "application/json",
     },
-    async (uri, { project_id }) => {
+    async (uri, { project_id },{requestId,sessionId}) => {
       const user = getUser();
       const deployments = unwrapGrpcResponse(await projectServiceClient.getAllDeployments({
         authUserData: user,
         projectId: project_id,
         reqMeta:{
-            requestId:`${Date.now()}`
+          requestId:`rid-${sessionId}:${requestId}`
         }
       }));
       return {
@@ -45,14 +44,14 @@ calling redeploy_deployment or reading deployment_status.`,
        description: "Returns details of a specific deployment.",
        mimeType: "application/json",
      },
-     async (uri, { project_id, deployment_id }) => {
+     async (uri, { project_id, deployment_id },{requestId,sessionId}) => {
        const user = getUser();
        const deployment = unwrapGrpcResponse(await projectServiceClient.getDeployment({
          authUserData: user,
          projectId: project_id,
          deploymentId: deployment_id,
          reqMeta:{
-            requestId:`${Date.now()}`
+            requestId:`rid-${sessionId}:${requestId}`
          }
        }));
        return {
@@ -72,17 +71,17 @@ calling redeploy_deployment or reading deployment_status.`,
       title:"Deployment Status",
       description:`Returns only the status field for a specific deployment. Prefer this over
 deployment_details when only the status is needed. Possible values:
-PROVISIONING, BUILDING, DEPLOYING, PRODUCTION, FAILED, INACTIVE.`,
+PROVISIONING, BUILDING, PRODUCTION, FAILED, INACTIVE.`,
       mimeType:"application/json"
     },
-    async(uri,{project_id,deployment_id})=>{
+    async(uri,{project_id,deployment_id},{requestId,sessionId})=>{
         const user = getUser()
         const data = unwrapGrpcResponse(await projectServiceClient.getDeployment({
            authUserData:user,
            projectId:project_id,
            deploymentId:deployment_id,
             reqMeta:{
-            requestId:`${Date.now()}`
+            requestId:`rid-${sessionId}:${requestId}`
          }
         }))
 
@@ -111,14 +110,15 @@ Useful after create_project or redeploy_deployment to immediately track
 the newly triggered deployment without knowing its ID.`,
       mimeType:"application/json"
     },
-    async(uri,{project_id})=>{
-        const user = getUser()
+    async(uri,{project_id},{requestId,sessionId})=>{
+        try {
+         const user = getUser()
         const deployment = unwrapGrpcResponse(await projectServiceClient.getLatestDeployments({
           authUserData:user,
           projectId:project_id,
           limit:1,
           reqMeta:{
-            requestId:`${Date.now()}`
+            requestId:`rid-${sessionId}:${requestId}`
           }
         }))
         return {
@@ -127,7 +127,20 @@ the newly triggered deployment without knowing its ID.`,
               mimeType:"application/json",
               text:JSON.stringify(deployment[0],null,2)
             }]
+        } 
+        } catch (e:any) {
+         return {
+          contents:[{
+             uri:uri.href,
+             mimeType:"application/json",
+             text:JSON.stringify({
+               error:e.message ?? "Faiiled to fetch resource.",
+               errCode:e.code ?? "UNKNOWN_ERROR"
+             },null,2)
+          }],
+        } 
         }
+        
     }
   )
 }

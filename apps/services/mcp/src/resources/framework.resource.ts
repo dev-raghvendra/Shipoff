@@ -14,16 +14,19 @@ export function registerFrameworkResource(server:McpServer){
            description:`Lists all frameworks supported by Shipoff, including their frameworkId,
 default build command, output directory, and whether they are static or
 server-side. Always fetch this before create_project to obtain a valid
-frameworkId and default configuration values.`,
+frameworkId and default configuration values.
+The returned framework configuration should be used as the default values
+when creating a project unless the user explicitly overrides them.`,
            mimeType:"application/json"
         },
-        async(uri)=>{
-            const user = getUser()
+        async(uri,{requestId,sessionId})=>{
+            try {
+             const user = getUser()
             const fws = unwrapGrpcResponse(await projectServiceClient.getFrameworks({
                 authUserData:user,
                 reqMeta:{
-                requestId:`${Date.now()}`
-             }
+                requestId:`rid-${sessionId}:${requestId}`
+                }
             }))
 
             return {
@@ -32,7 +35,20 @@ frameworkId and default configuration values.`,
                     mimeType:"application/json",
                     text:JSON.stringify(fws,null,2)
                 }]
+            }   
+            } catch (e:any) {
+               return {
+          contents:[{
+             uri:uri.href,
+             mimeType:"application/json",
+             text:JSON.stringify({
+               error:e.message ?? "Faiiled to fetch resource.",
+               errCode:e.code ?? "UNKNOWN_ERROR"
+             },null,2)
+          }],
+        } 
             }
+            
         }
     )
 }

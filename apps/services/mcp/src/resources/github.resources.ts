@@ -16,13 +16,15 @@ from the dashboard before repositories can be accessed or projects created.
 Always check this before listing repositories or creating a project.`,
             mimeType:"application/json"
         },
-        async(uri)=>{
+        async(uri,{requestId,sessionId})=>{
+            
             const user = getUser()
-            const inst = unwrapGrpcResponse(await githubServiceClient.getGithubInstallation({
+            try {
+             const inst = unwrapGrpcResponse(await githubServiceClient.getGithubInstallation({
                 authUserData:user,
                 reqMeta:{
-                requestId:`${Date.now()}`
-             }
+                requestId:`rid-${sessionId}:${requestId}`
+                }
             }))
 
             return {
@@ -31,7 +33,20 @@ Always check this before listing repositories or creating a project.`,
                     mimeType:"application/json",
                     text:JSON.stringify(inst,null,2)
                 }]
+            }   
+            } catch (e:any) {
+                return {
+          contents:[{
+             uri:uri.href,
+             mimeType:"application/json",
+             text:JSON.stringify({
+               error:e.message ?? "Faiiled to fetch github installation.",
+               errCode:e.code ?? "UNKNOWN_ERROR"
+             },null,2)
+          }],
+        }
             }
+            
         }
     )
 
@@ -41,7 +56,11 @@ Always check this before listing repositories or creating a project.`,
         {
             title:"List Github Repositories",
             description:`
-             Returns the Github Repositories currently the user has in their github installation.
+             Returns the GitHub repositories accessible through the user's Shipoff
+GitHub App installation.
+
+Use this resource to obtain a valid repository ID, repository URL, and
+repository full name before creating a project.
 
              Prerequisites:
              - Check if github installation exists for the user.
@@ -49,14 +68,15 @@ Always check this before listing repositories or creating a project.`,
             `,
             mimeType:"application/json"
         },
-        async(uri,{limit,offset})=>{
-           const user = getUser()
+        async(uri,{limit,offset},{requestId,sessionId})=>{
+           try {
+            const user = getUser()
            const repos = unwrapGrpcResponse(await githubServiceClient.getUserGithubRepositories({
              authUserData:user,
              limit,
              skip:offset,
              reqMeta:{
-                requestId:`${Date.now()}`
+                requestId:`rid-${sessionId}:${requestId}`
              }
            }))
 
@@ -67,6 +87,19 @@ Always check this before listing repositories or creating a project.`,
                 text:JSON.stringify(repos,null,2)
             }]
            }
+           } catch (e:any) {
+            return {
+          contents:[{
+             uri:uri.href,
+             mimeType:"application/json",
+             text:JSON.stringify({
+               error:e.message ?? "Faiiled to fetch github repos",
+               errCode:e.code ?? "UNKNOWN_ERROR"
+             },null,2)
+          }],
+        }
+           }
+           
         }
     )
 }
