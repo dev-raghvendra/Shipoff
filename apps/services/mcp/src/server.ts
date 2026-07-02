@@ -1,14 +1,16 @@
 import { app } from "@/app";
-import { getSessions } from "@/libs/mcp";
+import { getSessions } from "@/libs/mcp.js";
+import { CONFIG } from "./config/config";
+import { logger } from "./libs/winston";
 
-const PORT = Number(process.env.PORT) || 3000;
 
-const httpServer = app.listen(PORT, () => {
-  console.log(`shipoff-mcp running on :${PORT}`);
+
+const httpServer = app.listen(CONFIG.PORT, () => {
+  logger.info(`MCP_SERVER_RUNNING_ON_PORT_http://localhost:${CONFIG.PORT}`)
 });
 
 process.on("SIGINT", async () => {
-  console.log("Shutting down shipoff-mcp...");
+  logger.info(`MCP_SERVER_SHUTTING_DOWN`)
   for (const [id, session] of getSessions()) {
     await session.transport.close();
     await session.server.close();

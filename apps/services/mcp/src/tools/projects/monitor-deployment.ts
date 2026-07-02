@@ -1,11 +1,11 @@
 import { getUser } from "@/libs/context";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import z from "zod";
 import { ProjectService } from "@/services/projects.service";
 import { mapGrpcCode, unwrapGrpcResponse } from "@/utils/response.utils";
 import de from "zod/v4/locales/de.js";
-import { McpError, ServerNotification, ServerRequest } from "@modelcontextprotocol/sdk/types";
-import { sleep } from "@shipoff/services-commons";
+import { McpError, ServerNotification, ServerRequest } from "@modelcontextprotocol/sdk/types.js";
+import { sleep } from "@shipoff/services-commons/index";
 import { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol";
 import { promiseHooks } from "node:v8";
 

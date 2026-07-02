@@ -2,7 +2,7 @@ import { getUser } from "@/libs/context";
 import { ProjectService } from "@/services/projects.service";
 import { withIdempotency } from "@/utils/request.utils";
 import { unwrapGrpcResponse } from "@/utils/response.utils";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 
 const projectServiceClient = new ProjectService();

@@ -1,6 +1,6 @@
 import { createJwt, verifyJwt } from "@shipoff/services-commons";
 import { compare } from "@/libs/bcrypt";
-import { EmailPassLoginRequestBodyType, GetUserRequestBodyType, OAuthRequestBodyType, SigninRequestBodyType, VerifyEmailRequestBodyType } from "@/types/user";
+import { CreateAuthorizationCodeRequestBodyType, EmailPassLoginRequestBodyType, ExchangeAuthorizationCodeRequestBodyType, GetUserRequestBodyType, OAuthRequestBodyType, SigninRequestBodyType, VerifyEmailRequestBodyType } from "@/types/user";
 import { HasPermissionsRequestBodyType } from "@/types/utility";
 import { BodyLessRequestBodyType } from "@shipoff/types";
 import { PermissionBase } from "@/utils/rbac-utils";
@@ -9,6 +9,9 @@ import { createGrpcErrorHandler, GrpcAppError, GrpcResponse } from "@shipoff/ser
 import { status } from "@grpc/grpc-js";
 import {logger} from "@/libs/winston";
 import { normalizeSubscriptionData } from "@/utils/db-utils";
+import crypto from "crypto"
+import { authCodeCache, AuthCodeStoreEntry } from "@/cache/authcode.store.cache";
+import { verifyPkce } from "@/utils/auth-util";
 
 
 class AuthService {
@@ -61,6 +64,72 @@ class AuthService {
         }
     }
 
+    async createAuthorizationCode({reqMeta,...body}:CreateAuthorizationCodeRequestBodyType){
+        try {
+            const authCode = crypto.randomBytes(32).toString("base64url")
+            authCodeCache.set(authCode,JSON.stringify({...body,createdAt:Date.now()}))
+            return {
+                code:status.OK,
+                message:"Authorization code created",
+                res:{
+                    expiresAt:Date.now()+60000,
+                    authorizationCode:authCode
+                }
+            }
+        } catch (e:any) {
+            return this._errorHandler(e,"CREATE_AUTH_CODE",reqMeta.requestId)
+        }
+    }
+
+    async exchangeAuthorizationCode({ reqMeta, ...body }: ExchangeAuthorizationCodeRequestBodyType) {
+    try {
+        const authCode = authCodeCache.get(body.authorizationCode);
+
+        if (!authCode) {
+            throw new GrpcAppError(status.INVALID_ARGUMENT,"Invalid or expired authorization code");
+        }
+
+        const storedCode = JSON.parse(authCode) as AuthCodeStoreEntry;
+
+        if (storedCode.clientId !== body.clientId) {
+            throw new GrpcAppError(status.INVALID_ARGUMENT,"Invalid client");
+        }
+
+        if (storedCode.redirectUri !== body.redirectUri) {
+            throw new GrpcAppError(status.INVALID_ARGUMENT,"Invalid redirect URI");
+        }
+
+        const isValid = verifyPkce(
+            body.codeVerifier,
+            storedCode.codeChallenge
+        );
+
+        if (!isValid) {
+            throw new GrpcAppError(status.INVALID_ARGUMENT,"Invalid code verifier");
+        }
+
+        // Authorization codes are single-use
+        authCodeCache.delete(body.authorizationCode);
+
+        const res = await this._dbService.findUniqueUser({
+                where:{userId:storedCode.userId},
+                select:{...this._userSelect,password:true}
+        });
+        const {password, ...user} = res;
+        const u = normalizeSubscriptionData(user);
+
+        const token = await createJwt(u,"30D");
+        return {
+            code:status.OK,
+            message:"Access token generated",
+            res:{
+                accessToken:token
+            }
+        }
+    } catch (e: any) {
+        return this._errorHandler(e, "EXCHANGE_AUTH_CODE", reqMeta.requestId);
+    }
+}
 
 
     async login({reqMeta,...body}: EmailPassLoginRequestBodyType) {

@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { registerRedeployDeploymentTool } from "./redeploy-deployment";
 import {registerCreateProjectTool} from "./create-project";
 import { registerDeleteDeploymentTool } from "./delete-deployment";

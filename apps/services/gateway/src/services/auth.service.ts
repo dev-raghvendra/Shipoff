@@ -1,4 +1,4 @@
-import {AcceptInvitationRequest, AuthServiceClient, BodyLessRequest, BulkResourceRequest, CreateProjectMemberInvitationRequest, CreateTeamMemberInvitationRequest, CreateTeamRequest, DeleteProjectMemberRequest, DeleteTeamMemberRequest, DeleteTeamRequest, GetProjectMemberRequest, GetTeamMemberRequest, GetTeamMembersRequest, GetTeamRequest, GetTeamsLinkedToProjectRequest, GetUserRequest, LinkTeamToProjectRequest, LoginRequest, OAuthRequest, SigninRequest, TransferTeamOwnershipRequest, UnlinkTeamFromProjectRequest, VerifyEmailRequest} from "@shipoff/proto";
+import {AcceptInvitationRequest, AuthServiceClient, BodyLessRequest, BulkResourceRequest, CreateProjectMemberInvitationRequest, CreateTeamMemberInvitationRequest, CreateTeamRequest, DeleteProjectMemberRequest, DeleteTeamMemberRequest, DeleteTeamRequest, GetProjectMemberRequest, GetTeamMemberRequest, GetTeamMembersRequest, GetTeamRequest, GetTeamsLinkedToProjectRequest, GetUserRequest, LinkTeamToProjectRequest, LoginRequest, OAuthRequest, SigninRequest, TransferTeamOwnershipRequest, UnlinkTeamFromProjectRequest, VerifyEmailRequest, CreateAuthorizationCodeRequest,ExchangeAuthorizationCodeRequest} from "@shipoff/proto";
 import {GetAuthClient} from "@shipoff/grpc-clients";
 import {promisifyGrpcCall} from "@shipoff/services-commons"
 
@@ -29,6 +29,7 @@ export class AuthService {
         }
     }
 
+
     async OAuth(data:any){
         try {
             const req =  OAuthRequest.fromObject(data);
@@ -49,7 +50,27 @@ export class AuthService {
         }
     }
 
+    async createOAuthCode(data:any){
+        try {
+            const req = CreateAuthorizationCodeRequest.fromObject(data)
+            const response = await promisifyGrpcCall(this._authService.CreateAuthorizationCode.bind(this._authService), req);
+            return response;
+        } catch (e:any) {
+            return e;
+        }
+    }
+    async exchangeOAuthCode(data:any){
+        try {
+            const req = ExchangeAuthorizationCodeRequest.fromObject(data)
+            const response = await promisifyGrpcCall(this._authService.ExchangeAuthorizationCode.bind(this._authService), req);
+            return response;
+        } catch (e:any) {
+            return e;
+        }
+    }
+
     async getMe(data:any){
+    
         try {
             const req = BodyLessRequest.fromObject(data);
             const response = await promisifyGrpcCall(this._authService.GetMe.bind(this._authService), req);

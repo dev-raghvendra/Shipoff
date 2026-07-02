@@ -1,4 +1,4 @@
-import { createSession, getSession } from "@/libs/mcp";
+import { createSession, getSession } from "@/libs/mcp.js";
 import { Request, Response } from "express";
 
 export class McpController {

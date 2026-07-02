@@ -1,7 +1,7 @@
 import { getUser } from "@/libs/context";
 import { ProjectService } from "@/services/projects.service";
 import { unwrapGrpcResponse } from "@/utils/response.utils";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 const projectServiceClient= new ProjectService()
 

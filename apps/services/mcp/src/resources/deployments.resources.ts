@@ -1,4 +1,4 @@
-import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp";
+import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { getUser } from "../libs/context";
 import { ProjectService } from "@/services/projects.service";
 import { unwrapGrpcResponse } from "@/utils/response.utils";

@@ -15,9 +15,40 @@ export const VerifyEmailRequestSchema = z.object({
   reqMeta:RequestMetaSchema,
 }).strict();
 
+export const CreateAuthorizationCodeRequestSchema = z.object({
+  userId: z.string().min(5),
 
+  clientId: z.string().min(1),
 
+  redirectUri: z.string().url(),
 
+  codeChallenge: z
+    .string()
+    .min(43)
+    .max(128),
+
+  codeChallengeMethod: z.literal("S256"),
+  scopes:z.array(z.string()).min(1),
+  reqMeta:RequestMetaSchema
+}).strict()
+
+export type CreateAuthorizationCodeRequestBodyType = z.infer<typeof CreateAuthorizationCodeRequestSchema>
+
+export const ExchangeAuthorizationCodeRequestSchema = z.object({
+  authorizationCode: z.string().min(1),
+  
+  clientId: z.string().min(1),
+
+  redirectUri: z.string().url(),
+
+  codeVerifier: z
+    .string()
+    .min(43)
+    .max(128),
+    reqMeta:RequestMetaSchema
+  }).strict()
+  
+  export type ExchangeAuthorizationCodeRequestBodyType = z.infer<typeof ExchangeAuthorizationCodeRequestSchema>
 export const OAuthRequestSchema = SigninRequestSchema.extend({
   provider:Providers.exclude(["EMAIL"])
 })

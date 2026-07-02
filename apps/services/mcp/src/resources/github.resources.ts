@@ -1,5 +1,5 @@
 import { getUser } from "@/libs/context";
-import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp";
+import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { GithubService } from "@/services/github.service";
 import { unwrapGrpcResponse } from "@/utils/response.utils";
 const githubServiceClient = new GithubService()

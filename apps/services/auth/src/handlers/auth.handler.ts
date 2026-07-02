@@ -1,7 +1,7 @@
 import { sendUnaryData, ServerUnaryCall, status } from "@grpc/grpc-js";
 import AuthService from "@/services/auth.service";
-import { GetCurrentUserResponse, HasPermissionsRequest, HasPermissionsResponse, LoginRequest, LoginResponse, SigninRequest, BodyLessRequest, GetWSAuthTokenResponse, google, VerifyEmailRequest } from "@shipoff/proto";
-import { EmailPassLoginRequestBodyType, OAuthRequestBodyType, SigninRequestBodyType, VerifyEmailRequestBodyType } from "@/types/user";
+import { GetCurrentUserResponse, HasPermissionsRequest, HasPermissionsResponse, LoginRequest, LoginResponse, SigninRequest, BodyLessRequest, GetWSAuthTokenResponse, google, VerifyEmailRequest, CreateAuthorizationCodeRequest, CreateAuthorizationCodeResponse, ExchangeAuthorizationCodeRequest, ExchangeAuthorizationCodeResponse } from "@shipoff/proto";
+import { CreateAuthorizationCodeRequestBodyType, EmailPassLoginRequestBodyType, ExchangeAuthorizationCodeRequestBodyType, OAuthRequestBodyType, SigninRequestBodyType, VerifyEmailRequestBodyType } from "@/types/user";
 import { HasPermissionsRequestBodyType } from "@/types/utility";
 import { BodyLessRequestBodyType } from "@shipoff/types";
 
@@ -118,6 +118,34 @@ class AuthHandlers {
                 code:status.INTERNAL,
                 message:"Internal server error"
           })  
+        }
+    }
+    
+    async handleCreateAuthorizationCode(call:ServerUnaryCall<CreateAuthorizationCodeRequest & {body:CreateAuthorizationCodeRequestBodyType},CreateAuthorizationCodeResponse>,callback:sendUnaryData<CreateAuthorizationCodeResponse>){
+        try {
+            const {code,res,message} = await this._authService.createAuthorizationCode(call.request.body);
+            if(code!==status.OK) return callback({message,code})
+                const response = CreateAuthorizationCodeResponse.fromObject({code,res,message})
+            return callback(null,response)
+        } catch (e:any) {
+            return callback({
+                  code:status.INTERNAL,
+                  message:"Internal server error"
+            })  
+        }
+    }
+
+    async handleExchangeAuthorizationCode(call:ServerUnaryCall<ExchangeAuthorizationCodeRequest & {body:ExchangeAuthorizationCodeRequestBodyType},ExchangeAuthorizationCodeResponse>,callback:sendUnaryData<ExchangeAuthorizationCodeResponse>){
+        try {
+            const {code,res,message} = await this._authService.exchangeAuthorizationCode(call.request.body);
+            if(code!==status.OK) return callback({message,code})
+                const response = ExchangeAuthorizationCodeResponse.fromObject({code,res,message})
+            return callback(null,response)
+        } catch (e:any) {
+            return callback({
+                  code:status.INTERNAL,
+                  message:"Internal server error"
+            })  
         }
     }
 }

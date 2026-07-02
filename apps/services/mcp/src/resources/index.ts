@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { registerProjectsResource } from "./projects.resources";
 import { registerDeploymentsResource } from "./deployments.resources";
 import { registerFrameworkResource } from "./framework.resource";

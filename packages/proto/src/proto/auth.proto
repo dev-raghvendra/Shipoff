@@ -394,8 +394,43 @@ message VerifyEmailRequest {
 } 
 
 
+message CreateAuthorizationCodeRequest {
+    string userId = 1;
+    string clientId = 2;
+    string redirectUri = 3;
+    string codeChallenge = 4;
+    string codeChallengeMethod = 5;
+    repeated string scopes = 6;
+    RequestMeta reqMeta = 7;
 
+}
+ message CreateAuthorizationCodeResponseData {
+    string authorizationCode = 1;
+    int64 expiresAt = 2;
+}
 
+message CreateAuthorizationCodeResponse {
+    int64 code = 1;
+    string message = 2;
+    CreateAuthorizationCodeResponseData res = 3;
+}
+
+message ExchangeAuthorizationCodeRequest {
+    string authorizationCode = 1;
+    string clientId = 2;
+    string redirectUri = 3;
+    string codeVerifier = 4;
+    RequestMeta reqMeta = 5;
+}
+
+message ExchangeAuthorizationCodeResponse {
+    int32 code = 1;
+    string message = 2;
+    ExchangeAuthorizationCodeResponseData res = 3;
+}
+message ExchangeAuthorizationCodeResponseData {
+    string accessToken = 1;
+}
 
 // AuthService definition
 service AuthService {
@@ -408,6 +443,8 @@ service AuthService {
   rpc RefreshToken(BodyLessRequest) returns (LoginResponse);
   rpc GetWSAuthToken(BodyLessRequest) returns (GetWSAuthTokenResponse);
   rpc VerifyEmail (VerifyEmailRequest) returns (google.protobuf.Empty);
+  rpc CreateAuthorizationCode(CreateAuthorizationCodeRequest) returns (CreateAuthorizationCodeResponse);
+  rpc ExchangeAuthorizationCode(ExchangeAuthorizationCodeRequest) returns (ExchangeAuthorizationCodeResponse);
 
   // Team Management
   rpc CreateTeam(CreateTeamRequest) returns (CreateTeamResponse);

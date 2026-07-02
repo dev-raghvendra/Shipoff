@@ -1,5 +1,5 @@
 import { Server, ServerCredentials } from "@grpc/grpc-js";
-import { UnimplementedAuthServiceService } from "@shipoff/proto";
+import { CreateAuthorizationCodeRequest, UnimplementedAuthServiceService } from "@shipoff/proto";
 import AuthHandlers from "@/handlers/auth.handler";
 import {createSyncErrHandler, createUnaryValidator} from "@shipoff/services-commons"
 import { RPC_SCHEMA } from "@/config/rpc-schema";
@@ -31,6 +31,8 @@ server.addService(UnimplementedAuthServiceService.definition, {
     GetWSAuthToken: validateRPCBody("GetWSAuthToken", authhandlers.handleGetWSAuthToken.bind(authhandlers)),
     HasPermissions: validateRPCBody("HasPermissions", authhandlers.handleHasPermissions.bind(authhandlers)),
     VerifyEmail: validateRPCBody("VerifyEmail", authhandlers.handleVerifyEmail.bind(authhandlers)),
+    CreateAuthorizationCode:validateRPCBody("CreateAuthorizationCode",authhandlers.handleCreateAuthorizationCode.bind(authhandlers)),
+    ExchangeAuthorizationCode:validateRPCBody("ExchangeAuthorizationCode",authhandlers.handleExchangeAuthorizationCode.bind(authhandlers)),
     
     CreateTeam: validateRPCBody("CreateTeam", teamHandlers.handleCreateTeam.bind(teamHandlers)),
     GetTeam: validateRPCBody("GetTeam", teamHandlers.handleGetTeam.bind(teamHandlers)),

@@ -1,14 +1,15 @@
-import { Request, Response, NextFunction } from "express";
+import { CONFIG } from "@/config/config";
+import { Request, Response } from "express";
 
 export class MetadataController {
    async protectedResource(_:Request, res: Response) {
     res.json({
-      resource: "https://mcp.shipoff.in/mcp",
+      resource: `${CONFIG.MCP_SERVER_URL}/mcp`,
       authorization_servers: [
-        "https://shipoff.in"
+        CONFIG.AUTHORIZATION_SERVER_URL
       ],
       resource_name: "Shipoff MCP Server",
-      resource_documentation: "https://docs.shipoff.in/mcp"
+      resource_documentation: "https://docs.shipoff.in/mcp.js"
     });
   }
 }

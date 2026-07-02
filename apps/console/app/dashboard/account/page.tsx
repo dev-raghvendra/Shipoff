@@ -6,6 +6,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { toast } from "sonner"
 import { authService } from "@/services/auth.service"
 import { 
@@ -27,7 +36,9 @@ import {
   Lock,
   Trash2,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  Key,
+  Copy
 } from "lucide-react"
 import {
   AlertDialog,
@@ -91,6 +102,44 @@ export default function AccountPage(){
   const [installation, setInstallation] = React.useState<InferResponse<GithubInstallationResponse>["res"] | null>(null)
   const [isDeleting, setIsDeleting] = React.useState(false)
   const [showRemoveDialog, setShowRemoveDialog] = React.useState(false)
+  const [patName, setPatName] = React.useState("")
+  const [patExpiry, setPatExpiry] = React.useState("30d")
+  const [generatedPat, setGeneratedPat] = React.useState<string | null>(null)
+  const [isGeneratingPat, setIsGeneratingPat] = React.useState(false)
+
+  const handleGeneratePat = async () => {
+    if(!patName) {
+      toast.error("Please enter a token name")
+      return
+    }
+    try {
+      setIsGeneratingPat(true)
+      setGeneratedPat(null)
+      const res = await fetch("/api/pat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: patName, expiry: patExpiry })
+      })
+      const data = await res.json()
+      if(!res.ok) {
+        throw new Error(data.message || "Failed to generate token")
+      }
+      setGeneratedPat(data.accessToken)
+      setPatName("")
+      toast.success("Personal Access Token generated successfully")
+    } catch(e:any) {
+      toast.error(e?.message || "Failed to generate token")
+    } finally {
+      setIsGeneratingPat(false)
+    }
+  }
+
+  const handleCopyPat = () => {
+    if(generatedPat) {
+      navigator.clipboard.writeText(generatedPat)
+      toast.success("Token copied to clipboard")
+    }
+  }
 
   const handleChangePlan = async (type: string) => {
     try{
@@ -431,6 +480,88 @@ export default function AccountPage(){
               </div>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Personal Access Tokens Section */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div>
+              <CardTitle>Personal Access Tokens</CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                Generate tokens to authenticate AI agents like Cursor or other external tools with your account
+              </p>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            <div className="grid gap-4 sm:grid-cols-[1fr_200px_auto] items-end">
+              <div className="space-y-2">
+                <Label htmlFor="patName">Token Name</Label>
+                <Input
+                  id="patName"
+                  placeholder="e.g. Cursor AI, CLI tool..."
+                  value={patName}
+                  onChange={(e) => setPatName(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="patExpiry">Expiration</Label>
+                <Select value={patExpiry} onValueChange={setPatExpiry}>
+                  <SelectTrigger id="patExpiry">
+                    <SelectValue placeholder="Select expiry" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1h">1 Hour</SelectItem>
+                    <SelectItem value="1d">1 Day</SelectItem>
+                    <SelectItem value="7d">7 Days</SelectItem>
+                    <SelectItem value="30d">30 Days</SelectItem>
+                    <SelectItem value="90d">90 Days</SelectItem>
+                    <SelectItem value="365d">1 Year</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button onClick={handleGeneratePat} disabled={isGeneratingPat} className="w-full sm:w-auto">
+                {isGeneratingPat ? <Activity className="h-4 w-4 mr-2 animate-spin" /> : <Key className="h-4 w-4 mr-2" />}
+                Generate
+              </Button>
+            </div>
+
+            {generatedPat && (
+              <div className="p-4 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/50 space-y-3">
+                <div className="flex items-start gap-2">
+                  <Check className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                  <div className="space-y-1 flex-1">
+                    <p className="text-sm font-medium text-emerald-900 dark:text-emerald-100">
+                      Token generated successfully!
+                    </p>
+                    <p className="text-sm text-emerald-700 dark:text-emerald-400">
+                      Make sure to copy your personal access token now. You won't be able to see it again!
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 mt-2">
+                  <code className="flex-1 p-2 rounded bg-white dark:bg-black/40 border border-emerald-200 dark:border-emerald-800 text-sm break-all font-mono">
+                    {`${generatedPat.slice(0, 6)}...${generatedPat.slice(-6)}`}
+                  </code>
+                  <Button variant="outline" size="icon" onClick={handleCopyPat} className="shrink-0 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/50">
+                    <Copy className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
+                  </Button>
+                </div>
+              </div>
+            )}
+            
+            {!generatedPat && (
+              <div className="rounded-lg bg-muted/30 p-4 flex items-start gap-3 text-sm text-muted-foreground border border-dashed">
+                 <ShieldCheck className="h-5 w-5 shrink-0 mt-0.5 text-primary" />
+                 <p>
+                   Personal Access Tokens function like ordinary OAuth access tokens. They can be used instead of a password for Git over HTTPS, or to authenticate to the API.
+                 </p>
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 

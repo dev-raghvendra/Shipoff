@@ -1,5 +1,5 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { randomUUID } from "node:crypto";
 import { registerResources } from "@/resources";
 import { registerTools } from "@/tools/projects";
@@ -38,7 +38,7 @@ export function createSession(): Session {
 
 export function getSession(sessionId: string): Session | undefined {
   const session = sessions.get(sessionId);
-  if (session) session.lastSeen = Date.now(); // refresh TTL on access
+  if (session) session.lastSeen = Date.now(); 
   return session;
 }
 
@@ -46,7 +46,7 @@ export function getSessions(): Map<string, Session> {
   return sessions;
 }
 
-// evict sessions idle for more than 1 hour
+
 setInterval(() => {
   const now = Date.now();
   for (const [id, session] of sessions) {

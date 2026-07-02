@@ -1,6 +1,7 @@
-import { ErrorCode } from "@modelcontextprotocol/sdk/types";
-import { McpError } from "@modelcontextprotocol/sdk/types";
-
+import { CONFIG } from "@/config/config";
+import { ErrorCode } from "@modelcontextprotocol/sdk/types.js";
+import { McpError } from "@modelcontextprotocol/sdk/types.js";
+import { Response } from "express";
 
 export enum GrpcStatus {
     OK = 0,
@@ -47,4 +48,9 @@ export function unwrapGrpcResponse<T>(response: GrpcResponse<T>): T {
     }
 
     return response.res;
+}
+
+
+export function unauthorizedResponse(res: Response) {
+    return res.setHeader("WWW-Authenticate",   `Bearer resource_metadata="${CONFIG.MCP_SERVER_URL}/.well-known/oauth-protected-resource"`).status(401).end()
 }

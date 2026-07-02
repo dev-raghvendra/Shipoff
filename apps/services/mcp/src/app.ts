@@ -1,7 +1,8 @@
-import express from "express";
+import express, { Request } from "express";
 import cors from "cors";
 import { mcpRouter } from "@/routers/mcp.router";
 import { metaDataRouter } from "./routers/metadata.router";
+import { handleErrorMiddleware } from "./middlewares/err.middleware";
 
 const app = express();
 
@@ -9,9 +10,16 @@ app.use(cors());
 app.use(express.json());
 
 app.get("/health", (_req, res) => {
-  res.json({ status: "ok", service: "shipoff-mcp" });
+  res.json({ status: "ok", service: "shipoff-mcp.js", uptime:process.uptime() });
 });
-app.use("/mcp", mcpRouter);
+app.use("/mcp.js", mcpRouter);
 app.use("/.well-known", metaDataRouter);
+app.use((_,res)=>{
+    res.status(404).json({
+      code:404,
+      message:`${_.url} not found`
+    })
+})
+app.use(handleErrorMiddleware)
 
 export { app };

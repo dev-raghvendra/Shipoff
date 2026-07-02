@@ -5,7 +5,9 @@ import axios from "axios"
 import { decode } from "jsonwebtoken"
 import { createErrHandler } from "./error.utils"
 import { User } from "next-auth"
-import { SubscriptionType } from "@shipoff/types"
+import { InferResponse, SubscriptionType } from "@shipoff/types"
+import { InferRequest } from "@/types/request"
+import { CreateAuthorizationCodeRequest, CreateAuthorizationCodeResponse, ExchangeAuthorizationCodeRequest, ExchangeAuthorizationCodeResponse } from "@shipoff/proto"
 
 export interface UserData {
     userId: string,
@@ -33,6 +35,9 @@ export type ParamsType = {
         avatarUri: string,
     }
 }
+
+export type CreateAuthCodeRequest = InferRequest<CreateAuthorizationCodeRequest>
+export type ExchangeAuthCodeRequest = InferRequest<ExchangeAuthorizationCodeRequest>
 
 const errHandler  = createErrHandler({serviceName:"Auth"})
 
@@ -76,6 +81,40 @@ export async function syncWithBackend({ provider, data }: ParamsType) {
     return user.authUserData.avatarUri ? {user:user.authUserData,accessToken:res.data.res.accessToken,refreshToken:res.data.res.refreshToken} : null;
 }
 
+export async function createAuthCode(body:CreateAuthCodeRequest){
+    try {
+        const res = await axios.post<InferResponse<CreateAuthorizationCodeResponse>>(
+             `${MAIN_BACKEND_API.AUTH_API}/${AUTH_API_ROUTES.CREATE_OAUTH_CODE()}`,
+             body,
+            {
+                headers: {
+            "X-Api-Key": NEXT_AUTH_SECRETS.MAIN_BACKEND_API_KEY
+        }
+            }
+        );
+        return res.data.res;
+    } catch (e: any) {
+        errHandler(e,"CREATE_AUTH_CODE",false);
+        return null;
+    }
+}
+export async function exchangeAuthCode(body:ExchangeAuthCodeRequest){
+    try {
+        const res = await axios.post<InferResponse<ExchangeAuthorizationCodeResponse>>(
+             `${MAIN_BACKEND_API.AUTH_API}/${AUTH_API_ROUTES.EXCHANGE_OAUTH_CODE()}`,
+             body,
+            {
+                headers: {
+            "X-Api-Key": NEXT_AUTH_SECRETS.MAIN_BACKEND_API_KEY
+        }
+            }
+        );
+        return res.data.res;
+    } catch (e: any) {
+        errHandler(e,"EXCHANGE_AUTH_CODE",false,false);
+        return null
+    }
+}
 
 export async function refreshAccessToken(token: string) {
     try {

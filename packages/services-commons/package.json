@@ -15,6 +15,10 @@
     "winston": "^3.17.0",
     "zod": "^4.0.5"
   },
+  "exports": {
+    ".":"./index.js",
+    "./*": "./*.js"
+  },
   "devDependencies": {
     "@shipoff/typescript-config": "workspace:*",
     "@types/jsonwebtoken": "^9.0.10",

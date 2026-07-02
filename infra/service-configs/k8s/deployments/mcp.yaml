@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp
+  namespace: prod-services
+  labels:
+    app: mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp
+  template:
+    metadata:
+      labels:
+        app: mcp
+    spec:
+      containers:
+        - name: mcp
+          image: shipoff/platform-services:mcp-1.0.0
+          ports:
+            - containerPort: 3001
+          envFrom:
+            - secretRef:
+                name: mcp-env
+            - secretRef:
+                name: general-env
+            - secretRef:
+                name: service-url-env
+          resources:
+            requests:
+              memory: 500Mi
+              cpu: 300m
+            limits:
+              memory: 1Gi
+      imagePullSecrets:
+        - name: shipoff-registry-secret
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp
+  namespace: prod-services
+spec:
+  selector:
+    app: mcp
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3001
+      nodePort: 30082
+  type: NodePort
