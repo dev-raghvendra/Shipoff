@@ -20,6 +20,7 @@
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
+    "tsc-alias": "^1.8.16",
     "typescript": "^5.9.2"
   },
   "dependencies": {
@@ -33,7 +34,6 @@
     "proto": "link:packages/proto",
     "redis": "link:packages/redis",
     "services-commons": "link:packages/services-commons",
-    "tsc-alias": "^1.8.16",
     "types": "link:packages/types",
     "uuid": "^11.1.0",
     "ws": "^8.18.3"
