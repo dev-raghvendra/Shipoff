@@ -10,11 +10,12 @@
 
 Shipoff is a **microservices-based PaaS platform** that competes with platforms like Vercel, Netlify, and Railway. It demonstrates expertise in:
 
-- **Distributed Systems Architecture** with 6+ microservices
+- **Distributed Systems Architecture** with 7+ microservices
 - **Kubernetes Orchestration** for container lifecycle management
 - **Event-Driven Architecture** using Redis Streams
 - **Real-time Log Streaming** and observability
 - **Complex State Machine** for deployment lifecycle management
+- **Model Context Protocol (MCP) Integration** for AI agents
 - **Production-Grade Frontend** with modern React patterns
 - **Infrastructure as Code** with GitOps workflows
 
@@ -56,6 +57,7 @@ Shipoff is a **microservices-based PaaS platform** that competes with platforms 
 - **Synchronous**: gRPC with Protocol Buffers for inter-service calls
 - **Asynchronous**: Redis Streams for event-driven workflows (Kafka alternative)
 - **API Gateway**: Express.js REST API bridging gRPC to HTTP
+- **AI Agent Integration**: Model Context Protocol (MCP) server over SSE
 
 #### Data Layer
 - **Database**: PostgreSQL with Prisma ORM
@@ -269,6 +271,15 @@ QUEUED → BUILDING → PROVISIONING → PRODUCTION
 - **Artifact Backup**: Rollback support with previous version storage
 - **Environment Secrets**: Encrypted storage with injection at runtime
 
+### **10. AI Agent Integration (MCP)**
+
+**Complexity**: ⭐⭐⭐⭐
+
+- **MCP Server**: Fully implemented Model Context Protocol server exposing platform capabilities to AI agents.
+- **Tools**: AI agents can programmatically `createProject`, `deleteProject`, `monitorDeployment`, `redeployDeployment`, and `deleteDeployment`.
+- **Resources**: Exposes context resources like projects, deployments, frameworks, and domains directly to LLMs.
+- **SSE Transport**: Real-time server-sent events for seamless communication with MCP clients like Claude Desktop.
+
 ---
 
 ## 🧩 Architecture Complexities
@@ -394,7 +405,7 @@ GitHub Webhook → Project Service → Redis Stream → Orchestrator Consumer
 ## 📊 Technical Metrics
 
 ### **Codebase Scale**
-- **Total Services**: 6 microservices (auth, projects, orchestrator, gateway, logs, ingress)
+- **Total Services**: 7 microservices (auth, projects, orchestrator, mcp, gateway, logs, ingress)
 - **Frontend Apps**: 2 (console, landing)
 - **Shared Packages**: 7 workspace packages
 - **Lines of Code**: ~15,000+ (estimated)
@@ -560,6 +571,7 @@ shipoff/
 │       ├── auth/         # Authentication service
 │       ├── projects/     # Project management service
 │       ├── orchestrator/ # Container orchestration service
+│       ├── mcp/          # Model Context Protocol server for AI agents
 │       ├── gateway/      # API gateway
 │       ├── logs/        # Log aggregation service
 │       └── ingress/     # Traffic routing service

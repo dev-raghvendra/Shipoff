@@ -9,7 +9,7 @@
     },
     "types":["node","express"],
     "module": "nodenext",
-    "target": "esnext"
+    "target": "esnext",
   },
   "references": [
     {"path": "../../../packages/services-commons"},

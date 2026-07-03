@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "index",
+  "scripts": {
+    "build":"tsc --build"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

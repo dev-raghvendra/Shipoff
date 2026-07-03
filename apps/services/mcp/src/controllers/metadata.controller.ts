@@ -9,7 +9,7 @@ export class MetadataController {
         CONFIG.AUTHORIZATION_SERVER_URL
       ],
       resource_name: "Shipoff MCP Server",
-      resource_documentation: "https://docs.shipoff.in/mcp.js"
+      resource_documentation: "https://docs.shipoff.in/mcp"
     });
   }
 }

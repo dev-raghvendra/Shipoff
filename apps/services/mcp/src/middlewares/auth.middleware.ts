@@ -9,7 +9,7 @@ import { unauthorizedResponse } from "@/utils/response.utils";
 export async function authMiddleware(req: Request, res: Response, next: NextFunction) {
     const authHeader = req.headers["authorization"];
     if(!authHeader || !authHeader.startsWith("Bearer ")) return unauthorizedResponse(res);
-    const token = authHeader.split(" ")[1];
+    const token = authHeader.split(" ")[1].trim();
     if(!token) return unauthorizedResponse(res);
     const {authUserData} = await verifyJwt<{authUserData:UserType}>(token);
     requestContext.run({ user:authUserData }, next);
