@@ -1,5 +1,5 @@
 import { NEXT_AUTH_SECRETS } from "@/config/next-auth-secrets";
-import { createAuthCode } from "@/utils/auth.utils";
+import { createAuthCode, normalizeLoopback } from "@/utils/auth.utils";
 import { jwtVerify } from "jose";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -23,7 +23,7 @@ export async function GET(req:NextRequest){
     const response = await createAuthCode({
         userId: data.payload.userId,
         clientId:data.payload.clientId,
-        redirectUri:decodeURIComponent(data.payload.redirectUri),
+        redirectUri:normalizeLoopback(decodeURIComponent(data.payload.redirectUri)),
         codeChallenge:data.payload.codeChallenge,
         codeChallengeMethod: data.payload.codeChallengeMethod,
         scopes:data.payload.scope

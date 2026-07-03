@@ -179,3 +179,13 @@ export function returnErrorFromOAuth({name}:{name:string}):User{
     }
 }
 
+
+export function normalizeLoopback(uri: string) {
+  const u = new URL(uri);
+
+  if (["127.0.0.1", "localhost", "[::1]"].includes(u.hostname)) {
+    u.hostname = "localhost";
+  }
+
+  return u.toString();
+}

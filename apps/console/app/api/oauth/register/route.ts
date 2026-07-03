@@ -1,13 +1,12 @@
-import { registerOAuthClient } from "@/utils/auth.utils";
+import { normalizeLoopback, registerOAuthClient } from "@/utils/auth.utils";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req:NextRequest){
     const body =await req.json();
-    console.log(body)
     try {
         const response = await registerOAuthClient({
         clientName:body.client_name,
-        redirectUris:body.redirect_uris,
+        redirectUris:typeof body?.redirectUris == "object" ? body?.redirectUris.map((u:any)=>normalizeLoopback(u)): normalizeLoopback(body?.redirectUris),
         responseTypes:body.response_types,
         tokenEndpointAuthMethod:body.token_endpoint_auth_method,
         grantTypes:body.grant_types
