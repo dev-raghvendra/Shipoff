@@ -29,7 +29,7 @@ export async function GET(req:NextRequest){
         scopes:data.payload.scope
     });
 
-    const callback = new URL(data.payload.redirectUri);
+    const callback = new URL(decodeURIComponent(data.payload.redirectUri));
 
     callback.searchParams.set(
         "code",
