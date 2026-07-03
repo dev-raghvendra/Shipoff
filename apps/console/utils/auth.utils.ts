@@ -111,6 +111,7 @@ export async function exchangeAuthCode(body:ExchangeAuthCodeRequest){
         );
         return res.data.res;
     } catch (e: any) {
+        console.log(e)
         errHandler(e,"EXCHANGE_AUTH_CODE",false,true);
     }
 }
