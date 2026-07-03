@@ -23,7 +23,7 @@ export async function GET(req:NextRequest){
     const response = await createAuthCode({
         userId: data.payload.userId,
         clientId:data.payload.clientId,
-        redirectUri:data.payload.redirectUri,
+        redirectUri:decodeURIComponent(data.payload.redirectUri),
         codeChallenge:data.payload.codeChallenge,
         codeChallengeMethod: data.payload.codeChallengeMethod,
         scopes:data.payload.scope
