@@ -6,3 +6,4 @@ export interface Response <T> {
 
 export interface ErrResponse extends Response<null> {}
 
+

@@ -19,7 +19,6 @@ ID is needed for another operation.`,
     },
     async (uri,{limit,offset},{requestId,sessionId}) => {
       const user = getUser();
-      console.log(requestId)
       const projects = unwrapGrpcResponse(await projectServiceClient.getAllUserProjects({
         authUserData:user,
         limit,
@@ -28,7 +27,6 @@ ID is needed for another operation.`,
             requestId:`rid-${sessionId}:${requestId}`
         }
       }))
-      console.log("Projects",projects)
       return {
         contents: [{
           uri: uri.href,

@@ -2,9 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { createAuthCode } from "@/utils/auth.utils";
+import { SignJWT } from "jose";
+import { NEXT_AUTH_SECRETS } from "@/config/next-auth-secrets";
 
 export async function GET(req: NextRequest) {
-    const search = req.nextUrl.searchParams;
+    try {
+        const search = req.nextUrl.searchParams;
 
     const clientId = search.get("client_id");
     const redirectUri = search.get("redirect_uri");
@@ -12,6 +15,7 @@ export async function GET(req: NextRequest) {
     const state = search.get("state");
     const codeChallenge = search.get("code_challenge");
     const codeChallengeMethod = search.get("code_challenge_method");
+    const scope = search.get("scope")
 
     if (
         !clientId ||
@@ -23,7 +27,8 @@ export async function GET(req: NextRequest) {
     ) {
         return NextResponse.json(
             {
-                error: "invalid_request"
+               code:400,
+               message:"Invalid Request"
             },
             {
                 status: 400
@@ -40,24 +45,38 @@ export async function GET(req: NextRequest) {
         return NextResponse.redirect(signin);
     }
 
-    const response = await createAuthCode({
-        userId: session.user.userId,
-        clientId,
-        redirectUri,
-        codeChallenge,
-        codeChallengeMethod: "S256",
-        scopes:["*"]
-    });
+    const now = Math.floor(Date.now()/1000)
+    const request = await new SignJWT({type:"consent",clientId,redirectUri,codeChallenge,codeChallengeMethod,scope,state,userId:session.user.userId})
+    .setProtectedHeader({alg:"HS256"})
+    .setIssuedAt(now)
+    .setExpirationTime( now + 60*10)
+    .sign(new TextEncoder().encode(NEXT_AUTH_SECRETS.NEXTAUTH_SECRET))
+    const callback = new URL(`/dashboard/account/oauth/consent?request=${request}`,req.url)
+    return NextResponse.redirect(callback)
 
-    if(!response) return NextResponse.json({error:"Error while creating authorization code"})
-    const callback = new URL(redirectUri);
+    // const response = await createAuthCode({
+    //     userId: session.user.userId,
+    //     clientId,
+    //     redirectUri,
+    //     codeChallenge,
+    //     codeChallengeMethod: "S256",
+    //     scopes:[scope ?? "*"]
+    // });
 
-    callback.searchParams.set(
-        "code",
-        response.authorizationCode
-    );
+    // const callback = new URL(redirectUri);
 
-    callback.searchParams.set("state", state);
+    // callback.searchParams.set(
+    //     "code",
+    //     response?.authorizationCode!
+    // );
 
-    return NextResponse.redirect(callback);
+    // callback.searchParams.set("state", state);
+
+    // return NextResponse.redirect(callback);
+    } catch (e:any) {
+        return NextResponse.json({
+            code:e.code,
+            message:e.message
+        },{status:e.code})
+    }
 }

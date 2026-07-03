@@ -273,12 +273,14 @@ QUEUED → BUILDING → PROVISIONING → PRODUCTION
 
 ### **10. AI Agent Integration (MCP)**
 
-**Complexity**: ⭐⭐⭐⭐
+**Complexity**: ⭐⭐⭐⭐⭐
 
 - **MCP Server**: Fully implemented Model Context Protocol server exposing platform capabilities to AI agents.
+- **OAuth 2.1 & DCR**: Implements standard OAuth 2.1 flow with Dynamic Client Registration (DCR), allowing AI agents to securely register and obtain client credentials automatically.
+- **PAT Authentication**: Uses Personal Access Tokens (PAT) passed via Bearer headers for secure, scoped access to the user's platform resources.
 - **Tools**: AI agents can programmatically `createProject`, `deleteProject`, `monitorDeployment`, `redeployDeployment`, and `deleteDeployment`.
 - **Resources**: Exposes context resources like projects, deployments, frameworks, and domains directly to LLMs.
-- **SSE Transport**: Real-time server-sent events for seamless communication with MCP clients like Claude Desktop.
+- **Transport**: Utilizes Streamable HTTP Server Transport for seamless communication with MCP clients like Claude Desktop.
 
 ---
 

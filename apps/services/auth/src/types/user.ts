@@ -47,6 +47,17 @@ export const ExchangeAuthorizationCodeRequestSchema = z.object({
     .max(128),
     reqMeta:RequestMetaSchema
   }).strict()
+
+  export const RegisterOAuthClientRequestSchema = z.object({
+     clientName:z.string().min(5),
+     redirectUris:z.array(z.url()).min(1),
+     grantTypes:z.array(z.string()).min(1),
+     responseTypes : z.array(z.string()).min(1),
+     tokenEndpointAuthMethod:z.string().min(3),
+     reqMeta:RequestMetaSchema
+  })
+
+  export type RegisterOAuthClientRequestBodyType = z.infer<typeof RegisterOAuthClientRequestSchema>
   
   export type ExchangeAuthorizationCodeRequestBodyType = z.infer<typeof ExchangeAuthorizationCodeRequestSchema>
 export const OAuthRequestSchema = SigninRequestSchema.extend({

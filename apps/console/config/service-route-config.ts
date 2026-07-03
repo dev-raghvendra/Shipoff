@@ -14,6 +14,7 @@ export const AUTH_API_ROUTES = {
     ME:()=>`me`,
     CREATE_OAUTH_CODE:()=>`oauth/code/new`,
     EXCHANGE_OAUTH_CODE:()=>`oauth/code/exchange`,
+    REGISTER_OAUTH_CLIENT:()=>`oauth/client`,
     REFRESH:()=>`refresh`,
     GET_WS_AUTH_TOKEN:()=>`ws/auth-token`,
     UPDATE_SUBSCRIPTION:()=>`subscription`,

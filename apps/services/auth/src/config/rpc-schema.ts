@@ -1,6 +1,6 @@
 import { GetProjectIdsLinkedToTeamRequestSchema, ProjectMemberInvitationRequestSchema } from "@/types/project"
 import { CreateTeamRequestSchema, DeleteTeamMemberRequestSchema, DeleteTeamRequestSchema, GetTeamMembersRequestSchema, GetTeamRequestSchema, GetTeamsLinkedToProjectRequestSchema, LinkTeamToProjectRequestSchema, TeamMemberInvitationRequestSchema, UnlinkTeamFromProjectRequestSchema } from "@/types/team"
-import { EmailPassLoginRequestSchema, SigninRequestSchema, GetUserRequestSchema, OAuthRequestSchema, VerifyEmailRequestSchema, CreateAuthorizationCodeRequestSchema, ExchangeAuthorizationCodeRequestSchema } from "@/types/user"
+import { EmailPassLoginRequestSchema, SigninRequestSchema, GetUserRequestSchema, OAuthRequestSchema, VerifyEmailRequestSchema, CreateAuthorizationCodeRequestSchema, ExchangeAuthorizationCodeRequestSchema, RegisterOAuthClientRequestSchema } from "@/types/user"
 import { AcceptMemberInviteRequestSchema, HasPermissionsRequestSchema } from "@/types/utility"
 import { createRPCEntry, RPC_SCHEMA_T } from "@shipoff/services-commons";
 import { BodyLessRequestSchema, BulkResourceRequestSchema } from "@shipoff/types";
@@ -39,5 +39,6 @@ export const RPC_SCHEMA: RPC_SCHEMA_T<RPCs> = {
     GetWSAuthToken:createRPCEntry(BodyLessRequestSchema),
     VerifyEmail:createRPCEntry(VerifyEmailRequestSchema),
     CreateAuthorizationCode:createRPCEntry(CreateAuthorizationCodeRequestSchema),
-    ExchangeAuthorizationCode:createRPCEntry(ExchangeAuthorizationCodeRequestSchema)
+    ExchangeAuthorizationCode:createRPCEntry(ExchangeAuthorizationCodeRequestSchema),
+    RegisterOAuthClient:createRPCEntry(RegisterOAuthClientRequestSchema)
 } as const

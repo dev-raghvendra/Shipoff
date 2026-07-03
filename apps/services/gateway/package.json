@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --exec ts-node -r tsconfig-paths/register src/server.ts",
+    "dev": "tsx watch src/server.ts",
     "build": "tsc --build && tsc-alias",
     "start": "node dist/server.js"
   },
@@ -17,10 +17,8 @@
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/ws": "^8.18.1",
-    "nodemon": "^3.1.10",
-    "ts-node": "^10.9.2",
-    "tsconfig-paths": "^4.2.0",
     "tsc-alias": "^1.8.16",
+    "tsx": "^4.22.4",
     "typescript": "^5.9.2"
   },
   "dependencies": {

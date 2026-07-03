@@ -1,7 +1,7 @@
 import { Response } from "express";
 import { WebSocket } from "ws";
 
-const GRPC_TO_HTTP_MAP: Record<number, number> = {
+export const GRPC_TO_HTTP_MAP: Record<number, number> = {
     0: 200, // OK
     1: 499, // Canceled
     2: 500, // Unknown -> Internal Server Error

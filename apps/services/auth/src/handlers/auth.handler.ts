@@ -1,7 +1,7 @@
 import { sendUnaryData, ServerUnaryCall, status } from "@grpc/grpc-js";
 import AuthService from "@/services/auth.service";
-import { GetCurrentUserResponse, HasPermissionsRequest, HasPermissionsResponse, LoginRequest, LoginResponse, SigninRequest, BodyLessRequest, GetWSAuthTokenResponse, google, VerifyEmailRequest, CreateAuthorizationCodeRequest, CreateAuthorizationCodeResponse, ExchangeAuthorizationCodeRequest, ExchangeAuthorizationCodeResponse } from "@shipoff/proto";
-import { CreateAuthorizationCodeRequestBodyType, EmailPassLoginRequestBodyType, ExchangeAuthorizationCodeRequestBodyType, OAuthRequestBodyType, SigninRequestBodyType, VerifyEmailRequestBodyType } from "@/types/user";
+import { GetCurrentUserResponse, HasPermissionsRequest, HasPermissionsResponse, LoginRequest, LoginResponse, SigninRequest, BodyLessRequest, GetWSAuthTokenResponse, google, VerifyEmailRequest, CreateAuthorizationCodeRequest, CreateAuthorizationCodeResponse, ExchangeAuthorizationCodeRequest, ExchangeAuthorizationCodeResponse, RegisterOAuthClientRequest, RegisterOAuthClientResponse } from "@shipoff/proto";
+import { CreateAuthorizationCodeRequestBodyType, EmailPassLoginRequestBodyType, ExchangeAuthorizationCodeRequestBodyType, OAuthRequestBodyType, RegisterOAuthClientRequestBodyType, SigninRequestBodyType, VerifyEmailRequestBodyType } from "@/types/user";
 import { HasPermissionsRequestBodyType } from "@/types/utility";
 import { BodyLessRequestBodyType } from "@shipoff/types";
 
@@ -140,6 +140,19 @@ class AuthHandlers {
             const {code,res,message} = await this._authService.exchangeAuthorizationCode(call.request.body);
             if(code!==status.OK) return callback({message,code})
                 const response = ExchangeAuthorizationCodeResponse.fromObject({code,res,message})
+            return callback(null,response)
+        } catch (e:any) {
+            return callback({
+                  code:status.INTERNAL,
+                  message:"Internal server error"
+            })  
+        }
+    }
+    async handleRegisterOAuthClient(call:ServerUnaryCall<RegisterOAuthClientRequest & {body:RegisterOAuthClientRequestBodyType},RegisterOAuthClientResponse>,callback:sendUnaryData<RegisterOAuthClientResponse>){
+        try {
+            const {code,res,message} = await this._authService.registerOAuthClient(call.request.body);
+            if(code!==status.OK) return callback({message,code})
+            const response = RegisterOAuthClientResponse.fromObject({code,res,message})
             return callback(null,response)
         } catch (e:any) {
             return callback({

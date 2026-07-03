@@ -19,6 +19,11 @@ export async function oauthCodeCreateController(req:RequestWithMeta,res:Response
     grpcToHttpResponse.call(res, code, message, data);
 }
 
+export async function oauthClientCreateController(req:RequestWithMeta,res:Response){
+    const{code,message,res:data} = await authService.createOAuthClient({...req.body,reqMeta:req.meta})
+    grpcToHttpResponse.call(res, code, message, data);
+}
+
 export async function oauthCodeExchangeController(req:RequestWithMeta,res:Response){
     const {code, message, res:data} = await authService.exchangeOAuthCode({...req.body,reqMeta:req.meta});
     grpcToHttpResponse.call(res, code, message, data);

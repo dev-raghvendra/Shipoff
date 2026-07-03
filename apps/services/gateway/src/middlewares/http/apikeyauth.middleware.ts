@@ -14,6 +14,7 @@ export async function authenticateApiKey(req:RequestWithMeta,res:Response,next:N
         await verifyJwt((apiKey as string).trim(),SECRETS.API_KEY_SECRET)
         next();
     } catch (e:any) {
+
         if(e instanceof JsonWebTokenError){
            res.status(401).json({code:401, message: "Unauthorized" ,res:null});
            return

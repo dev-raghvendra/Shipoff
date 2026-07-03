@@ -1,6 +1,6 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import passHashMiddleware from "./middleware";
-import {  OAuthRequestDBBodyType, SigninRequestDBBodyType } from "@/types/user";
+import {  OAuthRequestDBBodyType, RegisterOAuthClientRequestBodyType, SigninRequestDBBodyType } from "@/types/user";
 import { CreateTeamRequestDBBodyType, DeleteTeamRequestDBBodyType, LinkTeamToProjectRequestDBBodyType, TeamMemberDBBodyType, TeamMemberInvitationRequestDBBodyType, TransferTeamOwnershipRequestDBBodyType, UnlinkTeamFromProjectRequestDBBodyType } from "@/types/team";
 import { ProjectMemberDBBodyType, ProjectMemberInvitationRequestDBBodyType, TransferProjectOwnershipRequestDBBodyType } from "@/types/project";
 import { generateId, GrpcAppError } from "@shipoff/services-commons";
@@ -13,7 +13,8 @@ const MODEL_MAP = {
     Team: "team",
     TeamMemberInvitation: "team-invite",
     ProjectMemberInvitation: "prj-invite",
-    Subscription:"sub"
+    Subscription:"sub",
+    Client:"clt"
 } as const;
 
 export class Database {
@@ -50,6 +51,32 @@ export class Database {
         const res = await this._client.user.update(args);
         if(res) return res as Prisma.UserGetPayload<T>;
         throw new GrpcAppError(status.NOT_FOUND,"User not found",null);
+    }
+
+
+    async createOAuthClient({clientName,...body}:Omit<RegisterOAuthClientRequestBodyType,"reqMeta">){
+        try {
+            const clientId = generateId("Client",MODEL_MAP)
+            const data = await this._client.oAuthClients.create({
+               data:{
+                  clientId,
+                  clientName,
+                  metadata:JSON.stringify(body)
+               }
+            })
+            return data
+        } catch (e:any) {
+            if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
+                throw new GrpcAppError(status.ALREADY_EXISTS,"Client already exists",null);
+            }
+            throw new GrpcAppError(status.INTERNAL,"Unexpected error occurred",e);
+        }
+    }
+
+    async findOAuthClient<T extends Prisma.OAuthClientsFindUniqueArgs>(args:T){
+        const res = await this._client.oAuthClients.findUnique(args);
+        if(res) return res as Prisma.OAuthClientsGetPayload<T>
+        throw new GrpcAppError(status.NOT_FOUND,"OAuthClient not found",null)
     }
 
     async findUniqueTeamById(teamId: string, select?: Prisma.TeamSelect) {

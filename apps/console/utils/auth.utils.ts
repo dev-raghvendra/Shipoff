@@ -7,7 +7,7 @@ import { createErrHandler } from "./error.utils"
 import { User } from "next-auth"
 import { InferResponse, SubscriptionType } from "@shipoff/types"
 import { InferRequest } from "@/types/request"
-import { CreateAuthorizationCodeRequest, CreateAuthorizationCodeResponse, ExchangeAuthorizationCodeRequest, ExchangeAuthorizationCodeResponse } from "@shipoff/proto"
+import { CreateAuthorizationCodeRequest, CreateAuthorizationCodeResponse, ExchangeAuthorizationCodeRequest, ExchangeAuthorizationCodeResponse, RegisterOAuthClientRequest, RegisterOAuthClientResponse } from "@shipoff/proto"
 
 export interface UserData {
     userId: string,
@@ -94,7 +94,7 @@ export async function createAuthCode(body:CreateAuthCodeRequest){
         );
         return res.data.res;
     } catch (e: any) {
-        errHandler(e,"CREATE_AUTH_CODE",false);
+        errHandler(e,"CREATE_AUTH_CODE",false,true);
         return null;
     }
 }
@@ -111,8 +111,23 @@ export async function exchangeAuthCode(body:ExchangeAuthCodeRequest){
         );
         return res.data.res;
     } catch (e: any) {
-        errHandler(e,"EXCHANGE_AUTH_CODE",false,false);
-        return null
+        errHandler(e,"EXCHANGE_AUTH_CODE",false,true);
+    }
+}
+export async function registerOAuthClient(body:InferRequest<RegisterOAuthClientRequest>){
+    try {
+        const res = await axios.post<InferResponse<RegisterOAuthClientResponse>>(
+             `${MAIN_BACKEND_API.AUTH_API}/${AUTH_API_ROUTES.REGISTER_OAUTH_CLIENT()}`,
+             body,
+            {
+                headers: {
+            "X-Api-Key": NEXT_AUTH_SECRETS.MAIN_BACKEND_API_KEY
+        }
+            }
+        );
+        return res.data.res;
+    } catch (e: any) {
+        errHandler(e,"REGISTER_OAUTH_CLIENT",false,true);
     }
 }
 

@@ -123,8 +123,12 @@ model ProPerks {
   subscription           Subscription[]
 }
 
-
-
+model OAuthClients {
+   clientId     String  @id @default(cuid())
+   clientName   String?
+   metadata     Json
+   createdAt    DateTime @default(now())
+}
 
 enum PermissionType {
   READ

@@ -1,4 +1,4 @@
-import { acceptProjectInvitationController, acceptTeamInvitationController, getWSAuthTokenController, createProjectMemberInvitationController, createTeamController, createTeamMemberInviteController, deleteProjectMemberController, deleteTeamController, deleteTeamMemberController, getMeController, getTeamController, getTeamMembersController, getTeamsController, getTeamsLinkedToProjectController, getUserController, linkTeamToProjectController, loginController, OauthController, refreshTokenController, signinController, transferTeamOwnershipController, unlinkTeamFromProjectController, verifyEmailController,oauthCodeCreateController, oauthCodeExchangeController } from "@/contollers/http/auth.controller";
+import { acceptProjectInvitationController, acceptTeamInvitationController, getWSAuthTokenController, createProjectMemberInvitationController, createTeamController, createTeamMemberInviteController, deleteProjectMemberController, deleteTeamController, deleteTeamMemberController, getMeController, getTeamController, getTeamMembersController, getTeamsController, getTeamsLinkedToProjectController, getUserController, linkTeamToProjectController, loginController, OauthController, refreshTokenController, signinController, transferTeamOwnershipController, unlinkTeamFromProjectController, verifyEmailController,oauthCodeCreateController, oauthCodeExchangeController, oauthClientCreateController } from "@/contollers/http/auth.controller";
 import { authenticateApiKey } from "@/middlewares/http/apikeyauth.middleware";
 import { authorizationMiddleware } from "@/middlewares/http/authorization.middleware";
 import { Router } from "express";
@@ -11,6 +11,7 @@ authRouter.post("/oauth", authenticateApiKey, OauthController);
 authRouter.get("/me", authorizationMiddleware, getMeController);
 authRouter.post("/oauth/code/new",authenticateApiKey,oauthCodeCreateController)
 authRouter.post("/oauth/code/exchange",authenticateApiKey,oauthCodeExchangeController)
+authRouter.post("/oauth/client",authenticateApiKey,oauthClientCreateController)
 authRouter.post("/verify-email", authorizationMiddleware, verifyEmailController);
 authRouter.get("/users/:targetUserId",authorizationMiddleware,getUserController)
 authRouter.get("/refresh", authorizationMiddleware, refreshTokenController);

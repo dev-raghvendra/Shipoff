@@ -1,6 +1,6 @@
 import { createJwt, verifyJwt } from "@shipoff/services-commons";
 import { compare } from "@/libs/bcrypt";
-import { CreateAuthorizationCodeRequestBodyType, EmailPassLoginRequestBodyType, ExchangeAuthorizationCodeRequestBodyType, GetUserRequestBodyType, OAuthRequestBodyType, SigninRequestBodyType, VerifyEmailRequestBodyType } from "@/types/user";
+import { CreateAuthorizationCodeRequestBodyType, EmailPassLoginRequestBodyType, ExchangeAuthorizationCodeRequestBodyType, GetUserRequestBodyType, OAuthRequestBodyType, RegisterOAuthClientRequestBodyType, SigninRequestBodyType, VerifyEmailRequestBodyType } from "@/types/user";
 import { HasPermissionsRequestBodyType } from "@/types/utility";
 import { BodyLessRequestBodyType } from "@shipoff/types";
 import { PermissionBase } from "@/utils/rbac-utils";
@@ -66,6 +66,9 @@ class AuthService {
 
     async createAuthorizationCode({reqMeta,...body}:CreateAuthorizationCodeRequestBodyType){
         try {
+            const client = await this._dbService.findOAuthClient({where:{clientId:body.clientId}})
+            const meta = client.metadata?.toString()
+            if(!meta || !meta.includes(body.redirectUri)) throw new GrpcAppError(status.INVALID_ARGUMENT,"Invalid redirect uri")
             const authCode = crypto.randomBytes(32).toString("base64url")
             authCodeCache.set(authCode,JSON.stringify({...body,createdAt:Date.now()}))
             return {
@@ -129,7 +132,16 @@ class AuthService {
     } catch (e: any) {
         return this._errorHandler(e, "EXCHANGE_AUTH_CODE", reqMeta.requestId);
     }
-}
+    }
+
+    async registerOAuthClient({reqMeta,...body}:RegisterOAuthClientRequestBodyType){
+        try {
+            const o = await this._dbService.createOAuthClient(body)
+            return GrpcResponse.OK(o,"Client Created")
+        } catch (e:any) {
+            return this._errorHandler(e,"REGISTER_OAUTH_CLIENT",reqMeta.requestId)
+        }
+    }
 
 
     async login({reqMeta,...body}: EmailPassLoginRequestBodyType) {

@@ -19,3 +19,4 @@ export type InferRequest<
   ([OptionalProp] extends [keyof ReturnType<T["toObject"]>]
     ? Partial<Pick<ReturnType<T["toObject"]>, OptionalProp>>
     : {});
+

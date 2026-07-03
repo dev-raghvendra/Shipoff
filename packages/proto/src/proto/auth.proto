@@ -423,6 +423,31 @@ message ExchangeAuthorizationCodeRequest {
     RequestMeta reqMeta = 5;
 }
 
+message RegisterOAuthClientRequest{
+    string clientName = 1;
+    repeated string redirectUris = 2;
+    repeated string grantTypes = 3;
+    repeated string responseTypes = 4;
+    string tokenEndpointAuthMethod = 5;
+    RequestMeta reqMeta = 6;
+;}
+
+message RegisterOAuthClientResponseData {
+  string clientId = 1;
+  int64  clientIdIssuedAt = 2;
+  string clientName = 3;
+  repeated string grantTypes = 4;
+  repeated string responseTypes = 5;
+  repeated string redirectUris = 6;
+  string tokenEndpointAuthMethod = 7;
+}
+
+message RegisterOAuthClientResponse {
+   int32 code = 1;
+   string message = 2;
+   RegisterOAuthClientResponseData res = 3;
+}
+
 message ExchangeAuthorizationCodeResponse {
     int32 code = 1;
     string message = 2;
@@ -443,6 +468,7 @@ service AuthService {
   rpc RefreshToken(BodyLessRequest) returns (LoginResponse);
   rpc GetWSAuthToken(BodyLessRequest) returns (GetWSAuthTokenResponse);
   rpc VerifyEmail (VerifyEmailRequest) returns (google.protobuf.Empty);
+  rpc RegisterOAuthClient(RegisterOAuthClientRequest) returns (RegisterOAuthClientResponse);
   rpc CreateAuthorizationCode(CreateAuthorizationCodeRequest) returns (CreateAuthorizationCodeResponse);
   rpc ExchangeAuthorizationCode(ExchangeAuthorizationCodeRequest) returns (ExchangeAuthorizationCodeResponse);
 

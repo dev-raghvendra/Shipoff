@@ -3,7 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 
 
 export async function POST(req: NextRequest) {
-    const body = await req.formData();
+  try {
+        const body = await req.formData();
 
     const grantType = body.get("grant_type");
     const authorizationCode = body.get("code");
@@ -20,7 +21,8 @@ export async function POST(req: NextRequest) {
     ) {
         return NextResponse.json(
             {
-                error: "invalid_request"
+                code:400,
+                message:"Invalid request"
             },
             {
                 status: 400
@@ -36,11 +38,16 @@ export async function POST(req: NextRequest) {
             codeVerifier
         });
 
-    if(!response) return NextResponse.json({error:"Error while creating authorization code"})
-
-
+    
     return NextResponse.json({
-        access_token: response.accessToken,
-        token_type: "Bearer"
+        access_token: response?.accessToken,
+        token_type: "Bearer",
+        expires_in:1000*60*60*24*30
     });
+  } catch (e:any) {
+    return NextResponse.json({
+        code:e.code,
+        message:e.message
+    },{status:e.code})
+  }
 }
