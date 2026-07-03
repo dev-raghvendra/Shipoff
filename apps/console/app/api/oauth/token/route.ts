@@ -1,4 +1,4 @@
-import { exchangeAuthCode } from "@/utils/auth.utils";
+import { exchangeAuthCode, normalizeLoopback } from "@/utils/auth.utils";
 import { NextRequest, NextResponse } from "next/server";
 
 
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
         await exchangeAuthCode({
             authorizationCode,
             clientId,
-            redirectUri,
+            redirectUri:normalizeLoopback(redirectUri),
             codeVerifier
         });
 

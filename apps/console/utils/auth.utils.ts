@@ -100,7 +100,6 @@ export async function createAuthCode(body:CreateAuthCodeRequest){
 }
 export async function exchangeAuthCode(body:ExchangeAuthCodeRequest){
     try {
-        console.log("hitting exchange",body)
         const res = await axios.post<InferResponse<ExchangeAuthorizationCodeResponse>>(
              `${MAIN_BACKEND_API.AUTH_API}/${AUTH_API_ROUTES.EXCHANGE_OAUTH_CODE()}`,
              body,
@@ -112,7 +111,6 @@ export async function exchangeAuthCode(body:ExchangeAuthCodeRequest){
         );
         return res.data.res;
     } catch (e: any) {
-        console.log(e.response.data)
         errHandler(e,"EXCHANGE_AUTH_CODE",false,true);
     }
 }
