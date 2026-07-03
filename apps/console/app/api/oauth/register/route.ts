@@ -6,7 +6,7 @@ export async function POST(req:NextRequest){
     try {
         const response = await registerOAuthClient({
         clientName:body.client_name,
-        redirectUris:typeof body?.redirect_uris == "object" ? body?.redirectUris.map((u:any)=>normalizeLoopback(u)): normalizeLoopback(body?.redirect_uris),
+        redirectUris:typeof body?.redirect_uris == "object" ? body?.redirect_uris.map((u:any)=>normalizeLoopback(u)): normalizeLoopback(body?.redirect_uris),
         responseTypes:body.response_types,
         tokenEndpointAuthMethod:body.token_endpoint_auth_method,
         grantTypes:body.grant_types
