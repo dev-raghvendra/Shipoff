@@ -19,7 +19,7 @@
     "@types/ws": "^8.18.1",
     "tsc-alias": "^1.8.16",
     "tsx": "^4.22.4",
-    "typescript": "^5.9.2"
+    "typescript": "5.9.3"
   },
   "dependencies": {
     "@shipoff/grpc-clients": "workspace:*",

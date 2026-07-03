@@ -24,7 +24,6 @@
   },
   "devDependencies": {
     "@shipoff/typescript-config": "workspace:*",
-    "@types/jsonwebtoken": "^9.0.10",
-    "typescript": "^5.9.2"
+    "@types/jsonwebtoken": "^9.0.10"
   }
 }

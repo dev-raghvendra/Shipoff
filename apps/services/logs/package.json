@@ -15,7 +15,7 @@
     "@shipoff/typescript-config": "workspace:*",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
-    "typescript": "^5.8.3"
+    "typescript": "5.9.3"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.920.0",

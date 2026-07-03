@@ -13,13 +13,13 @@
     "dotenv": "^17.2.1"
   },
   "exports": {
-    ".":"./index.js",
+    ".": "./index.js",
     "./*": "./*.js"
-  },
-  "devDependencies": {
-    "typescript": "^6.0.3"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
 }
