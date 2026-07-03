@@ -83,6 +83,7 @@ export async function syncWithBackend({ provider, data }: ParamsType) {
 
 export async function createAuthCode(body:CreateAuthCodeRequest){
     try {
+        console.log("hitting upstream with",body)
         const res = await axios.post<InferResponse<CreateAuthorizationCodeResponse>>(
              `${MAIN_BACKEND_API.AUTH_API}/${AUTH_API_ROUTES.CREATE_OAUTH_CODE()}`,
              body,
