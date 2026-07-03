@@ -37,6 +37,7 @@ export async function GET(req: NextRequest) {
     }
 
     const session = await getServerSession(authOptions);
+    console.log("REDIRECT_URI",redirectUri)
 
     if (!session) {
         const signin = new URL("/signin", req.url);

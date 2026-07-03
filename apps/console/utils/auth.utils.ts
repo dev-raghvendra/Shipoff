@@ -83,7 +83,6 @@ export async function syncWithBackend({ provider, data }: ParamsType) {
 
 export async function createAuthCode(body:CreateAuthCodeRequest){
     try {
-        console.log("creating authcode",body)
         const res = await axios.post<InferResponse<CreateAuthorizationCodeResponse>>(
              `${MAIN_BACKEND_API.AUTH_API}/${AUTH_API_ROUTES.CREATE_OAUTH_CODE()}`,
              body,
@@ -117,7 +116,6 @@ export async function exchangeAuthCode(body:ExchangeAuthCodeRequest){
 }
 export async function registerOAuthClient(body:InferRequest<RegisterOAuthClientRequest>){
     try {
-        console.log("storing client",body)
         const res = await axios.post<InferResponse<RegisterOAuthClientResponse>>(
              `${MAIN_BACKEND_API.AUTH_API}/${AUTH_API_ROUTES.REGISTER_OAUTH_CLIENT()}`,
              body,
