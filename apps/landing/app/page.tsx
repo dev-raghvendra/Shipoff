@@ -3,6 +3,7 @@
 import { Navigation } from '@/components/landing/navigation'
 import { HeroSection } from '@/components/landing/hero-section'
 import { HowItWorksSection } from '@/components/landing/how-it-works-section'
+import { McpSection } from '@/components/landing/mcp-section'
 import { FrameworksSection } from '@/components/landing/frameworks-section'
 import { BenefitsSection } from '@/components/landing/benefits-section'
 import { PricingSection } from '@/components/landing/pricing-section'
@@ -15,6 +16,7 @@ export default function LandingPage() {
       <Navigation />
       <HeroSection />
       <HowItWorksSection />
+      <McpSection />
       <FrameworksSection />
       <BenefitsSection />
       <PricingSection />

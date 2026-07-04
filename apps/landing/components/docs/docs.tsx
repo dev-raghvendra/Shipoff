@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Book, Rocket, Code2, Settings, Users, Zap, Database, AlertCircle, Search, Menu, X, ChevronRight, Lock, Circle } from 'lucide-react'
+import { ArrowLeft, Book, Rocket, Code2, Settings, Users, Zap, Database, AlertCircle, Search, Menu, X, ChevronRight, Lock, Circle, Bot } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Logo } from '@/components/ui/logo'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -32,6 +32,7 @@ const sections = [
   { id: 'frameworks', title: 'Frameworks', icon: Code2 },
   { id: 'environment-variables', title: 'Environment Variables', icon: Settings },
   { id: 'teams', title: 'Teams & Collaboration', icon: Users },
+  { id: 'mcp', title: 'MCP for AI Agents', icon: Bot },
   { id: 'troubleshooting', title: 'Troubleshooting', icon: AlertCircle },
 ]
 
@@ -154,6 +155,24 @@ export default function DocsPage() {
       return () => document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [searchOpen])
+
+  // Scroll to hash anchor on load (e.g. /docs#mcp from landing "Connect your agent")
+  useEffect(() => {
+    const hash = window.location.hash.replace('#', '')
+    if (!hash) return
+
+    const scrollToHash = () => {
+      const element = document.getElementById(hash)
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        const matchingSection = sections.find((section) => section.id === hash)
+        setActiveSection(matchingSection ? hash : hash.startsWith('mcp') ? 'mcp' : hash)
+      }
+    }
+
+    const timeoutId = window.setTimeout(scrollToHash, 100)
+    return () => window.clearTimeout(timeoutId)
+  }, [])
 
   // Track active section on scroll
   useEffect(() => {
@@ -1130,6 +1149,301 @@ export default function DocsPage() {
                   </ul>
                 </CardContent>
               </Card>
+            </section>
+
+            {/* MCP for AI Agents */}
+            <section id="mcp" className="scroll-mt-24 mb-16">
+              <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
+                <Bot className="size-7 text-primary" />
+                MCP for AI Agents
+              </h2>
+
+              <Card className="mb-6">
+                <CardHeader>
+                  <CardTitle>Model Context Protocol Server</CardTitle>
+                  <CardDescription>
+                    Connect Cursor, Claude Desktop, Claude Code, Codex CLI, or custom agents to manage Shipoff from your editor
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    Shipoff exposes a native MCP server over HTTP. Supported clients authenticate with OAuth 2.1;
+                    agents without OAuth can use a personal access token from{' '}
+                    <Link href={CONFIG.ACCOUNT_URL} className="text-primary hover:underline">Dashboard → Account</Link>.
+                    Once connected, your AI assistant can create projects, trigger deployments, monitor
+                    build status, and read live context from your account.
+                  </p>
+                  <div className="bg-muted p-4 rounded-lg font-mono text-sm">
+                    <p className="text-muted-foreground mb-1">MCP endpoint</p>
+                    <p className="text-primary">{CONFIG.MCP_URL}</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="grid md:grid-cols-2 gap-6 mb-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Tools</CardTitle>
+                    <CardDescription>Actions agents can perform</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="list-disc pl-6 space-y-1 text-sm text-muted-foreground">
+                      <li><code className="bg-muted px-1 rounded">createProject</code> — create a new project</li>
+                      <li><code className="bg-muted px-1 rounded">deleteProject</code> — remove a project</li>
+                      <li><code className="bg-muted px-1 rounded">redeployDeployment</code> — trigger a redeploy</li>
+                      <li><code className="bg-muted px-1 rounded">monitorDeployment</code> — watch status and logs</li>
+                      <li><code className="bg-muted px-1 rounded">deleteDeployment</code> — delete a deployment</li>
+                    </ul>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Resources</CardTitle>
+                    <CardDescription>Context agents can read</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="list-disc pl-6 space-y-1 text-sm text-muted-foreground">
+                      <li>Projects — configured projects and settings</li>
+                      <li>Deployments — history and states</li>
+                      <li>Frameworks — supported runtimes</li>
+                      <li>GitHub — connected repositories</li>
+                      <li>Domains — routing configuration</li>
+                    </ul>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <Card id="mcp-oauth" className="scroll-mt-24 mb-6">
+                <CardHeader>
+                  <CardTitle>OAuth 2.1 authentication</CardTitle>
+                  <CardDescription>Dynamic client registration — no manual API keys in the console</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    Shipoff MCP uses OAuth 2.1 with dynamic client registration (DCR). When your agent connects,
+                    it discovers auth endpoints from the MCP server, registers itself, and opens a browser sign-in
+                    so you can approve access to your Shipoff account.
+                  </p>
+                  <ol className="list-decimal pl-6 space-y-2 text-sm text-muted-foreground">
+                    <li>Add the Shipoff MCP server URL to your client (see guides below).</li>
+                    <li>On first use, complete the OAuth flow when prompted — sign in at console.shipoff.in and approve access.</li>
+                    <li>Your client stores the token and can call MCP tools and read resources scoped to your account.</li>
+                  </ol>
+                  <p className="text-sm text-muted-foreground">
+                    If your agent does not support OAuth, use a personal access token instead — see{' '}
+                    <button
+                      type="button"
+                      onClick={() => document.getElementById('mcp-pat')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                      className="text-primary hover:underline"
+                    >
+                      PAT setup
+                    </button>.
+                  </p>
+                  <div className="bg-muted p-4 rounded-lg font-mono text-xs space-y-1 text-muted-foreground">
+                    <p className="text-foreground font-semibold font-sans text-sm mb-2">What happens under the hood</p>
+                    <p>1. Client POSTs to {CONFIG.MCP_URL} → receives 401 + WWW-Authenticate metadata</p>
+                    <p>2. Client discovers authorization server via protected-resource metadata</p>
+                    <p>3. Client registers via DCR and runs the authorization code flow</p>
+                    <p>4. Bearer token is sent on all subsequent MCP requests</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <h3 className="text-2xl font-bold mb-4">Connect your agent</h3>
+              <p className="text-sm text-muted-foreground mb-6">
+                Pick your MCP client below. Every guide uses the same endpoint — only the config file or CLI command differs.
+              </p>
+
+              <div className="space-y-6 mb-6">
+                <Card id="mcp-cursor" className="scroll-mt-24">
+                  <CardHeader>
+                    <CardTitle>Cursor</CardTitle>
+                    <CardDescription>Settings → MCP → Add new global MCP server</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Open <strong>Cursor Settings → MCP</strong>, click <strong>Add new global MCP server</strong>,
+                      and paste this into your MCP config (typically <code className="bg-muted px-1 rounded">~/.cursor/mcp.json</code>):
+                    </p>
+                    <pre className="bg-muted p-4 rounded-lg text-xs font-mono text-muted-foreground overflow-x-auto">{`{
+  "mcpServers": {
+    "shipoff": {
+      "url": "${CONFIG.MCP_URL}"
+    }
+  }
+}`}</pre>
+                    <p className="text-sm text-muted-foreground">
+                      Restart Cursor or reload MCP servers. When you first use Shipoff tools, Cursor opens a browser
+                      for OAuth sign-in. Approve access and you are connected.
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card id="mcp-claude-desktop" className="scroll-mt-24">
+                  <CardHeader>
+                    <CardTitle>Claude Desktop</CardTitle>
+                    <CardDescription>Edit claude_desktop_config.json</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Add Shipoff to your Claude Desktop MCP config:
+                    </p>
+                    <ul className="list-disc pl-6 space-y-1 text-sm text-muted-foreground">
+                      <li><strong>macOS:</strong> <code className="bg-muted px-1 rounded">~/Library/Application Support/Claude/claude_desktop_config.json</code></li>
+                      <li><strong>Windows:</strong> <code className="bg-muted px-1 rounded">%APPDATA%\\Claude\\claude_desktop_config.json</code></li>
+                    </ul>
+                    <pre className="bg-muted p-4 rounded-lg text-xs font-mono text-muted-foreground overflow-x-auto">{`{
+  "mcpServers": {
+    "shipoff": {
+      "url": "${CONFIG.MCP_URL}"
+    }
+  }
+}`}</pre>
+                    <p className="text-sm text-muted-foreground">
+                      Restart Claude Desktop. On first connection, complete the OAuth sign-in in your browser when prompted.
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card id="mcp-claude-code" className="scroll-mt-24">
+                  <CardHeader>
+                    <CardTitle>Claude Code</CardTitle>
+                    <CardDescription>CLI commands for HTTP MCP with OAuth</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Add Shipoff as a remote HTTP MCP server, then authenticate:
+                    </p>
+                    <pre className="bg-muted p-4 rounded-lg text-xs font-mono text-muted-foreground overflow-x-auto">{`# Add the Shipoff MCP server
+claude mcp add --transport http shipoff ${CONFIG.MCP_URL}
+
+# Authenticate (opens browser for OAuth 2.1 sign-in)
+# In a Claude Code session, run /mcp → select shipoff → Authenticate
+
+# Verify the server is configured
+claude mcp list
+claude mcp get shipoff`}</pre>
+                    <p className="text-sm text-muted-foreground">
+                      Alternatively, add via JSON in <code className="bg-muted px-1 rounded">~/.claude.json</code> or a project
+                      <code className="bg-muted px-1 rounded">.mcp.json</code>:
+                    </p>
+                    <pre className="bg-muted p-4 rounded-lg text-xs font-mono text-muted-foreground overflow-x-auto">{`{
+  "mcpServers": {
+    "shipoff": {
+      "type": "http",
+      "url": "${CONFIG.MCP_URL}"
+    }
+  }
+}`}</pre>
+                  </CardContent>
+                </Card>
+
+                <Card id="mcp-codex" className="scroll-mt-24">
+                  <CardHeader>
+                    <CardTitle>Codex CLI</CardTitle>
+                    <CardDescription>Commands and config.toml for streamable HTTP + OAuth</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Use the Codex CLI to register Shipoff, then log in with OAuth:
+                    </p>
+                    <pre className="bg-muted p-4 rounded-lg text-xs font-mono text-muted-foreground overflow-x-auto">{`# Add Shipoff as a remote MCP server
+codex mcp add shipoff --url ${CONFIG.MCP_URL}
+
+# Complete OAuth 2.1 sign-in (opens browser)
+codex mcp login shipoff
+
+# Verify configuration
+codex mcp list
+codex mcp get shipoff`}</pre>
+                    <p className="text-sm text-muted-foreground">
+                      Or edit <code className="bg-muted px-1 rounded">~/.codex/config.toml</code> directly:
+                    </p>
+                    <pre className="bg-muted p-4 rounded-lg text-xs font-mono text-muted-foreground overflow-x-auto">{`[mcp_servers.shipoff]
+url = "${CONFIG.MCP_URL}"`}</pre>
+                    <p className="text-sm text-muted-foreground">
+                      Then run <code className="bg-muted px-1 rounded">codex mcp login shipoff</code> to authorize.
+                      If your OAuth provider requires a fixed callback port, set <code className="bg-muted px-1 rounded">mcp_oauth_callback_port</code> in config.toml.
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card id="mcp-pat" className="scroll-mt-24">
+                  <CardHeader>
+                    <CardTitle>Personal access token (agents without OAuth)</CardTitle>
+                    <CardDescription>Use Bearer auth when your MCP client cannot run the OAuth flow</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Some agents and custom integrations do not support OAuth 2.1. For those clients, generate a
+                      personal access token (PAT) in the Shipoff console and send it as a Bearer token on every MCP request.
+                    </p>
+                    <ol className="list-decimal pl-6 space-y-2 text-sm text-muted-foreground">
+                      <li>
+                        Sign in at{' '}
+                        <Link href={CONFIG.LOGIN_URL} className="text-primary hover:underline">console.shipoff.in</Link>.
+                      </li>
+                      <li>
+                        Open <strong>Dashboard → Account</strong> and scroll to the{' '}
+                        <strong>Personal Access Tokens</strong> section.
+                      </li>
+                      <li>Enter a token name, choose an expiry, and click <strong>Generate</strong>.</li>
+                      <li>Copy the token immediately — it is shown only once.</li>
+                      <li>
+                        Configure your agent to send{' '}
+                        <code className="bg-muted px-1 rounded">Authorization: Bearer &lt;your_pat&gt;</code>{' '}
+                        to <code className="bg-muted px-1 rounded">{CONFIG.MCP_URL}</code>.
+                      </li>
+                    </ol>
+                    <div className="bg-muted p-4 rounded-lg">
+                      <p className="text-sm font-semibold mb-2">Generate a token</p>
+                      <Link href={CONFIG.ACCOUNT_URL} className="text-sm text-primary hover:underline">
+                        {CONFIG.ACCOUNT_URL}
+                      </Link>
+                    </div>
+
+                    <p className="text-sm font-semibold">Codex CLI</p>
+                    <pre className="bg-muted p-4 rounded-lg text-xs font-mono text-muted-foreground overflow-x-auto">{`# Store your PAT in the environment (never commit this)
+export SHIPOFF_PAT="shp_your_token_here"
+
+# ~/.codex/config.toml
+[mcp_servers.shipoff]
+url = "${CONFIG.MCP_URL}"
+bearer_token_env_var = "SHIPOFF_PAT"`}</pre>
+
+                    <p className="text-sm font-semibold">Claude Code</p>
+                    <pre className="bg-muted p-4 rounded-lg text-xs font-mono text-muted-foreground overflow-x-auto">{`export SHIPOFF_PAT="shp_your_token_here"
+
+claude mcp add --transport http \\
+  --header "Authorization: Bearer $SHIPOFF_PAT" \\
+  shipoff ${CONFIG.MCP_URL}`}</pre>
+
+                    <p className="text-sm font-semibold">Cursor / Claude Desktop (JSON config)</p>
+                    <pre className="bg-muted p-4 rounded-lg text-xs font-mono text-muted-foreground overflow-x-auto">{`{
+  "mcpServers": {
+    "shipoff": {
+      "url": "${CONFIG.MCP_URL}",
+      "headers": {
+        "Authorization": "Bearer shp_your_token_here"
+      }
+    }
+  }
+}`}</pre>
+
+                    <p className="text-sm font-semibold">Custom client / curl</p>
+                    <pre className="bg-muted p-4 rounded-lg text-xs font-mono text-muted-foreground overflow-x-auto">{`curl -X POST ${CONFIG.MCP_URL} \\
+  -H "Authorization: Bearer shp_your_token_here" \\
+  -H "Content-Type: application/json" \\
+  -H "Accept: application/json, text/event-stream" \\
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"my-agent","version":"1.0.0"}}}'`}</pre>
+                    <p className="text-sm text-muted-foreground">
+                      Treat PATs like passwords: store them in environment variables or a secrets manager, rotate them
+                      regularly, and revoke unused tokens from the Account page.
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
             </section>
 
             {/* Troubleshooting */}

@@ -14,6 +14,8 @@ export const metadata: Metadata = {
     'frameworks support',
     'environment variables',
     'troubleshooting',
+    'MCP server',
+    'AI agents',
   ],
   openGraph: {
     title: 'Documentation | Shipoff',

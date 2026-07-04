@@ -15,7 +15,7 @@ const _poppins = Poppins({ subsets: ['latin'], weight: ["100","200","300","400",
 export const metadata: Metadata = {
   title: 'Shipoff – From Code to Cloud in Seconds',
   description:
-    'Deploy your web apps directly from Git to a global cloud in seconds. Shipoff makes deployment effortless with zero configuration, optimized builds, and a lightning-fast CDN.',
+    'Deploy your web apps directly from Git to a global cloud in seconds. Shipoff makes deployment effortless with zero configuration, MCP support for AI workflows, and a lightning-fast CDN.',
   keywords: [
     'deployment platform',
     'web hosting',
@@ -28,6 +28,11 @@ export const metadata: Metadata = {
     'Netlify alternative',
     'Shipoff',
     'deploy apps fast',
+    'MCP server',
+    'Model Context Protocol',
+    'AI deployment',
+    'AI agents',
+    'Cursor MCP',
   ],
   authors: [{ name: 'Shipoff', url: 'https://shipoff.in' }],
   creator: 'Shipoff Team',

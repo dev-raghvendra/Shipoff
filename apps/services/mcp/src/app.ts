@@ -1,4 +1,4 @@
-import express, { Request } from "express";
+import express from "express";
 import cors from "cors";
 import { mcpRouter } from "@/routers/mcp.router";
 import { metaDataRouter } from "./routers/metadata.router";

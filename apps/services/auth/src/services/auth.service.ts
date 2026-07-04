@@ -121,7 +121,7 @@ class AuthService {
         const {password, ...user} = res;
         const u = normalizeSubscriptionData(user);
 
-        const token = await createJwt(u,"30D");
+        const token = await createJwt({authUserData:u},"30D");
         return {
             code:status.OK,
             message:"Access token generated",

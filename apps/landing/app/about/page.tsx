@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowLeft, Github, Rocket, Code2, Database, Zap, Users, Settings, Book } from 'lucide-react'
+import { ArrowLeft, Github, Rocket, Code2, Database, Zap, Users, Settings, Book, Bot } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Logo } from '@/components/ui/logo'
 
@@ -128,6 +128,7 @@ export default function AboutPage() {
                 <li>Real-time log streaming and observability</li>
                 <li>Team collaboration and project management</li>
                 <li>Zero-downtime deployments with automatic rollback</li>
+                <li>MCP server for AI agent workflows (create, deploy, monitor via Cursor & Claude)</li>
               </ul>
             </div>
 
@@ -193,7 +194,7 @@ export default function AboutPage() {
                     Backend Services
                   </h4>
                   <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• <strong>6 Microservices:</strong> Auth, Projects, Orchestrator, Gateway, Logs, Ingress</li>
+                    <li>• <strong>7 Microservices:</strong> Auth, Projects, Orchestrator, Gateway, Logs, Ingress, MCP</li>
                     <li>• <strong>gRPC:</strong> Type-safe inter-service communication</li>
                     <li>• <strong>Redis Streams:</strong> Event-driven architecture</li>
                   </ul>
@@ -289,6 +290,18 @@ export default function AboutPage() {
                   </p>
                 </div>
                 
+                <div className="border-l-4 border-violet-500 pl-4 py-2">
+                  <h4 className="font-semibold mb-2 flex items-center gap-2">
+                    <Bot className="size-4 text-violet-500" />
+                    6. MCP Server for AI Workflows
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    Model Context Protocol server with OAuth 2.1 authentication, exposing tools for
+                    project lifecycle management and resources for deployments, frameworks, GitHub, and domains.
+                    Enables Cursor, Claude Desktop, and custom agents to deploy and monitor apps programmatically.
+                  </p>
+                </div>
+                
                 <div className="border-l-4 border-pink-500 pl-4 py-2">
                   <h4 className="font-semibold mb-2">5. Team Collaboration</h4>
                   <p className="text-sm text-muted-foreground">
@@ -337,7 +350,7 @@ export default function AboutPage() {
               
               <div className="grid md:grid-cols-3 gap-4">
                 <div className="border rounded-lg p-4 text-center">
-                  <div className="text-3xl font-bold text-primary mb-2">6+</div>
+                  <div className="text-3xl font-bold text-primary mb-2">7+</div>
                   <div className="text-sm text-muted-foreground">Microservices</div>
                 </div>
                 

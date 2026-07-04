@@ -24,7 +24,7 @@ export function CTASection() {
               Ready to ship faster?
             </h2>
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Join thousands of developers deploying their applications with Shipoff
+              Join thousands of developers deploying with Shipoff—or connect an AI agent via MCP and ship from your editor.
             </p>
             <Link href="/login">
               <Button size="lg" className="gap-2 group px-8 h-12 text-base shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all">

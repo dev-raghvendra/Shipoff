@@ -17,6 +17,9 @@ export function Navigation() {
             <Link href="#features" className="text-sm hover:text-primary transition-colors">
               Features
             </Link>
+            <Link href="#mcp" className="text-sm hover:text-primary transition-colors">
+              MCP
+            </Link>
             <Link href="#benefits" className="text-sm hover:text-primary transition-colors">
               Benefits
             </Link>
