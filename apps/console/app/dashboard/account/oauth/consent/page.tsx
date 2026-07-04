@@ -48,6 +48,7 @@ function OAuthConsentContent() {
 
   const handleAuthorize = async () => {
      toast.success("Authorization allowed")
+     setAuthorizing(true)
      window.location.href=`${window.location.origin}/api/oauth/authorize/decision?accept=true&request=${request}`
   }
 
