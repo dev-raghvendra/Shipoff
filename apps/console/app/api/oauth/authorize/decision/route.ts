@@ -9,9 +9,8 @@ export async function GET(req:NextRequest){
         const decision  = search.get("accept")
         const request = search.get("request")
 
-        if(decision!=="true") return NextResponse.redirect("/dashboard")
-        else if(!request) return NextResponse.json({code:400,message:"Request param not found,  Invalid Request"})
-        const data = await jwtVerify<{
+        if(!request) return NextResponse.json({code:400,message:"Request param not found,  Invalid Request"})
+            const data = await jwtVerify<{
         clientId:string,
         redirectUri:string,
         codeChallenge:string,
@@ -20,6 +19,15 @@ export async function GET(req:NextRequest){
         state:string,
         userId:string
     }>(request,new TextEncoder().encode(NEXT_AUTH_SECRETS.NEXTAUTH_SECRET))
+
+    const callback = new URL(decodeURIComponent(data.payload.redirectUri));
+    callback.searchParams.set("state", data.payload.state);
+    
+    if(decision!=="true"){
+      callback.searchParams.set("error","access_denied")
+      return NextResponse.redirect(callback)
+    } 
+
     const response = await createAuthCode({
         userId: data.payload.userId,
         clientId:data.payload.clientId,
@@ -29,14 +37,12 @@ export async function GET(req:NextRequest){
         scopes:data.payload.scope
     });
 
-    const callback = new URL(decodeURIComponent(data.payload.redirectUri));
 
     callback.searchParams.set(
         "code",
         response?.authorizationCode!
     );
 
-    callback.searchParams.set("state", data.payload.state);
     return NextResponse.redirect(callback);
     } catch (e:any) {
         return NextResponse.json({code:e.code,message:e.message},{status:e.code})
