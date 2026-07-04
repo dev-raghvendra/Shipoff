@@ -70,9 +70,7 @@ export default function Auth({isSignin}:{isSignin:boolean}) {
         setLoading(true)
         setError(null)
         try {
-            await signIn(provider,{
-               callbackUrl:"/"
-            })
+            await signIn(provider)
         } catch (error:any) {
            setError({title:"Authentication Error",message:error.message})
         } finally {
