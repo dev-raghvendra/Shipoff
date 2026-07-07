@@ -137,7 +137,12 @@ class AuthService {
     async registerOAuthClient({reqMeta,...body}:RegisterOAuthClientRequestBodyType){
         try {
             const o = await this._dbService.createOAuthClient(body)
-            return GrpcResponse.OK(o,"Client Created")
+            const data = {
+                ...body,
+                ...o,
+                clientIdIssuedAt:o.createdAt
+            }
+            return GrpcResponse.OK(data,"Client Created")
         } catch (e:any) {
             return this._errorHandler(e,"REGISTER_OAUTH_CLIENT",reqMeta.requestId)
         }
